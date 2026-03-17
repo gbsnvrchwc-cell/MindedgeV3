@@ -12,16 +12,25 @@ require('dotenv').config();
 const app = express();
 app.set('trust proxy', 1); // Required for Railway proxy
 const PORT = process.env.PORT || 3000;
-const JWT_SECRET = process.env.JWT_SECRET || 'mindedge-dev-secret-change-in-production';
-const DOMAIN = process.env.DOMAIN || `http://localhost:${PORT}`;
-const ADMIN_CODE = process.env.ADMIN_CODE || 'MINDEDGE-ADMIN';
+// ── FAIL FAST: require secrets in production ─────────────────────
+if (!process.env.JWT_SECRET) {
+  console.error('FATAL: JWT_SECRET environment variable is required');
+  process.exit(1);
+}
+if (!process.env.ANTHROPIC_API_KEY) {
+  console.error('FATAL: ANTHROPIC_API_KEY environment variable is required');
+  process.exit(1);
+}
+const JWT_SECRET  = process.env.JWT_SECRET;
+const DOMAIN      = process.env.DOMAIN || `http://localhost:${PORT}`;
+const ADMIN_CODE  = process.env.ADMIN_CODE || '';
 
 // ── SECURITY HEADERS ─────────────────────────────────────────────
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", 'https://js.stripe.com'],
+      scriptSrc: ["'self'", "'unsafe-inline'", 'https://js.stripe.com'],
       scriptSrcAttr: ["'unsafe-inline'"],
       styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com', 'https://fonts.gstatic.com'],
       fontSrc: ["'self'", 'https://fonts.gstatic.com', 'https://fonts.googleapis.com', 'data:'],
@@ -35,12 +44,18 @@ app.use(helmet({
 }));
 
 // ── CORS — only allow your own domain ────────────────────────────
+const RAILWAY_DOMAIN = process.env.RAILWAY_PUBLIC_DOMAIN
+  ? 'https://' + process.env.RAILWAY_PUBLIC_DOMAIN
+  : null;
+
 const allowedOrigins = [
   DOMAIN,
   'http://localhost:3000',
   'https://mindedge.app',
-  /\.railway\.app$/,
-];
+  'https://mindedgev1-production.up.railway.app',
+  'https://mindedgev3-production.up.railway.app',
+  RAILWAY_DOMAIN,
+].filter(Boolean);
 app.use(cors({
   origin: (origin, cb) => {
     if (!origin) return cb(null, true);
@@ -76,6 +91,12 @@ const checkoutLimiter = rateLimit({
   message: { error: 'Too many checkout attempts.' },
 });
 
+const codeLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5, // max 5 code attempts per 15 minutes per IP
+  message: { error: 'Too many code attempts. Please wait before trying again.' },
+});
+
 const chartLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 10,                   // 10 chart lookups per minute
@@ -96,7 +117,7 @@ function verifyToken(token) {
 function setAccessCookie(res, token) {
   res.cookie('mindedge_access', token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: true, // always secure — we only run on HTTPS in Railway
     sameSite: 'lax',
     maxAge: 1000 * 60 * 60 * 24 * 3650,
   });
@@ -151,7 +172,7 @@ app.get('/app', requireAccess, (req, res) => {
 });
 
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok', version: '3.0.0', time: new Date().toISOString() });
+  res.json({ status: 'ok' });
 });
 
 // Check if current user is authenticated (for frontend)
@@ -168,7 +189,7 @@ app.get('/api/auth-status', (req, res) => {
 
 // ── FREE ACCESS CODE (for analyst community) ─────────────────────
 // You can give community members a code to get free access
-app.post('/api/redeem-code', (req, res) => {
+app.post('/api/redeem-code', codeLimiter, (req, res) => {
   const { code } = req.body;
   if (!code) return res.status(400).json({ error: 'Code required' });
 
@@ -218,7 +239,8 @@ app.post('/api/create-checkout', checkoutLimiter, async (req, res) => {
   if (!process.env.STRIPE_SECRET_KEY) {
     return res.status(500).json({ error: 'Payments not configured' });
   }
-  const product = PRODUCTS[req.body.product] || PRODUCTS.app;
+  const productKey = ['app','guide','bundle'].includes(req.body.product) ? req.body.product : 'app';
+  const product = PRODUCTS[productKey];
   try {
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
@@ -234,7 +256,7 @@ app.post('/api/create-checkout', checkoutLimiter, async (req, res) => {
         quantity: 1,
       }],
       mode: 'payment',
-      success_url: `${DOMAIN}/payment-success?session_id={CHECKOUT_SESSION_ID}&product=${req.body.product || 'app'}`,
+      success_url: `${DOMAIN}/payment-success?session_id={CHECKOUT_SESSION_ID}&product=${productKey}`,
       cancel_url: `${DOMAIN}/paywall`,
       allow_promotion_codes: true,
     });
@@ -248,6 +270,8 @@ app.post('/api/create-checkout', checkoutLimiter, async (req, res) => {
 app.get('/payment-success', async (req, res) => {
   const { session_id, product } = req.query;
   if (!session_id) return res.redirect('/paywall');
+  // Validate session_id format to prevent injection
+  if (!/^cs_[a-zA-Z0-9_]+$/.test(session_id)) return res.redirect('/paywall?error=invalid_session');
   try {
     const session = await stripe.checkout.sessions.retrieve(session_id);
     if (session.payment_status !== 'paid') return res.redirect('/paywall?error=not_paid');
@@ -256,6 +280,7 @@ app.get('/payment-success', async (req, res) => {
 
     // Guide-only purchase: send PDF directly, no app access cookie
     if (product === 'guide') {
+      // Issue a short-lived download token stored as httpOnly cookie
       const token = issueToken({
         access: false,
         tier: 'guide',
@@ -263,8 +288,14 @@ app.get('/payment-success', async (req, res) => {
         paid_at: Date.now(),
         stripe_session: session.id,
       });
-      // Redirect to guide download page
-      return res.redirect('/download-guide?token=' + token);
+      // Set as httpOnly cookie instead of URL param (prevents token leakage in logs/referrer)
+      res.cookie('mindedge_guide_token', token, {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'lax',
+        maxAge: 1000 * 60 * 60 * 24 * 365 * 10, // 10 years
+      });
+      return res.redirect('/download-guide');
     }
 
     // App or bundle: set access cookie
@@ -290,15 +321,18 @@ app.get('/payment-success', async (req, res) => {
 
 // Guide download page
 app.get('/download-guide', (req, res) => {
-  const { token } = req.query;
+  // Check cookie first (guide-only purchase), then access cookie (bundle/platform)
+  const guideToken = req.cookies.mindedge_guide_token;
+  const accessToken = req.cookies.mindedge_access;
+  const token = guideToken || accessToken;
+  if (!token) return res.redirect('/paywall?error=access_required');
   try {
     const payload = verifyToken(token);
-    if (payload.tier !== 'guide' && payload.tier !== 'pro' && payload.tier !== 'community' && payload.tier !== 'admin') {
-      return res.status(403).send('Access denied');
-    }
-    // Serve the PDF
+    const allowed = ['guide','pro','community','admin'].includes(payload.tier);
+    if (!allowed) return res.redirect('/paywall?error=upgrade_required');
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', 'attachment; filename="MindEdge_SPX_Scalping_Framework.pdf"');
+    res.setHeader('Cache-Control', 'no-store');
     res.sendFile(path.join(__dirname, 'downloads', 'spx_scalping_guide.pdf'));
   } catch {
     res.redirect('/paywall?error=invalid_token');
@@ -507,12 +541,20 @@ app.post('/api/analyze-trade', requireAccessAPI, aiLimiter, chartLimiter, async 
   try {
     const fetchChart = async (interval, range) => {
       const url = `https://query1.finance.yahoo.com/v8/finance/chart/%5EGSPC?interval=${interval}&range=${range}&includePrePost=false`;
-      const r = await fetch(url, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-          'Accept': 'application/json',
-        },
-      });
+      const controller = new AbortController();
+      const fetchTimeout = setTimeout(() => controller.abort(), 8000); // 8s timeout
+      let r;
+      try {
+        r = await fetch(url, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'Accept': 'application/json',
+          },
+          signal: controller.signal,
+        });
+      } finally {
+        clearTimeout(fetchTimeout);
+      }
       if (!r.ok) throw new Error(`Yahoo Finance error: ${r.status}`);
       const data = await r.json();
       const result = data.chart.result[0];
@@ -612,9 +654,19 @@ app.post('/api/analyze-trade', requireAccessAPI, aiLimiter, chartLimiter, async 
       return 'flat';
     };
 
-    const ep = parseFloat(entryPrice) || null;
-    const xp = parseFloat(exitPrice)  || null;
-    const pnl = ep && xp ? ((xp - ep) * (direction === 'Short' ? -1 : 1)).toFixed(2) : 'not provided';
+    // Sanitize and validate numeric inputs
+    const sanitizePrice = (p) => {
+      const n = parseFloat(String(p).replace(/[^0-9.-]/g, ''));
+      return !isNaN(n) && n > 0 && n < 100000 ? n : null;
+    };
+    const sanitizeText = (t) => t ? String(t).substring(0, 500).replace(/[<>]/g, '') : '';
+    const ep  = sanitizePrice(entryPrice);
+    const xp  = sanitizePrice(exitPrice);
+    const safeNotes   = sanitizeText(notes);
+    const safeGex     = sanitizeText(gexLevels);
+    const safeChecks  = sanitizeText(preTrade5Checks);
+    const safeDir     = ['Long','Short'].includes(direction) ? direction : 'Long';
+    const pnl = ep && xp ? ((xp - ep) * (safeDir === 'Short' ? -1 : 1)).toFixed(2) : 'not provided';
 
     // ── BUILD COMPREHENSIVE PROMPT ────────────────────────────────
     // Format times for display - keep original ISO for processing but show readable format
@@ -652,16 +704,16 @@ app.post('/api/analyze-trade', requireAccessAPI, aiLimiter, chartLimiter, async 
 ═══════════════════════════════
 TRADE DETAILS
 ═══════════════════════════════
-Direction: ${direction || 'Long'}
+Direction: ${safeDir}
 Entry Time: ${entryDisplay}
 Exit Time: ${exitDisplay}
 Session Window: ${sessionWindowStatus}
-Pre-Trade 5 Checks Completed: ${preTrade5Checks || 'Not confirmed by trader'}
-GEX Provided: ${gexLevels ? 'YES' : 'NO — MANDATORY per v2.0 rules'}
+Pre-Trade 5 Checks Completed: ${safeChecks || 'Not confirmed by trader'}
+GEX Provided: ${safeGex ? 'YES' : 'NO — MANDATORY per v2.0 rules'}
 Entry Price: ${ep || 'not provided'}
 Exit Price: ${xp || 'not provided'}
 P&L: ${pnl} points
-Trader Notes: ${notes || 'none'}
+Trader Notes: ${safeNotes || 'none'}
 
 ═══════════════════════════════
 9 / 21 EMA — AT ENTRY MOMENT
@@ -702,15 +754,12 @@ BOS / ChoCh — MARKET STRUCTURE
 ═══════════════════════════════
 15-min structure events (most recent):
 ${structure15m.length ? structure15m.map(e => '  ' + e.label + ' at ' + e.price + ' (' + e.time + ')').join('\n') : '  No clear BOS/ChoCh detected in window'}
-') : '  No clear BOS/ChoCh detected in window'}
 
 5-min structure events:
 ${structure5m.length ? structure5m.map(e => '  ' + e.label + ' at ' + e.price + ' (' + e.time + ')').join('\n') : '  No clear BOS/ChoCh detected in window'}
-') : '  No clear BOS/ChoCh detected in window'}
 
 1-min structure events (execution):
 ${structure1m.length ? structure1m.map(e => '  ' + e.label + ' at ' + e.price + ' (' + e.time + ')').join('\n') : '  No clear BOS/ChoCh detected in window'}
-') : '  No clear BOS/ChoCh detected in window'}
 
 ═══════════════════════════════
 VRVP — VISIBLE RANGE VOLUME PROFILE
@@ -736,7 +785,7 @@ ${svp ? `Session POC: ${svp.poc}  |  Session VAH: ${svp.vaHigh}  |  Session VAL:
 ═══════════════════════════════
 GEX LEVELS (Gamma Exposure — trader-provided)
 ═══════════════════════════════
-${gexLevels || 'Not provided by trader — GEX levels must be sourced from SpotGamma, Squeeze Metrics, or similar at time of trade'}
+${safeGex || 'Not provided by trader — GEX levels must be sourced from SpotGamma, Squeeze Metrics, or similar at time of trade'}
 
 ═══════════════════════════════
 RAW PRICE ACTION CONTEXT
