@@ -498,7 +498,7 @@ function emaAtTime(emaArr, targetTime) {
 
 // ── TRADE ANALYSIS ENDPOINT ──────────────────────────────────────
 app.post('/api/analyze-trade', requireAccessAPI, aiLimiter, chartLimiter, async (req, res) => {
-  const { entryTime, exitTime, entryPrice, exitPrice, direction, notes, gexLevels } = req.body;
+  const { entryTime, exitTime, entryPrice, exitPrice, direction, notes, gexLevels, sessionWindow, preTrade5Checks } = req.body;
 
   if (!entryTime || !exitTime) {
     return res.status(400).json({ error: 'Entry and exit time required' });
@@ -630,6 +630,23 @@ app.post('/api/analyze-trade', requireAccessAPI, aiLimiter, chartLimiter, async 
     const entryDisplay = formatTime(entryTime);
     const exitDisplay  = formatTime(exitTime);
 
+    // ── SESSION WINDOW CHECK ─────────────────────────────────────
+    const entryDate = new Date(entryTime);
+    const entryHour = entryDate.getUTCHours(); // will be ET offset by user's input
+    const entryMin  = entryDate.getUTCMinutes();
+    const entryTotalMins = entryHour * 60 + entryMin;
+    // Convert UTC to ET (UTC-4 EDT or UTC-5 EST) — approximate
+    const etOffset = 4; // assume EDT
+    const etHour = ((entryHour - etOffset + 24) % 24);
+    const etMins = etHour * 60 + entryMin;
+    let sessionWindowStatus = 'UNKNOWN';
+    if (etMins >= 9*60+30 && etMins <= 10*60+30) sessionWindowStatus = 'PRIME (9:30-10:30am ET) — APPROVED';
+    else if (etMins > 10*60+30 && etMins <= 11*60+30) sessionWindowStatus = 'MID-MORNING (10:30-11:30am ET) — SELECTIVE';
+    else if (etMins > 11*60+30 && etMins < 15*60) sessionWindowStatus = 'LUNCH HOURS — AVOID (low volume, high noise)';
+    else if (etMins >= 15*60 && etMins <= 16*60) sessionWindowStatus = 'POWER HOUR (3:00-4:00pm ET) — APPROVED';
+    else if (etMins < 9*60+30) sessionWindowStatus = 'PRE-MARKET — outside approved window';
+    else sessionWindowStatus = 'AFTER-HOURS — outside approved window';
+
     const prompt = `You are an elite SPX scalper and technical analyst. Analyze this trade using the trader's exact strategy: 9/21 EMA, Fibonacci levels, BOS/ChoCh market structure, VRVP, SVP, and GEX levels. All indicator values have been pre-calculated from live Yahoo Finance data and are provided below.
 
 ═══════════════════════════════
@@ -638,6 +655,9 @@ TRADE DETAILS
 Direction: ${direction || 'Long'}
 Entry Time: ${entryDisplay}
 Exit Time: ${exitDisplay}
+Session Window: ${sessionWindowStatus}
+Pre-Trade 5 Checks Completed: ${preTrade5Checks || 'Not confirmed by trader'}
+GEX Provided: ${gexLevels ? 'YES' : 'NO — MANDATORY per v2.0 rules'}
 Entry Price: ${ep || 'not provided'}
 Exit Price: ${xp || 'not provided'}
 P&L: ${pnl} points
@@ -731,31 +751,37 @@ ${JSON.stringify(context5m.slice(-16).map(b=>({t:b.time.slice(11,16),o:b.open,h:
 ${JSON.stringify(context1m.map(b=>({t:b.time.slice(11,16),o:b.open,h:b.high,l:b.low,c:b.close})), null, 1)}
 
 ═══════════════════════════════
-ANALYSIS REQUIRED
+V2.0 ANALYSIS REQUIRED
 ═══════════════════════════════
-Using ALL of the above indicator data, provide a structured professional trade review:
+Using ALL calculated indicator data above, provide a structured professional trade review applying the v2.0 ruleset:
 
-1. EMA ALIGNMENT: Were the 9/21 EMAs aligned across all three timeframes at entry? Was price above or below both EMAs? Was there a recent crossover that validated or invalidated the trade?
+0. SESSION WINDOW: Was this trade taken during an approved session window (9:30-10:30am or 3:00-4:00pm ET)? Session status: ${sessionWindowStatus}. If outside approved windows, flag this as a rule violation immediately.
 
-2. FIBONACCI ANALYSIS: Was the entry near a key Fibonacci level? Was it in the ChartPrime OTE zone (70.5–78.6%)? Was the entry at a premium or discount relative to the range?
+1. EMA ALIGNMENT (v2.0): Were the 9/21 EMAs aligned across all three timeframes? Was there a 1-minute vs 5-minute EMA conflict? Per v2.0 rules, a 1m bearish EMA when 5m is bullish requires 50% size reduction or skip. Did the trader violate this rule?
 
-3. MARKET STRUCTURE (BOS/ChoCh): What was the structural context? Was there a recent BOS confirming trend continuation, or a ChoCh signaling reversal? Did the entry align with structure?
+2. FIBONACCI ANALYSIS: Was the entry in the OTE zone (70.5-78.6%) or Golden Pocket (61.8-65%)? Was it a premium or discount entry? The textbook entry per v2.0 is inside the OTE zone — how far was this entry from that ideal?
 
-4. VOLUME PROFILE (VRVP/SVP): Was the entry inside or outside the value area? Was price trading near the POC? Were there any high-volume nodes acting as support/resistance?
+3. MARKET STRUCTURE (BOS/ChoCh): What was the structural context on 15m and 5m? Did the 1-minute agree with the 30-second trigger? Per v2.0, the 1m must not contradict the 30s trigger.
 
-5. GEX CONTEXT: ${gexLevels ? 'Analyze how the provided GEX levels affected price behaviour around the trade. Were there gamma walls nearby? Did price respect or reject GEX levels?' : 'Note: GEX levels were not provided. Explain how GEX from SpotGamma/Squeeze Metrics would have informed this trade.'}
+4. VOLUME PROFILE (VRVP v2.0): Was the entry inside or outside the value area? Note: VRVP should be anchored to session open. Was price near the POC? If entry was outside value area, the POC should have been the target.
 
-6. ENTRY QUALITY: Was the entry optimal? Was there alignment across all indicators? Rate the entry confluence (how many indicators agreed).
+5. GEX CONTEXT: ${gexLevels ? 'Analyze the provided GEX levels: ' + gexLevels + '. Were there gamma walls near the entry or blocking the target? Was the trade above or below the HVL? How did GEX affect price behaviour?' : 'RULE VIOLATION: GEX levels were not provided. Per v2.0 rules, GEX is MANDATORY for SPX scalping. Explain what GEX information would have been critical for this trade and where to get it (SpotGamma, Squeeze Metrics).'}
 
-7. EXIT QUALITY: Was the exit well-timed relative to EMAs, structure, and volume profile?
+6. SETUP VALIDITY: Based on the 1-minute chart data, did the setup trigger within 3 candles of forming? Per v2.0, a setup that has not triggered within 3 candles on the execution timeframe is INVALIDATED.
 
-8. WHAT WORKED / WHAT DIDN'T: Be specific with prices and times from the data.
+7. ENTRY QUALITY SCORE: Rate 0-5 confluences present at entry (session window approved, EMA aligned no conflict, in OTE/Golden Pocket, BOS/ChoCh confirmed, inside value area, GEX clear). State the score and which confluences were present vs missing.
 
-9. IDEAL ENTRY: Given all the indicators, where would the textbook entry have been? Give a specific price level with reasoning.
+8. EXIT QUALITY (v2.0): Evaluate against specific v2.0 exit criteria: Did EMA9 roll over on 30s? Was there a bearish engulfing on 1m? Did price close below 9 EMA on execution timeframe? Was the exit at +8 points (breakeven rule) or +12 points (50% off rule)?
 
-10. SCALPING GRADE: A/B/C/D — one sentence with the primary reason for the grade.
+9. WHAT WORKED / WHAT DIDN'T: Be specific with prices, times, and which v2.0 rules were followed vs violated.
 
-Be precise. Reference actual calculated values. This is a professional-grade analysis.`;
+10. IDEAL ENTRY (v2.0): Give the textbook entry price based on OTE zone, EMA support, and VRVP value area. State why this level had better confluence than the actual entry.
+
+11. V2.0 RULE VIOLATIONS: List every v2.0 rule that was violated in this trade. Be direct and specific.
+
+12. SCALPING GRADE: A/B/C/D+ or - with one sentence explaining the primary reason. A = 5/5 confluences, correct session window, no rule violations. B = 3-4 confluences, minor violations. C = 1-2 confluences or major violations. D = fundamental rule violations regardless of outcome.
+
+Be precise. Reference actual calculated values. Grade based on PROCESS not outcome — a profitable trade with rule violations is still a C or D.`;
 
     const aiResponse = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
