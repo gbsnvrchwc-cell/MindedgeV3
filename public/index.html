@@ -1110,6 +1110,12 @@
             <textarea id="trade-notes" placeholder="Why did you enter? What were you seeing? Any hesitation?" rows="3" style="margin-bottom:0;"></textarea>
           </div>
 
+          <div style="margin-bottom:16px;">
+            <div style="font-size:12px;color:var(--cream3);margin-bottom:4px;">GEX Levels (optional but recommended)</div>
+            <div style="font-size:11px;color:var(--cream3);margin-bottom:6px;font-family:var(--mono);">From SpotGamma, Squeeze Metrics, or similar. e.g. "Call wall 5900, Put wall 5750, HVL 5820"</div>
+            <textarea id="trade-gex" placeholder="e.g. Call wall: 5900, Put wall: 5750, HVL: 5820, Flip level: 5840" rows="2" style="margin-bottom:0;"></textarea>
+          </div>
+
           <button class="btn btn-gold" onclick="runTradeAnalysis()" id="analyze-btn" style="width:100%;padding:14px;">
             Analyze My Trade &#8599;
           </button>
@@ -1119,10 +1125,11 @@
         <div class="card">
           <div class="card-label" style="margin-bottom:12px;">What the analyzer checks</div>
           <div style="font-size:13px;color:var(--cream2);line-height:1.8;font-weight:300;">
-            <div style="margin-bottom:6px;">&#9632; <strong style="color:var(--cream);font-weight:400;">15-minute chart</strong> — Higher timeframe trend, key support/resistance, market structure</div>
-            <div style="margin-bottom:6px;">&#9632; <strong style="color:var(--cream);font-weight:400;">5-minute chart</strong> — Setup quality, momentum, consolidation patterns before entry</div>
-            <div style="margin-bottom:6px;">&#9632; <strong style="color:var(--cream);font-weight:400;">1-minute chart</strong> — Execution precision, optimal entry timing, exit quality</div>
-            <div>&#9632; <strong style="color:var(--cream);font-weight:400;">Scalping grade</strong> — A/B/C/D rating on execution with specific improvement notes</div>
+            <div style="margin-bottom:6px;">&#9632; <strong style="color:var(--cream);font-weight:400;">9 &amp; 21 EMA</strong> — Alignment, slope, and crossovers across all 3 timeframes</div>
+            <div style="margin-bottom:6px;">&#9632; <strong style="color:var(--cream);font-weight:400;">Fibonacci (ChartPrime)</strong> — OTE zone (70.5–78.6%), golden ratio, key retracement levels</div>
+            <div style="margin-bottom:6px;">&#9632; <strong style="color:var(--cream);font-weight:400;">BOS &amp; ChoCh</strong> — Break of Structure and Change of Character detection per timeframe</div>
+            <div style="margin-bottom:6px;">&#9632; <strong style="color:var(--cream);font-weight:400;">VRVP &amp; SVP</strong> — POC, Value Area High/Low, high volume nodes</div>
+            <div>&#9632; <strong style="color:var(--cream);font-weight:400;">GEX levels</strong> — Gamma walls, HVL, flip levels and their effect on price</div>
           </div>
         </div>
       </div>
@@ -1164,8 +1171,13 @@
           </div>
 
           <!-- ANALYSIS TEXT -->
+          <div class="card" style="margin-bottom:16px;">
+            <div class="card-label" style="margin-bottom:14px;">Calculated Indicators</div>
+            <div id="analyzer-indicators" style="font-size:12px;font-family:var(--mono);color:var(--cream2);line-height:2;"></div>
+          </div>
+
           <div class="card">
-            <div class="card-label" style="margin-bottom:16px;">Multi-Timeframe Analysis</div>
+            <div class="card-label" style="margin-bottom:16px;">Full Analysis</div>
             <div id="analyzer-text" class="ai-response" style="font-size:13px;line-height:1.85;white-space:pre-wrap;"></div>
           </div>
 
@@ -1212,6 +1224,7 @@
     document.getElementById('analyzer-results').style.display = 'none';
 
     try {
+      const gexLevels = document.getElementById('trade-gex').value.trim();
       const res = await fetch('/api/analyze-trade', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1220,7 +1233,7 @@
           exitTime: new Date(exitTime).toISOString(),
           entryPrice, exitPrice,
           direction: tradeDirection,
-          notes
+          notes, gexLevels
         })
       });
 
@@ -1245,6 +1258,31 @@
       document.getElementById('result-pnl').style.color = pnlColor;
       document.getElementById('result-current').textContent = data.chartSummary?.currentPrice ? data.chartSummary.currentPrice : '—';
       document.getElementById('analyzer-text').textContent = data.analysis;
+
+      // Show calculated indicators
+      if (data.indicators) {
+        const ind = data.indicators;
+        const ea  = ind.emaAtEntry;
+        const emaStatus = tf => ea[tf].ema9 > ea[tf].ema21 ? '&#9650; BULL' : '&#9660; BEAR';
+        document.getElementById('analyzer-indicators').innerHTML = [
+          '<span style="color:var(--gold)">9/21 EMA at entry</span>',
+          '1m:  EMA9 ' + (ea['1m'].ema9||'—') + '  EMA21 ' + (ea['1m'].ema21||'—') + '  ' + emaStatus('1m'),
+          '5m:  EMA9 ' + (ea['5m'].ema9||'—') + '  EMA21 ' + (ea['5m'].ema21||'—') + '  ' + emaStatus('5m'),
+          '15m: EMA9 ' + (ea['15m'].ema9||'—') + '  EMA21 ' + (ea['15m'].ema21||'—') + '  ' + emaStatus('15m'),
+          '',
+          '<span style="color:var(--gold)">Fibonacci (15m)</span>',
+          'Range: ' + (ind.fib15m?.swing_low||'—') + ' &#8594; ' + (ind.fib15m?.swing_high||'—') + ' (' + (ind.fib15m?.range||'—') + ' pts)',
+          '61.8%: ' + (ind.fib15m?.['fib_61.8']||'—') + '  |  OTE 70.5%: ' + (ind.fib15m?.['fib_70.5']||'—') + '  |  78.6%: ' + (ind.fib15m?.['fib_78.6']||'—'),
+          '',
+          '<span style="color:var(--gold)">VRVP (15m)</span>',
+          'POC: ' + (ind.vrvp15m?.poc||'—') + '  VAH: ' + (ind.vrvp15m?.vaHigh||'—') + '  VAL: ' + (ind.vrvp15m?.vaLow||'—'),
+          ind.svp ? 'Session POC: ' + ind.svp.poc + '  Session VAH: ' + ind.svp.vaHigh + '  Session VAL: ' + ind.svp.vaLow : 'SVP: session data unavailable',
+          '',
+          '<span style="color:var(--gold)">Structure (BOS/ChoCh)</span>',
+          '15m: ' + (ind.structure15m?.length ? ind.structure15m.slice(-2).map(e=>e.label+' @ '+e.price).join(' | ') : 'no events detected'),
+          '5m:  ' + (ind.structure5m?.length  ? ind.structure5m.slice(-2).map(e=>e.label+' @ '+e.price).join(' | ')  : 'no events detected'),
+        ].join('<br>');
+      }
 
       document.getElementById('analyzer-placeholder').style.display = 'none';
       document.getElementById('analyzer-results').style.display = 'block';
