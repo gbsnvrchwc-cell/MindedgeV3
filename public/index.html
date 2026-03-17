@@ -2598,7 +2598,7 @@ function clearCoach() {
       if (data.error) throw new Error(data.error);
 
       // Extract grade from analysis
-      const gradeMatch = data.analysis.match(/Scalping Grade[:\s]*([A-D][+-]?)/i);
+      const gradeMatch = data.analysis.match(/Scalping Grade[^A-D]*([A-D][+-]?)/i) || data.analysis.match(/GRADE[:\s*]*([A-D][+-]?)/i) || data.analysis.match(/\*\*([A-D][+-]?)\*\*/i);
       const grade = gradeMatch ? gradeMatch[1] : '—';
       const gradeColor = grade.startsWith('A') ? 'var(--green)' : grade.startsWith('B') ? 'var(--gold)' : 'var(--red)';
 
