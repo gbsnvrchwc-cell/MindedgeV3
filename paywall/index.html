@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MindEdge — Trading Psychology Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Outfit:wght@300;400;500&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080807;
+    --bg2: #0f0f0d;
+    --bg3: #161613;
+    --gold: #C9A84C;
+    --gold2: #e8c870;
+    --gold-dim: rgba(201,168,76,0.1);
+    --gold-border: rgba(201,168,76,0.25);
+    --cream: #F0EAD6;
+    --cream2: #c8c0a8;
+    --cream3: #8a8475;
+    --green: #52a882;
+    --border: rgba(255,255,255,0.06);
+    --serif: 'Cormorant Garamond', Georgia, serif;
+    --sans: 'Outfit', sans-serif;
+    --mono: 'JetBrains Mono', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--cream);
+    font-family: var(--sans);
+    min-height: 100vh;
+  }
+
+  /* NAV */
+  nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 24px 48px;
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo {
+    font-family: var(--serif);
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--gold);
+    letter-spacing: 0.02em;
+  }
+  .nav-sub {
+    font-size: 10px;
+    color: var(--cream3);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+  .nav-badge {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--gold);
+    border: 1px solid var(--gold-border);
+    padding: 4px 12px;
+    border-radius: 20px;
+    background: var(--gold-dim);
+  }
+
+  /* HERO */
+  .hero {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 100px 48px 60px;
+    text-align: center;
+  }
+  .hero-eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+  .hero-title {
+    font-family: var(--serif);
+    font-size: clamp(48px, 7vw, 86px);
+    font-weight: 300;
+    line-height: 1.05;
+    color: var(--cream);
+    margin-bottom: 24px;
+  }
+  .hero-title em { color: var(--gold); font-style: italic; }
+  .hero-sub {
+    font-size: 18px;
+    color: var(--cream2);
+    font-weight: 300;
+    line-height: 1.7;
+    max-width: 600px;
+    margin: 0 auto 48px;
+  }
+
+  /* CTA */
+  .cta-box {
+    background: var(--bg3);
+    border: 1px solid var(--gold-border);
+    border-radius: 16px;
+    padding: 40px;
+    max-width: 440px;
+    margin: 0 auto 80px;
+  }
+  .price-display {
+    font-family: var(--serif);
+    font-size: 64px;
+    font-weight: 300;
+    color: var(--gold);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .price-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--cream3);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+  .cta-features {
+    list-style: none;
+    margin-bottom: 28px;
+    text-align: left;
+  }
+  .cta-features li {
+    font-size: 14px;
+    color: var(--cream2);
+    font-weight: 300;
+    padding: 6px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .cta-features li::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--gold);
+    flex-shrink: 0;
+  }
+  .btn-pay {
+    width: 100%;
+    padding: 16px;
+    background: var(--gold);
+    color: #0f0e0b;
+    font-family: var(--sans);
+    font-size: 16px;
+    font-weight: 500;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.02em;
+  }
+  .btn-pay:hover { background: var(--gold2); transform: translateY(-1px); }
+  .btn-pay:active { transform: translateY(0); }
+  .btn-pay:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+  .guarantee {
+    font-size: 12px;
+    color: var(--cream3);
+    margin-top: 14px;
+    line-height: 1.5;
+  }
+  .error-msg {
+    font-size: 13px;
+    color: #e05252;
+    margin-top: 12px;
+    display: none;
+  }
+
+  /* MASTERS */
+  .section {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 48px 80px;
+  }
+  .section-eyebrow {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    text-align: center;
+  }
+  .section-title {
+    font-family: var(--serif);
+    font-size: 36px;
+    font-weight: 300;
+    text-align: center;
+    margin-bottom: 40px;
+    color: var(--cream);
+  }
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 60px;
+  }
+  .feature-card {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+  }
+  .feature-icon {
+    font-size: 22px;
+    margin-bottom: 12px;
+  }
+  .feature-name {
+    font-family: var(--serif);
+    font-size: 18px;
+    font-weight: 400;
+    color: var(--cream);
+    margin-bottom: 6px;
+  }
+  .feature-desc {
+    font-size: 13px;
+    color: var(--cream3);
+    font-weight: 300;
+    line-height: 1.6;
+  }
+
+  /* MASTERS ROW */
+  .masters-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 60px;
+  }
+  .master-pill {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 20px;
+    text-align: center;
+  }
+  .master-pill-name {
+    font-family: var(--serif);
+    font-size: 16px;
+    color: var(--cream);
+  }
+  .master-pill-title {
+    font-size: 10px;
+    color: var(--gold);
+    font-family: var(--mono);
+    margin-top: 2px;
+    letter-spacing: 0.05em;
+  }
+
+  /* QUOTE */
+  .quote-block {
+    border-left: 2px solid var(--gold);
+    padding: 16px 24px;
+    font-family: var(--serif);
+    font-size: 22px;
+    font-style: italic;
+    color: var(--cream2);
+    font-weight: 300;
+    line-height: 1.5;
+    max-width: 700px;
+    margin: 0 auto 60px;
+  }
+  .quote-attr {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--cream3);
+    font-style: normal;
+    margin-top: 10px;
+    letter-spacing: 0.08em;
+  }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 32px 48px;
+    text-align: center;
+    font-size: 12px;
+    color: var(--cream3);
+    line-height: 1.8;
+  }
+
+  /* PRODUCT CARDS */
+  .product-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    max-width: 900px;
+    margin: 0 auto 60px;
+  }
+  .product-card {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px 24px;
+    display: flex;
+    flex-direction: column;
+    transition: border-color 0.2s;
+  }
+  .product-card:hover { border-color: var(--gold-border); }
+  .product-card.featured {
+    border: 2px solid var(--gold);
+    background: #0e0d09;
+  }
+  .product-badge {
+    display: inline-block;
+    background: var(--gold-dim);
+    color: var(--gold);
+    border: 1px solid var(--gold-border);
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    padding: 3px 10px;
+    border-radius: 4px;
+    margin-bottom: 16px;
+  }
+  .product-name {
+    font-family: var(--serif);
+    font-size: 22px;
+    font-weight: 300;
+    color: var(--cream);
+    margin-bottom: 6px;
+    line-height: 1.2;
+  }
+  .product-price {
+    font-family: var(--serif);
+    font-size: 40px;
+    font-weight: 300;
+    color: var(--gold);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .product-price-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--cream3);
+    letter-spacing: 0.1em;
+    margin-bottom: 20px;
+  }
+  .product-features {
+    list-style: none;
+    margin-bottom: 24px;
+    flex: 1;
+  }
+  .product-features li {
+    font-size: 13px;
+    color: var(--cream2);
+    font-weight: 300;
+    padding: 5px 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    line-height: 1.4;
+  }
+  .product-features li::before {
+    content: '';
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--gold);
+    flex-shrink: 0;
+    margin-top: 5px;
+  }
+  .product-features li.muted { color: var(--cream3); }
+  .product-features li.muted::before { background: var(--cream3); }
+  .strikethrough { text-decoration: line-through; color: var(--cream3); }
+  .saving-badge {
+    display: inline-block;
+    background: rgba(82,168,130,0.15);
+    color: #52a882;
+    font-size: 11px;
+    font-family: var(--mono);
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+  }
+
+  @media (max-width: 700px) {
+    nav { padding: 20px 24px; }
+    .hero { padding: 60px 24px 40px; }
+    .section { padding: 0 24px 60px; }
+    .features-grid { grid-template-columns: 1fr; }
+    .cta-box { margin: 0 24px 60px; }
+    .product-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div>
+    <div class="nav-logo">MindEdge</div>
+    <div class="nav-sub">Trading Psychology</div>
+  </div>
+  <div class="nav-badge">One-time · Lifetime Access</div>
+</nav>
+
+<section class="hero">
+  <div class="hero-eyebrow">The mental edge separates profitable traders from everyone else</div>
+  <h1 class="hero-title">Master the psychology<br>of <em>elite trading</em></h1>
+  <p class="hero-sub">AI-powered coaching drawn from the world's greatest trading psychologists. Daily check-ins, scenario simulations, bias tracking, and a trade journal that actually learns from you.</p>
+
+  <!-- PRODUCT GRID -->
+  <div class="product-grid">
+
+    <!-- GUIDE ONLY -->
+    <div class="product-card">
+      <div class="product-badge">PDF GUIDE</div>
+      <div class="product-name">SPX Scalping<br>Framework</div>
+      <div class="product-price">$19.99</div>
+      <div class="product-price-label">One-time &middot; Instant download</div>
+      <ul class="product-features">
+        <li>8-page professional trading guide</li>
+        <li>Multi-timeframe framework (10m/3m/30s)</li>
+        <li>Full indicator stack explained</li>
+        <li>Pre-trade checklist</li>
+        <li>Real trade case study</li>
+        <li>Non-negotiable rules &amp; risk parameters</li>
+        <li class="muted">MindEdge platform access</li>
+        <li class="muted">AI coaching &amp; trade analyzer</li>
+      </ul>
+      <button class="btn-pay" onclick="startCheckout('guide')" id="guide-btn"
+        style="background:transparent;color:var(--gold);border:1px solid rgba(201,168,76,0.4);font-size:13px;">
+        Buy Guide &mdash; $19.99
+      </button>
+      <div class="error-msg" id="guide-error"></div>
+    </div>
+
+    <!-- BUNDLE — FEATURED -->
+    <div class="product-card featured">
+      <div class="product-badge">BEST VALUE</div>
+      <div class="saving-badge">Save $9.99</div>
+      <div class="product-name">Complete<br>Bundle</div>
+      <div class="product-price">$44.99</div>
+      <div class="product-price-label">One-time &middot; Lifetime access &middot; <span class="strikethrough">$54.98</span></div>
+      <ul class="product-features">
+        <li>Everything in the Guide</li>
+        <li>MindEdge platform &mdash; lifetime access</li>
+        <li>6 Psychology Masters AI coaching</li>
+        <li>100+ scenario simulations</li>
+        <li>SPX multi-timeframe trade analyzer</li>
+        <li>9/21 EMA &middot; Fib &middot; BOS/ChoCh &middot; VRVP &middot; GEX</li>
+        <li>Personal trade journal &amp; calendar</li>
+        <li>Cognitive bias tracker</li>
+      </ul>
+      <button class="btn-pay" onclick="startCheckout('bundle')" id="bundle-btn"
+        style="font-size:14px;">
+        Get Bundle &mdash; $44.99
+      </button>
+      <div class="error-msg" id="bundle-error"></div>
+    </div>
+
+    <!-- APP ONLY -->
+    <div class="product-card">
+      <div class="product-badge">PLATFORM</div>
+      <div class="product-name">MindEdge<br>Platform</div>
+      <div class="product-price">$34.99</div>
+      <div class="product-price-label">One-time &middot; Lifetime access</div>
+      <ul class="product-features">
+        <li>6 Psychology Masters AI coaching</li>
+        <li>100+ scenario simulations</li>
+        <li>SPX multi-timeframe trade analyzer</li>
+        <li>9/21 EMA &middot; Fib &middot; BOS/ChoCh &middot; VRVP</li>
+        <li>Personal trade journal &amp; calendar</li>
+        <li>Cognitive bias tracker &amp; dashboard</li>
+        <li>Progress analytics &amp; AI growth report</li>
+        <li class="muted">SPX Scalping Guide PDF</li>
+      </ul>
+      <button class="btn-pay" onclick="startCheckout('app')" id="app-btn"
+        style="background:transparent;color:var(--gold);border:1px solid rgba(201,168,76,0.4);font-size:13px;">
+        Get Platform &mdash; $34.99
+      </button>
+      <div class="error-msg" id="app-error"></div>
+    </div>
+
+  </div>
+
+  <!-- ACCESS CODE -->
+  <div style="max-width:440px;margin:0 auto 60px;text-align:center;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+      <div style="flex:1;height:1px;background:rgba(255,255,255,0.08);"></div>
+      <div style="font-size:11px;color:var(--cream3);font-family:var(--mono);">COMMUNITY ACCESS</div>
+      <div style="flex:1;height:1px;background:rgba(255,255,255,0.08);"></div>
+    </div>
+    <input type="text" id="access-code-input" placeholder="Enter your community access code"
+      style="background:var(--bg3);border:1px solid rgba(255,255,255,0.08);border-radius:8px;
+      color:var(--cream);font-family:var(--sans);font-size:14px;padding:12px 16px;width:100%;
+      outline:none;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.08em;text-align:center;">
+    <button class="btn-pay" id="code-btn" onclick="redeemCode()"
+      style="width:100%;background:transparent;color:var(--gold);border:1px solid rgba(201,168,76,0.3);font-size:13px;">
+      Redeem Access Code
+    </button>
+    <div class="error-msg" id="code-error-msg" style="margin-top:8px;"></div>
+    <div style="font-size:11px;color:var(--cream3);margin-top:10px;">
+      Community members receive full platform access. Contact your analyst for a code.
+    </div>
+  </div>
+
+</section>
+
+<section class="section">
+  <div class="section-eyebrow">What's inside</div>
+  <h2 class="section-title">Everything a serious trader needs</h2>
+
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">◈</div>
+      <div class="feature-name">Daily Check-In</div>
+      <div class="feature-desc">Rate your emotional state and confidence each session. Get personalized AI guidance before you trade a single share.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">◉</div>
+      <div class="feature-name">Psychology Masters</div>
+      <div class="feature-desc">Select a master and receive coaching in their exact voice and framework — Douglas's zone, Steenbarger's CBT, Tharp's R-multiples.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">◑</div>
+      <div class="feature-name">Scenario Lab</div>
+      <div class="feature-desc">100+ documented trading scenarios. Choose your response. Get expert psychological analysis of your decision instantly.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">◐</div>
+      <div class="feature-name">Bias Tracker</div>
+      <div class="feature-desc">Identify your dominant cognitive biases over time. Describe a trade — AI pinpoints exactly which biases were active.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">◻</div>
+      <div class="feature-name">Trade Journal</div>
+      <div class="feature-desc">Calendar-based private journal. Track sessions, emotions, and lessons. AI reflects on each entry with Steenbarger-style coaching questions.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">✦</div>
+      <div class="feature-name">AI Coach</div>
+      <div class="feature-desc">Full multi-turn coaching conversations. Ask anything about your trading psychology — available at any hour, on any device.</div>
+    </div>
+  </div>
+
+  <div class="section-eyebrow">The minds behind the platform</div>
+  <h2 class="section-title">Trained on the greatest</h2>
+
+  <div class="masters-row">
+    <div class="master-pill">
+      <div class="master-pill-name">Mark Douglas</div>
+      <div class="master-pill-title">Trading in the Zone</div>
+    </div>
+    <div class="master-pill">
+      <div class="master-pill-name">Dr. Brett Steenbarger</div>
+      <div class="master-pill-title">Performance Psychology</div>
+    </div>
+    <div class="master-pill">
+      <div class="master-pill-name">Dr. Van Tharp</div>
+      <div class="master-pill-title">Trade Your Way to Freedom</div>
+    </div>
+    <div class="master-pill">
+      <div class="master-pill-name">Dr. Alexander Elder</div>
+      <div class="master-pill-title">Trading for a Living</div>
+    </div>
+    <div class="master-pill">
+      <div class="master-pill-name">Jesse Livermore</div>
+      <div class="master-pill-title">The Greatest Speculator</div>
+    </div>
+    <div class="master-pill">
+      <div class="master-pill-name">Daniel Kahneman</div>
+      <div class="master-pill-title">Nobel Prize · Behavioral Economics</div>
+    </div>
+  </div>
+
+  <div class="quote-block">
+    "The best traders have an almost playful relationship with uncertainty — they embrace it rather than fight it."
+    <div class="quote-attr">— Dr. Brett Steenbarger</div>
+  </div>
+</section>
+
+<footer>
+  <div style="font-family:var(--serif);font-size:20px;color:var(--gold);margin-bottom:8px;">MindEdge</div>
+  AI-powered trading psychology · Built on the wisdom of the world's greatest traders<br>
+  One-time payment · Lifetime access · No subscription ever
+</footer>
+
+<script>
+async function startCheckout(product) {
+  const ids = { guide: 'guide-btn', bundle: 'bundle-btn', app: 'app-btn' };
+  const labels = { guide: 'Buy Guide — $19.99', bundle: 'Get Bundle — $44.99', app: 'Get Platform — $34.99' };
+  const errIds = { guide: 'guide-error', bundle: 'bundle-error', app: 'app-error' };
+  const btn = document.getElementById(ids[product]);
+  const errEl = document.getElementById(errIds[product]);
+  btn.disabled = true;
+  btn.textContent = 'Redirecting...';
+  if (errEl) errEl.style.display = 'none';
+  try {
+    const res = await fetch('/api/create-checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ product })
+    });
+    const data = await res.json();
+    if (data.url) { window.location.href = data.url; }
+    else throw new Error(data.error || 'No checkout URL');
+  } catch (err) {
+    btn.disabled = false;
+    btn.textContent = labels[product];
+    if (errEl) { errEl.style.display = 'block'; errEl.textContent = 'Something went wrong: ' + err.message; }
+  }
+}
+
+async function redeemCode() {
+  const code = document.getElementById('access-code-input').value.trim();
+  const btn = document.getElementById('code-btn');
+  const errEl = document.getElementById('code-error-msg');
+  if (!code) { errEl.style.display='block'; errEl.textContent='Please enter a code.'; return; }
+  btn.disabled = true;
+  btn.textContent = 'Verifying...';
+  errEl.style.display = 'none';
+  try {
+    const res = await fetch('/api/redeem-code', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code })
+    });
+    const data = await res.json();
+    if (data.success) { window.location.href = '/app'; }
+    else throw new Error(data.error || 'Invalid code');
+  } catch (err) {
+    btn.disabled = false;
+    btn.textContent = 'Redeem Access Code';
+    errEl.style.display = 'block';
+    errEl.textContent = err.message;
+  }
+}
+
+const params = new URLSearchParams(window.location.search);
+if (params.get('error')) {
+  document.getElementById('error-msg').style.display = 'block';
+  document.getElementById('error-msg').textContent = 'Payment could not be verified. Please try again.';
+}
+</script>
+</body>
+</html>
