@@ -86,3 +86,4 @@ At Claude Sonnet pricing (~$3 per million input tokens):
 - Each coaching response ≈ 500–800 tokens
 - 1,000 sessions/month ≈ ~$3–5/month
 - Railway free tier: 500 hours/month (enough for personal use)
+- 
