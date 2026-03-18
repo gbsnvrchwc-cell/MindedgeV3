@@ -729,6 +729,11 @@
       <textarea id="bias-situation" placeholder="Describe a recent trade or decision that felt emotionally charged..." rows="4" style="margin-bottom:12px;"></textarea>
       <button class="btn btn-gold" onclick="analyzeBias()">Identify My Biases ↗</button>
       <div id="bias-response" class="ai-response" style="display:none;margin-top:16px;"></div>
+      <div style="margin-top:16px;font-size:12px;color:var(--cream3);font-family:var(--mono);line-height:1.8;">
+        Describe a real trade situation above.<br>
+        The AI will score each bias based on what you write<br>
+        and the bars will update in real time.
+      </div>
     </div>
   </div>
 
@@ -1822,13 +1827,31 @@ const SCENARIOS = [
 ];
 
 const BIASES = [
-  { name: "Loss Aversion", desc: "Feeling losses 2.5x more intensely than equivalent gains. Leads to premature exits and holding losers too long.", severity: 78 },
-  { name: "Overconfidence", desc: "Overestimating your predictive ability after a winning streak. Leads to oversizing and ignoring stop-losses.", severity: 65 },
-  { name: "Anchoring", desc: "Over-relying on the first piece of information (e.g., entry price) when making subsequent decisions.", severity: 45 },
-  { name: "Confirmation Bias", desc: "Seeking information that confirms your trade thesis while dismissing contradicting evidence.", severity: 82 },
-  { name: "Recency Bias", desc: "Overweighting recent events — extrapolating a trend or loss streak into the future.", severity: 58 },
-  { name: "Sunk Cost Fallacy", desc: "Holding a losing trade because of what you've already lost, rather than the current expected value.", severity: 70 }
+  { name: "Loss Aversion", key: "loss_aversion", desc: "Feeling losses 2.5x more intensely than equivalent gains. Leads to premature exits and holding losers too long.", severity: 0 },
+  { name: "Overconfidence", key: "overconfidence", desc: "Overestimating your predictive ability after a winning streak. Leads to oversizing and ignoring stop-losses.", severity: 0 },
+  { name: "Anchoring", key: "anchoring", desc: "Over-relying on the first piece of information (e.g., entry price) when making subsequent decisions.", severity: 0 },
+  { name: "Confirmation Bias", key: "confirmation_bias", desc: "Seeking information that confirms your trade thesis while dismissing contradicting evidence.", severity: 0 },
+  { name: "Recency Bias", key: "recency_bias", desc: "Overweighting recent events — extrapolating a trend or loss streak into the future.", severity: 0 },
+  { name: "Sunk Cost Fallacy", key: "sunk_cost", desc: "Holding a losing trade because of what you've already lost, rather than the current expected value.", severity: 0 }
 ];
+
+// Load saved bias scores from localStorage
+function loadBiasScores() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('mindedge_bias_scores') || 'null');
+    if (saved) {
+      BIASES.forEach(b => {
+        if (saved[b.key] !== undefined) b.severity = saved[b.key];
+      });
+    }
+  } catch(e) {}
+}
+
+function saveBiasScores() {
+  const scores = {};
+  BIASES.forEach(b => scores[b.key] = b.severity);
+  localStorage.setItem('mindedge_bias_scores', JSON.stringify(scores));
+}
 
 const QUOTES = [
   { q: "The market is a device for transferring money from the impatient to the patient.", a: "Warren Buffett" },
@@ -1858,6 +1881,7 @@ function showPage(id, btn) {
   if (id === 'biases') renderBiases();
   if (id === 'journal') initJournal();
   if (id === 'analyzer') renderAnalysisHistory();
+  loadBiasScores();
   if(document.getElementById("page-progress")) {}
   if (id === 'progress') renderProgress();
   if (id === 'settings') initSettings();
@@ -1906,24 +1930,47 @@ function selectMaster(i) {
   document.getElementById('master-question').value = '';
 }
 
-function renderBiases() {
+function renderBiases(animate) {
+  loadBiasScores();
   const grid = document.getElementById('bias-grid');
   const colors = { high: '#e05252', med: '#C9A84C', low: '#52a882' };
+  const hasData = BIASES.some(b => b.severity > 0);
   grid.innerHTML = BIASES.map(b => {
     const col = b.severity >= 70 ? colors.high : b.severity >= 50 ? colors.med : colors.low;
+    const displaySev = hasData ? b.severity : '?';
+    const barWidth = hasData ? b.severity : 15;
+    const barCol = hasData ? col : 'var(--border)';
     return `
-      <div class="card">
+      <div class="card" id="bias-card-${b.key}">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
           <div style="font-family:var(--serif);font-size:18px;font-weight:400;color:var(--cream);">${b.name}</div>
-          <div style="font-family:var(--mono);font-size:13px;color:${col};">${b.severity}%</div>
+          <div style="font-family:var(--mono);font-size:13px;color:${hasData ? col : 'var(--cream3)'};" id="bias-pct-${b.key}">${displaySev}${hasData ? '%' : ''}</div>
         </div>
         <div class="bias-bar-wrap">
-          <div class="bias-bar" style="width:${b.severity}%;background:${col};"></div>
+          <div class="bias-bar" id="bias-bar-${b.key}" style="width:${animate ? 0 : barWidth}%;background:${barCol};transition:width 1s ease,background 0.5s ease;"></div>
         </div>
         <div style="font-size:12px;color:var(--cream3);margin-top:10px;font-weight:300;line-height:1.5;">${b.desc}</div>
       </div>
     `;
   }).join('');
+
+  if (!hasData) {
+    // Show placeholder message
+    const placeholder = document.getElementById('bias-placeholder');
+    if (placeholder) placeholder.style.display = 'block';
+  }
+
+  if (animate) {
+    setTimeout(() => {
+      BIASES.forEach(b => {
+        const bar = document.getElementById('bias-bar-' + b.key);
+        const pct = document.getElementById('bias-pct-' + b.key);
+        const col = b.severity >= 70 ? colors.high : b.severity >= 50 ? colors.med : colors.low;
+        if (bar) { bar.style.width = b.severity + '%'; bar.style.background = col; }
+        if (pct) { pct.textContent = b.severity + '%'; pct.style.color = col; }
+      });
+    }, 100);
+  }
 }
 
 let currentScenario = null;
@@ -2303,14 +2350,104 @@ function analyzeScenario() {
   );
 }
 
-function analyzeBias() {
+async function analyzeBias() {
   const txt = document.getElementById('bias-situation').value.trim();
   if (!txt) return;
+
+  const btn = document.querySelector('[onclick="analyzeBias()"]');
   const el = document.getElementById('bias-response');
-  callClaude(
-    `Cognitive Bias Analysis for a trader:\n\nSituation: "${txt}"\n\nPlease:\n1. Identify the 2-3 most active cognitive biases present in this situation (from Kahneman, Douglas, and behavioral finance research)\n2. Explain exactly how each bias is manifesting\n3. Provide specific debiasing techniques from the psychology literature\n4. Name the master trader or psychologist whose framework is most relevant here`,
-    el
-  );
+  btn.disabled = true;
+  btn.textContent = 'Analyzing your biases...';
+  el.style.display = 'none';
+
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({
+        system: `You are a trading psychology expert trained in cognitive behavioral finance. 
+Your job is to analyze a trader's situation and score their cognitive biases.
+
+You MUST respond with ONLY a valid JSON object in this exact format — no other text, no markdown:
+{
+  "scores": {
+    "loss_aversion": 0-100,
+    "overconfidence": 0-100,
+    "anchoring": 0-100,
+    "confirmation_bias": 0-100,
+    "recency_bias": 0-100,
+    "sunk_cost": 0-100
+  },
+  "primary_bias": "name of the strongest bias",
+  "analysis": "2-3 sentence plain text explanation of what biases are most active and why, referencing the situation",
+  "top_tip": "one specific, actionable debiasing technique for the dominant bias"
+}
+
+Score each bias 0-100 based on how strongly it appears in the situation described.
+0 = not present at all. 100 = extremely dominant. Be realistic and varied.
+Only return the JSON object. No preamble, no markdown backticks.`,
+        messages: [{ role: 'user', content: `Analyze this trader situation for cognitive biases: "${txt}"` }]
+      })
+    });
+
+    const data = await res.json();
+    const text = data.content?.[0]?.text || '';
+
+    let parsed;
+    try {
+      // Strip any accidental markdown
+      const clean = text.replace(/```json|```/g, '').trim();
+      parsed = JSON.parse(clean);
+    } catch(e) {
+      throw new Error('Could not parse AI response');
+    }
+
+    // Update BIASES with new scores
+    const scores = parsed.scores;
+    BIASES.forEach(b => {
+      if (scores[b.key] !== undefined) {
+        b.severity = Math.min(100, Math.max(0, Math.round(scores[b.key])));
+      }
+    });
+    saveBiasScores();
+
+    // Re-render with animation
+    renderBiases(true);
+
+    // Show analysis text
+    el.style.display = 'block';
+    el.innerHTML = `
+      <div style="margin-bottom:12px;">
+        <div style="font-size:11px;color:var(--gold);font-family:var(--mono);margin-bottom:6px;">DOMINANT BIAS DETECTED</div>
+        <div style="font-size:16px;color:var(--cream);font-weight:400;font-family:var(--serif);">${parsed.primary_bias}</div>
+      </div>
+      <div style="font-size:13px;color:var(--cream2);line-height:1.7;margin-bottom:12px;">${parsed.analysis}</div>
+      <div style="background:var(--bg3);border:1px solid var(--gold-border);border-radius:8px;padding:12px;">
+        <div style="font-size:10px;color:var(--gold);font-family:var(--mono);margin-bottom:4px;">DEBIASING TECHNIQUE</div>
+        <div style="font-size:13px;color:var(--cream2);line-height:1.6;">${parsed.top_tip}</div>
+      </div>
+    `;
+
+    // Save to dashboard metrics
+    updateBiasMetric();
+
+  } catch(err) {
+    el.style.display = 'block';
+    el.textContent = 'Analysis failed: ' + err.message + '. Please try again.';
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Identify My Biases ↗';
+}
+
+function updateBiasMetric() {
+  // Update dashboard bias display
+  const topBias = BIASES.reduce((a,b) => b.severity > a.severity ? b : a);
+  const metricEl = document.getElementById('metric-bias');
+  const labelEl  = document.getElementById('metric-bias-label');
+  if (metricEl) metricEl.textContent = topBias.name;
+  if (labelEl)  labelEl.textContent  = topBias.severity + '% severity';
 }
 
 // ═══════════════════════════════════════════════════════════════
