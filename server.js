@@ -824,8 +824,8 @@ Was the entry near the POC or inside the value area? How did the VRVP and SVP le
 6. GEX
 ${safeGex ? 'GEX was provided: ' + safeGex + '. How did these gamma levels interact with the trade? Were there walls nearby? Was the trader above or below the HVL?' : 'GEX was not provided for this trade. Note briefly what GEX information would have been useful — particularly whether there were gamma walls near the entry or target.'}
 
-7. WHAT WORKED
-2-3 specific things that were done well. Reference actual prices and times from the data.
+7. WHAT YOU DID WELL
+Start here. Look for genuine positives — did they trade in the right direction? Was the exit disciplined? Did they follow their stop? Was the timing reasonable? Did they stay patient before entering? Reference actual prices and times. Be specific and honest — only mention real strengths visible in the data. 2-3 things minimum. This section should leave the trader feeling capable, not just criticised.
 
 8. WHAT TO IMPROVE
 2-3 honest, actionable observations. Be constructive not harsh. Focus on what the trader can do differently next time, not on what went wrong.
