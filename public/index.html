@@ -482,6 +482,9 @@
     <button class="nav-item" onclick="showPage('progress', this)">
       <span class="nav-icon">&#9678;</span> Progress
     </button>
+    <button class="nav-item" onclick="showPage('stoploss', this)">
+      <span class="nav-icon">&#9646;</span> Stop Loss Calc
+    </button>
     <button class="nav-item" onclick="showPage('settings', this)">
       <span class="nav-icon">&#9900;</span> Settings
     </button>
@@ -1140,7 +1143,112 @@ The AI will assess your active biases and update the chart in real time.
 
 
   <!-- ═══════════════ SETTINGS PAGE ═══════════════ -->
-  <div id="page-settings" class="page">
+  <!-- STOP LOSS CALCULATOR PAGE -->
+  <div id="page-stoploss" class="page">
+    <div class="page-header">
+      <div class="page-eyebrow">Risk Management</div>
+      <h1 class="page-title">Stop Loss <em>Calculator</em></h1>
+      <p class="page-subtitle">Enter your spot price and premium to calculate exactly where your stop should be placed based on your risk tolerance.</p>
+    </div>
+
+    <div class="grid-2" style="gap:20px;align-items:start;">
+
+      <!-- INPUT CARD -->
+      <div>
+        <div class="card" style="margin-bottom:16px;">
+          <div class="card-label" style="margin-bottom:16px;">Trade Details</div>
+
+          <div style="margin-bottom:16px;">
+            <div style="font-size:12px;color:var(--cream3);margin-bottom:6px;">Spot Price (SPX)</div>
+            <input type="number" id="sl-spot-price" placeholder="e.g. 5842.50" oninput="calcStopLoss()" style="width:100%;">
+          </div>
+
+          <div style="margin-bottom:16px;">
+            <div style="font-size:12px;color:var(--cream3);margin-bottom:6px;">Option Premium Paid (per contract)</div>
+            <input type="number" id="sl-premium" placeholder="e.g. 4.50" step="0.01" oninput="calcStopLoss()" style="width:100%;">
+          </div>
+
+          <div style="margin-bottom:16px;">
+            <div style="font-size:12px;color:var(--cream3);margin-bottom:6px;">Number of Contracts</div>
+            <input type="number" id="sl-contracts" placeholder="e.g. 1" value="1" min="1" oninput="calcStopLoss()" style="width:100%;">
+          </div>
+
+          <div style="margin-bottom:6px;">
+            <div style="font-size:12px;color:var(--cream3);margin-bottom:10px;">Stop Loss Level</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+              <button class="sl-btn" id="sl-btn-5" onclick="selectSL(5)" style="padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.08);background:var(--bg3);color:var(--cream2);font-family:var(--mono);font-size:13px;cursor:pointer;transition:all 0.2s;">-5%</button>
+              <button class="sl-btn" id="sl-btn-10" onclick="selectSL(10)" style="padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.08);background:var(--bg3);color:var(--cream2);font-family:var(--mono);font-size:13px;cursor:pointer;transition:all 0.2s;">-10%</button>
+              <button class="sl-btn" id="sl-btn-15" onclick="selectSL(15)" style="padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.08);background:var(--bg3);color:var(--cream2);font-family:var(--mono);font-size:13px;cursor:pointer;transition:all 0.2s;">-15%</button>
+              <button class="sl-btn" id="sl-btn-20" onclick="selectSL(20)" style="padding:12px;border-radius:8px;border:1px solid var(--gold-border);background:var(--gold-dim);color:var(--gold);font-family:var(--mono);font-size:13px;cursor:pointer;transition:all 0.2s;">-20% ★</button>
+            </div>
+            <div style="font-size:11px;color:var(--cream3);margin-top:8px;font-family:var(--mono);">★ Recommended for SPX scalping</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RESULTS CARD -->
+      <div>
+        <div class="card" style="margin-bottom:16px;" id="sl-result-card">
+          <div class="card-label" style="margin-bottom:16px;">Your Stop Loss</div>
+
+          <div id="sl-placeholder" style="font-size:13px;color:var(--cream3);line-height:1.7;">
+            Enter your spot price and premium above to see your stop loss levels.
+          </div>
+
+          <div id="sl-results" style="display:none;">
+
+            <!-- Main stop level -->
+            <div style="background:rgba(224,82,82,0.08);border:1px solid rgba(224,82,82,0.25);border-radius:10px;padding:16px;margin-bottom:16px;text-align:center;">
+              <div style="font-size:11px;color:var(--red);font-family:var(--mono);margin-bottom:6px;letter-spacing:0.1em;">EXIT TRADE IF PREMIUM DROPS TO</div>
+              <div style="font-size:40px;color:var(--cream);font-family:var(--serif);font-weight:300;" id="sl-exit-premium">—</div>
+              <div style="font-size:12px;color:var(--cream3);margin-top:4px;" id="sl-loss-per-contract">—</div>
+            </div>
+
+            <!-- Stats grid -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
+              <div style="background:var(--bg3);border-radius:8px;padding:12px;">
+                <div style="font-size:10px;color:var(--cream3);font-family:var(--mono);margin-bottom:4px;">PREMIUM PAID</div>
+                <div style="font-size:18px;color:var(--cream);font-family:var(--serif);" id="sl-display-premium">—</div>
+              </div>
+              <div style="background:var(--bg3);border-radius:8px;padding:12px;">
+                <div style="font-size:10px;color:var(--cream3);font-family:var(--mono);margin-bottom:4px;">STOP %</div>
+                <div style="font-size:18px;color:var(--red);font-family:var(--serif);" id="sl-display-pct">—</div>
+              </div>
+              <div style="background:var(--bg3);border-radius:8px;padding:12px;">
+                <div style="font-size:10px;color:var(--cream3);font-family:var(--mono);margin-bottom:4px;">MAX LOSS</div>
+                <div style="font-size:18px;color:var(--red);font-family:var(--serif);" id="sl-max-loss">—</div>
+              </div>
+              <div style="background:var(--bg3);border-radius:8px;padding:12px;">
+                <div style="font-size:10px;color:var(--cream3);font-family:var(--mono);margin-bottom:4px;">CONTRACTS</div>
+                <div style="font-size:18px;color:var(--cream);font-family:var(--serif);" id="sl-display-contracts">—</div>
+              </div>
+            </div>
+
+            <!-- All 4 levels comparison -->
+            <div style="margin-bottom:4px;">
+              <div style="font-size:10px;color:var(--cream3);font-family:var(--mono);margin-bottom:10px;letter-spacing:0.1em;">ALL STOP LEVELS</div>
+              <div id="sl-all-levels" style="display:flex;flex-direction:column;gap:6px;"></div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Risk reminder -->
+        <div class="card" style="border-color:var(--gold-border);">
+          <div style="font-size:10px;color:var(--gold);font-family:var(--mono);margin-bottom:10px;letter-spacing:0.1em;">RISK RULES</div>
+          <div style="font-size:12px;color:var(--cream3);line-height:1.8;">
+            <div style="margin-bottom:6px;">&#9632; Set your stop <strong style="color:var(--cream);font-weight:400;">before</strong> entering the trade — never after</div>
+            <div style="margin-bottom:6px;">&#9632; -20% is the recommended maximum for SPX scalping</div>
+            <div style="margin-bottom:6px;">&#9632; Move stop to breakeven after <strong style="color:var(--cream);font-weight:400;">+8 points</strong> profit</div>
+            <div>&#9632; Never risk more than <strong style="color:var(--cream);font-weight:400;">1-2%</strong> of your total account on one trade</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+    <div id="page-settings" class="page">
     <div class="page-header">
       <div class="page-eyebrow">Account</div>
       <h1 class="page-title">Settings <em>&amp; Profile</em></h1>
@@ -1892,6 +2000,7 @@ function showPage(id, btn) {
   loadBiasScores();
   if(document.getElementById("page-progress")) {}
   if (id === 'progress') renderProgress();
+  if (id === 'stoploss') { selectSL(selectedSLPct); }
   if (id === 'settings') initSettings();
   if (id === 'analyzer') renderAnalysisHistory();
   if (id === 'progress') renderProgress();
@@ -3253,6 +3362,77 @@ function downloadGuide() {
     });
 }
 
+// ═══════════════════════════════════════════════════════════════
+//  STOP LOSS CALCULATOR
+// ═══════════════════════════════════════════════════════════════
+
+let selectedSLPct = 20; // default -20%
+
+function selectSL(pct) {
+  selectedSLPct = pct;
+  // Update button styles
+  [5, 10, 15, 20].forEach(p => {
+    const btn = document.getElementById('sl-btn-' + p);
+    if (!btn) return;
+    if (p === pct) {
+      btn.style.background = 'var(--gold-dim)';
+      btn.style.borderColor = 'var(--gold-border)';
+      btn.style.color = 'var(--gold)';
+    } else {
+      btn.style.background = 'var(--bg3)';
+      btn.style.borderColor = 'rgba(255,255,255,0.08)';
+      btn.style.color = 'var(--cream2)';
+    }
+  });
+  calcStopLoss();
+}
+
+function calcStopLoss() {
+  const spot     = parseFloat(document.getElementById('sl-spot-price').value);
+  const premium  = parseFloat(document.getElementById('sl-premium').value);
+  const contracts = parseInt(document.getElementById('sl-contracts').value) || 1;
+
+  const placeholder = document.getElementById('sl-placeholder');
+  const results     = document.getElementById('sl-results');
+
+  if (!premium || premium <= 0) {
+    placeholder.style.display = 'block';
+    results.style.display = 'none';
+    return;
+  }
+
+  placeholder.style.display = 'none';
+  results.style.display = 'block';
+
+  const stopPremium  = parseFloat((premium * (1 - selectedSLPct / 100)).toFixed(2));
+  const lossPerContract = parseFloat((premium - stopPremium) * 100).toFixed(2);
+  const totalMaxLoss = (parseFloat(lossPerContract) * contracts).toFixed(2);
+
+  document.getElementById('sl-exit-premium').textContent = '$' + stopPremium.toFixed(2);
+  document.getElementById('sl-loss-per-contract').textContent = 
+    '$' + lossPerContract + ' loss per contract  ·  $' + totalMaxLoss + ' total';
+  document.getElementById('sl-display-premium').textContent = '$' + premium.toFixed(2);
+  document.getElementById('sl-display-pct').textContent = '-' + selectedSLPct + '%';
+  document.getElementById('sl-max-loss').textContent = '-$' + totalMaxLoss;
+  document.getElementById('sl-display-contracts').textContent = contracts;
+
+  // All 4 levels
+  const levels = [5, 10, 15, 20];
+  const colors = { 5: '#52a882', 10: '#C9A84C', 15: '#E8A050', 20: '#e05252' };
+  document.getElementById('sl-all-levels').innerHTML = levels.map(p => {
+    const exitP  = (premium * (1 - p / 100)).toFixed(2);
+    const lossPC = (premium * p / 100 * 100).toFixed(0);
+    const totalL = (lossPC * contracts).toFixed(0);
+    const isSelected = p === selectedSLPct;
+    return \`<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:6px;background:\${isSelected ? 'rgba(201,168,76,0.08)' : 'var(--bg3)'};border:1px solid \${isSelected ? 'var(--gold-border)' : 'transparent'};">
+      <div style="font-family:var(--mono);font-size:12px;color:\${colors[p]};width:40px;">-\${p}%</div>
+      <div style="font-size:13px;color:var(--cream);">Exit at <strong>$\${exitP}</strong></div>
+      <div style="font-size:12px;color:var(--cream3);font-family:var(--mono);">-$\${totalL} total</div>
+    </div>\`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════════════
 // INIT
 initDashboard();
 renderMasters();
