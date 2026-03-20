@@ -1043,9 +1043,15 @@ The AI will assess your active biases and update the chart in real time.
             </div>
           </div>
 
+          <!-- WHAT YOU DID WELL — highlighted card -->
+          <div class="card" id="analyzer-positives-card" style="display:none;border:1px solid rgba(82,168,130,0.3);background:rgba(82,168,130,0.04);margin-bottom:16px;">
+            <div style="font-size:10px;color:var(--green);font-family:var(--mono);margin-bottom:10px;letter-spacing:0.1em;">✓ WHAT YOU DID WELL</div>
+            <div id="analyzer-positives" style="font-size:13px;color:var(--cream2);line-height:1.8;"></div>
+          </div>
+
           <!-- ANALYSIS TEXT -->
           <div class="card">
-            <div class="card-label" style="margin-bottom:16px;">Multi-Timeframe Analysis</div>
+            <div class="card-label" style="margin-bottom:16px;">Full Analysis</div>
             <div id="analyzer-text" class="ai-response" style="font-size:13px;line-height:1.85;white-space:pre-wrap;"></div>
           </div>
 
@@ -2365,8 +2371,8 @@ async function analyzeBias() {
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: JSON.stringify({
-        max_tokens: 1500,
-        system: `You are a master trading psychologist with deep knowledge of Mark Douglas, Dr. Brett Steenbarger, Dr. Van Tharp, Dr. Alexander Elder, Jesse Livermore, and Daniel Kahneman. You analyze trader situations and identify cognitive biases with clinical precision.
+        max_tokens: 2000,
+        system: `You are a master trading psychologist with deep knowledge of Mark Douglas, Dr. Brett Steenbarger, Dr. Van Tharp, Dr. Alexander Elder, Jesse Livermore, and Daniel Kahneman. You analyze trader situations with both honesty and encouragement — identifying what is working as well as what needs attention.
 
 You MUST respond with ONLY a valid JSON object in this exact format — no other text, no markdown backticks:
 {
@@ -2379,18 +2385,19 @@ You MUST respond with ONLY a valid JSON object in this exact format — no other
     "sunk_cost": 0-100
   },
   "primary_bias": "name of the single strongest bias",
-  "secondary_bias": "name of the second strongest bias",
-  "diagnosis": "3-4 sentences. Describe exactly what is happening psychologically in this situation. Reference the specific moment the bias took control. Be clinical and direct — not gentle.",
-  "master_quote": "an exact relevant quote from one of: Mark Douglas, Brett Steenbarger, Van Tharp, Alexander Elder, Jesse Livermore, or Daniel Kahneman that directly applies to this situation",
+  "secondary_bias": "name of the second strongest bias or 'None detected' if only one is present",
+  "strengths": "2-3 sentences identifying what the trader did well psychologically in this situation. Look for: awareness, discipline, patience, following a process, cutting losses, not revenge trading, asking questions. If genuine strengths are present, name them specifically. Be honest — only mention real strengths visible in the situation.",
+  "diagnosis": "3-4 sentences describing what is happening psychologically. Reference the specific moment the bias influenced the decision. Be direct but constructive — not harsh. Connect it to how the trader was feeling, not just what they did.",
+  "master_quote": "an exact relevant quote from one of: Mark Douglas, Brett Steenbarger, Van Tharp, Alexander Elder, Jesse Livermore, or Daniel Kahneman that speaks to this situation",
   "master_name": "full name of the master being quoted",
-  "master_insight": "2-3 sentences explaining exactly why this master's framework applies here and what they would say about this trader's specific mistake",
-  "pattern_warning": "one sentence describing the dangerous pattern this bias creates if left unchecked — what does it ultimately lead to?",
-  "debiasing_technique": "a specific, named psychological technique (e.g. pre-mortem analysis, process journaling, the if-then planning method) with exact instructions on how to apply it to this exact situation",
-  "immediate_action": "one concrete thing the trader should do TODAY to begin correcting this bias"
+  "master_insight": "3-4 sentences. Explain why this master's framework applies here. What would they specifically say about this situation? What concept from their work is most relevant — and how does it explain both what went wrong and how to correct it?",
+  "pattern_warning": "2-3 sentences. Describe the pattern this bias creates over time if left unchecked. What does it lead to across 50 trades, not just this one? Make it real and specific to trading.",
+  "debiasing_technique": "Name a specific psychological technique, then explain in 3-4 sentences exactly how to apply it to this situation. Be practical — give the trader something they can actually do before their next trade, not a vague concept.",
+  "immediate_action": "2-3 sentences. One concrete thing to do today, and one change to make before the next trade. Be specific about the behaviour to change, not just the mindset."
 }
 
-Score each bias 0-100. 0 = not present. 100 = completely dominant. Scores must reflect the actual situation described — be varied and precise.
-The diagnosis must reference specific details from the trader's situation, not generic advice.
+Score each bias 0-100. 0 = not present. 100 = completely dominant. Be varied and realistic — most situations have 1-2 dominant biases and several minor ones.
+Reference specific details from the trader's situation throughout — never give generic advice.
 Only return the JSON. No preamble. No markdown. No backticks.`,
         messages: [{ role: 'user', content: `Analyze this trader situation for cognitive biases: "${txt}"` }]
       })
@@ -2422,47 +2429,54 @@ Only return the JSON. No preamble. No markdown. No backticks.`,
 
     // Show rich analysis
     el.style.display = 'block';
+
+    const secondaryBiasHtml = parsed.secondary_bias && parsed.secondary_bias !== 'None detected'
+      ? `<div style="display:flex;align-items:center;gap:8px;margin-top:6px;">
+           <div style="font-size:10px;color:var(--cream3);font-family:var(--mono);">ALSO PRESENT</div>
+           <div style="font-size:14px;color:var(--cream3);font-family:var(--serif);">${parsed.secondary_bias}</div>
+         </div>`
+      : '';
+
     el.innerHTML = `
-      <div style="border-bottom:1px solid var(--border);padding-bottom:14px;margin-bottom:14px;">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
-          <div style="font-size:10px;color:var(--red);font-family:var(--mono);letter-spacing:0.1em;">PRIMARY BIAS</div>
-          <div style="font-size:10px;color:var(--gold);font-family:var(--mono);letter-spacing:0.1em;">SECONDARY BIAS</div>
-        </div>
-        <div style="display:flex;align-items:center;gap:10px;">
-          <div style="font-size:18px;color:var(--cream);font-family:var(--serif);font-weight:400;">${parsed.primary_bias}</div>
-          <div style="font-size:12px;color:var(--cream3);">+</div>
-          <div style="font-size:15px;color:var(--cream2);font-family:var(--serif);font-weight:300;">${parsed.secondary_bias || ''}</div>
-        </div>
+      <div style="border-bottom:1px solid var(--border);padding-bottom:14px;margin-bottom:20px;">
+        <div style="font-size:10px;color:var(--red);font-family:var(--mono);letter-spacing:0.1em;margin-bottom:4px;">PRIMARY BIAS DETECTED</div>
+        <div style="font-size:20px;color:var(--cream);font-family:var(--serif);font-weight:400;">${parsed.primary_bias}</div>
+        ${secondaryBiasHtml}
       </div>
 
-      <div style="margin-bottom:16px;">
+      <div style="margin-bottom:20px;">
+        <div style="font-size:10px;color:var(--green);font-family:var(--mono);margin-bottom:8px;letter-spacing:0.1em;">✓ WHAT YOU DID WELL</div>
+        <div style="font-size:13px;color:var(--cream2);line-height:1.8;">${parsed.strengths}</div>
+      </div>
+
+      <div style="margin-bottom:20px;">
         <div style="font-size:10px;color:var(--gold);font-family:var(--mono);margin-bottom:8px;letter-spacing:0.1em;">PSYCHOLOGICAL DIAGNOSIS</div>
         <div style="font-size:13px;color:var(--cream2);line-height:1.8;">${parsed.diagnosis}</div>
       </div>
 
-      <div style="background:var(--bg3);border-left:3px solid var(--gold);padding:14px;margin-bottom:16px;border-radius:0 8px 8px 0;">
-        <div style="font-size:13px;color:var(--cream);font-style:italic;line-height:1.7;margin-bottom:8px;">"${parsed.master_quote}"</div>
+      <div style="background:var(--bg3);border-left:3px solid var(--gold);padding:14px 16px;margin-bottom:20px;border-radius:0 8px 8px 0;">
+        <div style="font-size:13px;color:var(--cream);font-style:italic;line-height:1.8;margin-bottom:10px;">"${parsed.master_quote}"</div>
         <div style="font-size:11px;color:var(--gold);font-family:var(--mono);">— ${parsed.master_name}</div>
       </div>
 
-      <div style="margin-bottom:16px;">
-        <div style="font-size:10px;color:var(--gold);font-family:var(--mono);margin-bottom:8px;letter-spacing:0.1em;">WHY THIS MASTER'S FRAMEWORK APPLIES</div>
+      <div style="margin-bottom:20px;">
+        <div style="font-size:10px;color:var(--gold);font-family:var(--mono);margin-bottom:8px;letter-spacing:0.1em;">WHY THIS APPLIES TO YOU</div>
         <div style="font-size:13px;color:var(--cream2);line-height:1.8;">${parsed.master_insight}</div>
       </div>
 
-      <div style="background:rgba(224,82,82,0.08);border:1px solid rgba(224,82,82,0.2);border-radius:8px;padding:12px;margin-bottom:16px;">
-        <div style="font-size:10px;color:var(--red);font-family:var(--mono);margin-bottom:6px;letter-spacing:0.1em;">⚠ PATTERN WARNING</div>
-        <div style="font-size:13px;color:var(--cream2);line-height:1.6;">${parsed.pattern_warning}</div>
+      <div style="background:rgba(224,82,82,0.06);border:1px solid rgba(224,82,82,0.2);border-radius:8px;padding:14px 16px;margin-bottom:20px;">
+        <div style="font-size:10px;color:var(--red);font-family:var(--mono);margin-bottom:8px;letter-spacing:0.1em;">⚠ IF LEFT UNCHECKED</div>
+        <div style="font-size:13px;color:var(--cream2);line-height:1.8;">${parsed.pattern_warning}</div>
       </div>
 
-      <div style="background:var(--bg3);border:1px solid var(--gold-border);border-radius:8px;padding:14px;margin-bottom:12px;">
-        <div style="font-size:10px;color:var(--gold);font-family:var(--mono);margin-bottom:8px;letter-spacing:0.1em;">DEBIASING TECHNIQUE</div>
+      <div style="background:var(--bg3);border:1px solid var(--gold-border);border-radius:8px;padding:14px 16px;margin-bottom:20px;">
+        <div style="font-size:10px;color:var(--gold);font-family:var(--mono);margin-bottom:8px;letter-spacing:0.1em;">TECHNIQUE TO PRACTISE</div>
         <div style="font-size:13px;color:var(--cream2);line-height:1.8;">${parsed.debiasing_technique}</div>
       </div>
 
-      <div style="background:rgba(82,168,130,0.08);border:1px solid rgba(82,168,130,0.2);border-radius:8px;padding:12px;">
-        <div style="font-size:10px;color:var(--green);font-family:var(--mono);margin-bottom:6px;letter-spacing:0.1em;">DO THIS TODAY</div>
-        <div style="font-size:13px;color:var(--cream2);line-height:1.6;">${parsed.immediate_action}</div>
+      <div style="background:rgba(82,168,130,0.06);border:1px solid rgba(82,168,130,0.2);border-radius:8px;padding:14px 16px;">
+        <div style="font-size:10px;color:var(--green);font-family:var(--mono);margin-bottom:8px;letter-spacing:0.1em;">DO THIS TODAY</div>
+        <div style="font-size:13px;color:var(--cream2);line-height:1.8;">${parsed.immediate_action}</div>
       </div>
     `;
 
@@ -2837,7 +2851,17 @@ function clearCoach() {
       document.getElementById('result-pnl').textContent = pnl !== '—' ? (parseFloat(pnl) >= 0 ? '+' : '') + pnl : '—';
       document.getElementById('result-pnl').style.color = pnlColor;
       document.getElementById('result-current').textContent = data.chartSummary?.currentPrice ? data.chartSummary.currentPrice : '—';
-      document.getElementById('analyzer-text').textContent = data.analysis;
+      // Extract "What You Did Well" section and show it separately
+      const analysisText = data.analysis;
+      const positivesMatch = analysisText.match(/7\.\s*WHAT YOU DID WELL[\s\S]*?(?=8\.|$)/i);
+      if (positivesMatch) {
+        const positivesRaw = positivesMatch[0]
+          .replace(/7\.\s*WHAT YOU DID WELL/i, '')
+          .trim();
+        document.getElementById('analyzer-positives').textContent = positivesRaw;
+        document.getElementById('analyzer-positives-card').style.display = 'block';
+      }
+      document.getElementById('analyzer-text').textContent = analysisText;
 
       document.getElementById('analyzer-placeholder').style.display = 'none';
       document.getElementById('analyzer-results').style.display = 'block';
