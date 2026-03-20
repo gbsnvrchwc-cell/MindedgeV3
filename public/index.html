@@ -730,9 +730,8 @@
       <button class="btn btn-gold" onclick="analyzeBias()">Identify My Biases ↗</button>
       <div id="bias-response" class="ai-response" style="display:none;margin-top:16px;"></div>
       <div style="margin-top:16px;font-size:12px;color:var(--cream3);font-family:var(--mono);line-height:1.8;">
-        Describe a real trade situation above.<br>
-        The AI will score each bias based on what you write<br>
-        and the bars will update in real time.
+        Describe a recent trade — what happened, how you felt, what you did.
+The AI will assess your active biases and update the chart in real time.
       </div>
     </div>
   </div>
@@ -965,7 +964,7 @@
           </div>
 
           <div style="margin-bottom:16px;">
-            <div style="font-size:12px;color:var(--gold);margin-bottom:10px;font-family:var(--mono);">V2.0 PRE-TRADE CHECKLIST</div>
+            <div style="font-size:12px;color:var(--gold);margin-bottom:10px;font-family:var(--mono);">PRE-TRADE CHECKLIST</div>
             <div style="display:flex;flex-direction:column;gap:8px;" id="pretrade-checks">
               <label style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--cream2);cursor:pointer;">
                 <input type="checkbox" id="chk-session" style="width:16px;height:16px;accent-color:var(--gold);">
@@ -977,11 +976,11 @@
               </label>
               <label style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--cream2);cursor:pointer;">
                 <input type="checkbox" id="chk-ema" style="width:16px;height:16px;accent-color:var(--gold);">
-                <span>EMA stack aligned — no 1m vs 5m conflict</span>
+                <span>EMA stack aligned on 5-minute and 15-minute</span>
               </label>
               <label style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--cream2);cursor:pointer;">
                 <input type="checkbox" id="chk-fib" style="width:16px;height:16px;accent-color:var(--gold);">
-                <span>Entry in OTE zone (70.5-78.6%) or Golden Pocket (61.8-65%)</span>
+                <span>Room to run from the nearest ChartPrime Fibonacci level</span>
               </label>
               <label style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--cream2);cursor:pointer;">
                 <input type="checkbox" id="chk-ritual" style="width:16px;height:16px;accent-color:var(--gold);">
@@ -1208,7 +1207,7 @@
         <div class="card" style="margin-bottom:20px;border:1px solid var(--gold-border);">
           <div class="card-label" style="margin-bottom:8px;">SPX Scalping Framework</div>
           <div style="font-size:13px;color:var(--cream2);font-weight:300;line-height:1.6;margin-bottom:16px;">
-            Your professional SPX scalping guide — 9/21 EMA, Fibonacci OTE, BOS/ChoCh, VRVP, GEX framework. v2.0 with all refinements included.
+            Your professional SPX scalping guide — 9/21 EMA, Fibonacci OTE, BOS/ChoCh, VRVP, GEX framework.
           </div>
           <button class="btn btn-gold" onclick="downloadGuide()" style="width:100%;font-size:13px;">
             &#8595; Download SPX Scalping Guide PDF
@@ -2803,7 +2802,7 @@ function clearCoach() {
     try {
       const gexLevels = document.getElementById('trade-gex') ? document.getElementById('trade-gex').value.trim() : '';
       const checks = ['chk-session','chk-gex','chk-ema','chk-fib','chk-ritual'];
-      const checkLabels = { 'chk-session':'Session window', 'chk-gex':'GEX checked', 'chk-ema':'EMA no conflict', 'chk-fib':'Entry in OTE/GP', 'chk-ritual':'Five checks stated' };
+      const checkLabels = { 'chk-session':'Session window', 'chk-gex':'GEX checked', 'chk-ema':'EMA aligned', 'chk-fib':'Room to run from Fib', 'chk-ritual':'Five checks stated' };
       const checkedCount = checks.filter(id => document.getElementById(id) && document.getElementById(id).checked).length;
       const preTrade5Checks = checkedCount + '/5 checks: ' + checks.map(id => (document.getElementById(id) && document.getElementById(id).checked ? '[OK]' : '[X]') + ' ' + checkLabels[id]).join(' | ');
       const res = await fetch('/api/analyze-trade', {
