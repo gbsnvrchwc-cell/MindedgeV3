@@ -727,7 +727,10 @@
     <div class="card-gold">
       <div class="card-label">Your Bias Profile</div>
       <textarea id="bias-situation" placeholder="Describe a recent trade or decision that felt emotionally charged..." rows="4" style="margin-bottom:12px;"></textarea>
-      <button class="btn btn-gold" onclick="analyzeBias()">Identify My Biases ↗</button>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="btn btn-gold" onclick="analyzeBias()" style="flex:1;">Identify My Biases ↗</button>
+        <button class="btn btn-ghost" onclick="resetBiasScores()" style="font-size:11px;padding:10px 14px;color:var(--cream3);">Reset</button>
+      </div>
       <div id="bias-response" style="display:none;margin-top:4px;"></div>
       <div style="margin-top:16px;font-size:12px;color:var(--cream3);font-family:var(--mono);line-height:1.8;">
         Describe a recent trade — what happened, how you felt, what you did.
@@ -2492,6 +2495,13 @@ Only return the JSON. No preamble. No markdown. No backticks.`,
   btn.textContent = 'Identify My Biases ↗';
 }
 
+function resetBiasScores() {
+  localStorage.removeItem('mindedge_bias_scores');
+  BIASES.forEach(b => b.severity = 0);
+  document.getElementById('bias-response').style.display = 'none';
+  renderBiases(false);
+}
+
 function updateBiasMetric() {
   // Update dashboard bias display
   const topBias = BIASES.reduce((a,b) => b.severity > a.severity ? b : a);
@@ -3211,6 +3221,7 @@ function clearAllData() {
   localStorage.removeItem('mindedge_checkins_' + user);
   localStorage.removeItem('mindedge_analyses_' + user);
   localStorage.removeItem('mindedge_prefs_' + user);
+  localStorage.removeItem('mindedge_bias_scores');
   initDashboard();
   initSettings();
   alert('All data cleared.');
