@@ -728,7 +728,7 @@
       <div class="card-label">Your Bias Profile</div>
       <textarea id="bias-situation" placeholder="Describe a recent trade or decision that felt emotionally charged..." rows="4" style="margin-bottom:12px;"></textarea>
       <button class="btn btn-gold" onclick="analyzeBias()">Identify My Biases ↗</button>
-      <div id="bias-response" class="ai-response" style="display:none;margin-top:16px;"></div>
+      <div id="bias-response" style="display:none;margin-top:4px;"></div>
       <div style="margin-top:16px;font-size:12px;color:var(--cream3);font-family:var(--mono);line-height:1.8;">
         Describe a recent trade — what happened, how you felt, what you did.
 The AI will assess your active biases and update the chart in real time.
@@ -2438,45 +2438,45 @@ Only return the JSON. No preamble. No markdown. No backticks.`,
       : '';
 
     el.innerHTML = `
-      <div style="border-bottom:1px solid var(--border);padding-bottom:14px;margin-bottom:20px;">
+      <div style="border-bottom:1px solid var(--border);padding-bottom:12px;margin-bottom:16px;">
         <div style="font-size:10px;color:var(--red);font-family:var(--mono);letter-spacing:0.1em;margin-bottom:4px;">PRIMARY BIAS DETECTED</div>
         <div style="font-size:20px;color:var(--cream);font-family:var(--serif);font-weight:400;">${parsed.primary_bias}</div>
         ${secondaryBiasHtml}
       </div>
 
-      <div style="margin-bottom:20px;">
-        <div style="font-size:10px;color:var(--green);font-family:var(--mono);margin-bottom:8px;letter-spacing:0.1em;">✓ WHAT YOU DID WELL</div>
-        <div style="font-size:13px;color:var(--cream2);line-height:1.8;">${parsed.strengths}</div>
+      <div style="margin-bottom:16px;">
+        <div style="font-size:10px;color:var(--green);font-family:var(--mono);margin-bottom:6px;letter-spacing:0.1em;">✓ WHAT YOU DID WELL</div>
+        <div style="font-size:13px;color:var(--cream2);line-height:1.7;">${parsed.strengths}</div>
       </div>
 
-      <div style="margin-bottom:20px;">
-        <div style="font-size:10px;color:var(--gold);font-family:var(--mono);margin-bottom:8px;letter-spacing:0.1em;">PSYCHOLOGICAL DIAGNOSIS</div>
-        <div style="font-size:13px;color:var(--cream2);line-height:1.8;">${parsed.diagnosis}</div>
+      <div style="margin-bottom:16px;">
+        <div style="font-size:10px;color:var(--gold);font-family:var(--mono);margin-bottom:6px;letter-spacing:0.1em;">PSYCHOLOGICAL DIAGNOSIS</div>
+        <div style="font-size:13px;color:var(--cream2);line-height:1.7;">${parsed.diagnosis}</div>
       </div>
 
-      <div style="background:var(--bg3);border-left:3px solid var(--gold);padding:14px 16px;margin-bottom:20px;border-radius:0 8px 8px 0;">
-        <div style="font-size:13px;color:var(--cream);font-style:italic;line-height:1.8;margin-bottom:10px;">"${parsed.master_quote}"</div>
+      <div style="background:var(--bg3);border-left:3px solid var(--gold);padding:12px 14px;margin-bottom:16px;border-radius:0 8px 8px 0;">
+        <div style="font-size:13px;color:var(--cream);font-style:italic;line-height:1.7;margin-bottom:8px;">"${parsed.master_quote}"</div>
         <div style="font-size:11px;color:var(--gold);font-family:var(--mono);">— ${parsed.master_name}</div>
       </div>
 
-      <div style="margin-bottom:20px;">
-        <div style="font-size:10px;color:var(--gold);font-family:var(--mono);margin-bottom:8px;letter-spacing:0.1em;">WHY THIS APPLIES TO YOU</div>
-        <div style="font-size:13px;color:var(--cream2);line-height:1.8;">${parsed.master_insight}</div>
+      <div style="margin-bottom:16px;">
+        <div style="font-size:10px;color:var(--gold);font-family:var(--mono);margin-bottom:6px;letter-spacing:0.1em;">WHY THIS APPLIES TO YOU</div>
+        <div style="font-size:13px;color:var(--cream2);line-height:1.7;">${parsed.master_insight}</div>
       </div>
 
-      <div style="background:rgba(224,82,82,0.06);border:1px solid rgba(224,82,82,0.2);border-radius:8px;padding:14px 16px;margin-bottom:20px;">
-        <div style="font-size:10px;color:var(--red);font-family:var(--mono);margin-bottom:8px;letter-spacing:0.1em;">⚠ IF LEFT UNCHECKED</div>
-        <div style="font-size:13px;color:var(--cream2);line-height:1.8;">${parsed.pattern_warning}</div>
+      <div style="background:rgba(224,82,82,0.06);border:1px solid rgba(224,82,82,0.2);border-radius:8px;padding:12px 14px;margin-bottom:16px;">
+        <div style="font-size:10px;color:var(--red);font-family:var(--mono);margin-bottom:6px;letter-spacing:0.1em;">⚠ IF LEFT UNCHECKED</div>
+        <div style="font-size:13px;color:var(--cream2);line-height:1.7;">${parsed.pattern_warning}</div>
       </div>
 
-      <div style="background:var(--bg3);border:1px solid var(--gold-border);border-radius:8px;padding:14px 16px;margin-bottom:20px;">
-        <div style="font-size:10px;color:var(--gold);font-family:var(--mono);margin-bottom:8px;letter-spacing:0.1em;">TECHNIQUE TO PRACTISE</div>
-        <div style="font-size:13px;color:var(--cream2);line-height:1.8;">${parsed.debiasing_technique}</div>
+      <div style="background:var(--bg3);border:1px solid var(--gold-border);border-radius:8px;padding:12px 14px;margin-bottom:16px;">
+        <div style="font-size:10px;color:var(--gold);font-family:var(--mono);margin-bottom:6px;letter-spacing:0.1em;">TECHNIQUE TO PRACTISE</div>
+        <div style="font-size:13px;color:var(--cream2);line-height:1.7;">${parsed.debiasing_technique}</div>
       </div>
 
-      <div style="background:rgba(82,168,130,0.06);border:1px solid rgba(82,168,130,0.2);border-radius:8px;padding:14px 16px;">
-        <div style="font-size:10px;color:var(--green);font-family:var(--mono);margin-bottom:8px;letter-spacing:0.1em;">DO THIS TODAY</div>
-        <div style="font-size:13px;color:var(--cream2);line-height:1.8;">${parsed.immediate_action}</div>
+      <div style="background:rgba(82,168,130,0.06);border:1px solid rgba(82,168,130,0.2);border-radius:8px;padding:12px 14px;">
+        <div style="font-size:10px;color:var(--green);font-family:var(--mono);margin-bottom:6px;letter-spacing:0.1em;">DO THIS TODAY</div>
+        <div style="font-size:13px;color:var(--cream2);line-height:1.7;">${parsed.immediate_action}</div>
       </div>
     `;
 
