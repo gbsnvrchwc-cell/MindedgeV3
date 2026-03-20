@@ -709,7 +709,7 @@ Entry Time: ${entryDisplay}
 Exit Time: ${exitDisplay}
 Session Window: ${sessionWindowStatus}
 Pre-Trade 5 Checks Completed: ${safeChecks || 'Not confirmed by trader'}
-GEX Provided: ${safeGex ? 'YES' : 'NO — MANDATORY per v2.0 rules'}
+GEX Provided: ${safeGex ? 'YES' : 'NOT PROVIDED — GEX context will be limited'}
 Entry Price: ${ep || 'not provided'}
 Exit Price: ${xp || 'not provided'}
 P&L: ${pnl} points
@@ -800,37 +800,49 @@ ${JSON.stringify(context5m.slice(-16).map(b=>({t:b.time.slice(11,16),o:b.open,h:
 ${JSON.stringify(context1m.map(b=>({t:b.time.slice(11,16),o:b.open,h:b.high,l:b.low,c:b.close})), null, 1)}
 
 ═══════════════════════════════
-V2.0 ANALYSIS REQUIRED
+TRADE ANALYSIS
 ═══════════════════════════════
-Using ALL calculated indicator data above, provide a structured professional trade review applying the v2.0 ruleset:
+Using all the indicator data above, write a clear, conversational trade review. Write as a knowledgeable trading coach speaking directly to the trader — not as a compliance checklist. Use plain English. No jargon-heavy language. No bullet-point walls. Make it feel like feedback from a mentor who has seen the trade.
 
-0. SESSION WINDOW: Was this trade taken during an approved session window (9:30-10:30am or 3:00-4:00pm ET)? Session status: ${sessionWindowStatus}. If outside approved windows, flag this as a rule violation immediately.
+Structure your analysis as follows:
 
-1. EMA ALIGNMENT (v2.0): Were the 9/21 EMAs aligned across all three timeframes? Was there a 1-minute vs 5-minute EMA conflict? Per v2.0 rules, a 1m bearish EMA when 5m is bullish requires 50% size reduction or skip. Did the trader violate this rule?
+1. SESSION TIMING
+Was this a good time to be trading? Session: ${sessionWindowStatus}. Comment on whether the time of day supported or worked against the setup. Keep it to 2 sentences.
 
-2. FIBONACCI ANALYSIS: Was the entry in the OTE zone (70.5-78.6%) or Golden Pocket (61.8-65%)? Was it a premium or discount entry? The textbook entry per v2.0 is inside the OTE zone — how far was this entry from that ideal?
+2. EMA PICTURE
+What was the EMA story across the 9 and 21 on the 5-minute and 15-minute at the time of entry? Was price above or below both? Were the EMAs trending or flat? Note any recent crossovers. The 1-minute EMA is just a quick-reaction indicator — flag it as context, not as a problem if it differed from the higher timeframes.
 
-3. MARKET STRUCTURE (BOS/ChoCh): What was the structural context on 15m and 5m? Did the 1-minute agree with the 30-second trigger? Per v2.0, the 1m must not contradict the 30s trigger.
+3. FIBONACCI CONTEXT
+The trader uses ChartPrime Fibonacci levels. The key question is not whether they entered exactly in the OTE zone — it is whether there was meaningful room to run from the fib level nearest to their entry. Comment on which fib level the entry was closest to, and whether there was reasonable space before the next significant fib resistance. If the entry was near a key level with room to run, that is good. If the entry was between levels with no clear logic, note that.
 
-4. VOLUME PROFILE (VRVP v2.0): Was the entry inside or outside the value area? Note: VRVP should be anchored to session open. Was price near the POC? If entry was outside value area, the POC should have been the target.
+4. MARKET STRUCTURE
+What was the BOS and ChoCh picture telling us on the 15-minute and 5-minute? Was the structure in favour of the trade direction? Keep this practical and specific to the actual structure events detected.
 
-5. GEX CONTEXT: ${gexLevels ? 'Analyze the provided GEX levels: ' + gexLevels + '. Were there gamma walls near the entry or blocking the target? Was the trade above or below the HVL? How did GEX affect price behaviour?' : 'RULE VIOLATION: GEX levels were not provided. Per v2.0 rules, GEX is MANDATORY for SPX scalping. Explain what GEX information would have been critical for this trade and where to get it (SpotGamma, Squeeze Metrics).'}
+5. VOLUME PROFILE
+Was the entry near the POC or inside the value area? How did the VRVP and SVP levels interact with the entry and exit price? Where were the nearest volume nodes?
 
-6. SETUP VALIDITY: Based on the 1-minute chart data, did the setup trigger within 3 candles of forming? Per v2.0, a setup that has not triggered within 3 candles on the execution timeframe is INVALIDATED.
+6. GEX
+${safeGex ? 'GEX was provided: ' + safeGex + '. How did these gamma levels interact with the trade? Were there walls nearby? Was the trader above or below the HVL?' : 'GEX was not provided for this trade. Note briefly what GEX information would have been useful — particularly whether there were gamma walls near the entry or target.'}
 
-7. ENTRY QUALITY SCORE: Rate 0-5 confluences present at entry (session window approved, EMA aligned no conflict, in OTE/Golden Pocket, BOS/ChoCh confirmed, inside value area, GEX clear). State the score and which confluences were present vs missing.
+7. WHAT WORKED
+2-3 specific things that were done well. Reference actual prices and times from the data.
 
-8. EXIT QUALITY (v2.0): Evaluate against specific v2.0 exit criteria: Did EMA9 roll over on 30s? Was there a bearish engulfing on 1m? Did price close below 9 EMA on execution timeframe? Was the exit at +8 points (breakeven rule) or +12 points (50% off rule)?
+8. WHAT TO IMPROVE
+2-3 honest, actionable observations. Be constructive not harsh. Focus on what the trader can do differently next time, not on what went wrong.
 
-9. WHAT WORKED / WHAT DIDN'T: Be specific with prices, times, and which v2.0 rules were followed vs violated.
+9. IDEAL ENTRY
+Given everything above, where would a cleaner entry have been? Give a specific price and one sentence of reasoning. This is not a criticism — it is a learning point.
 
-10. IDEAL ENTRY (v2.0): Give the textbook entry price based on OTE zone, EMA support, and VRVP value area. State why this level had better confluence than the actual entry.
+10. OVERALL GRADE
+Give a single letter grade: A, B, C, or D. Then one sentence explaining it.
 
-11. V2.0 RULE VIOLATIONS: List every v2.0 rule that was violated in this trade. Be direct and specific.
+Grading guide:
+A — The setup logic was clear, the entry made sense relative to the indicators, and the trade was managed well.
+B — Good directional read and reasonable entry, with minor gaps in confluence or execution.
+C — The trade had some merit but the entry logic was unclear, or management was loose. Profitable trades can still be a C if the process was shaky.
+D — No clear setup logic, or risk management was absent. Reserved for trades where the process needs a significant rethink.
 
-12. SCALPING GRADE: A/B/C/D+ or - with one sentence explaining the primary reason. A = 5/5 confluences, correct session window, no rule violations. B = 3-4 confluences, minor violations. C = 1-2 confluences or major violations. D = fundamental rule violations regardless of outcome.
-
-Be precise. Reference actual calculated values. Grade based on PROCESS not outcome — a profitable trade with rule violations is still a C or D.`;
+Write like a mentor, not an auditor. The goal is for the trader to finish reading this and know exactly what to do differently — and feel motivated to improve, not discouraged.`;
 
     const aiResponse = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
