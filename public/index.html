@@ -725,7 +725,7 @@
       <span class="nav-icon">⟳</span> Rule Drills
     </button>
     <button class="nav-item" onclick="showPage('replay', this)">
-      <span class="nav-icon">▶</span> Trade Replay
+      <span class="nav-icon">◎</span> Chart Practice
     </button>
     <button class="nav-item" onclick="showPage('analytics', this)">
       <span class="nav-icon">◧</span> Analytics
@@ -1684,54 +1684,139 @@ The AI will assess your active biases and update the chart in real time.
     </div>
   </div>
 
-  <!-- ═══════════════════════════════ TRADE REPLAY ═══════════════════════════════ -->
+  <!-- ═══════════════════════════════ CHART PRACTICE ═══════════════════════════════ -->
   <div id="page-replay" class="page">
     <div class="page-header">
-      <div class="page-eyebrow">Practice</div>
-      <h1 class="page-title">Trade <em>Replay</em></h1>
-      <p class="page-subtitle">Watch price action unfold candle by candle. Practice reading the tape and making decisions without real money.</p>
+      <div class="page-eyebrow">Deliberate Practice</div>
+      <h1 class="page-title">Chart <em>Practice</em></h1>
+      <p class="page-subtitle">Train your reads on realistic SPX price action. Two modes — deep scenarios and quick-fire pattern drills.</p>
     </div>
 
-    <div class="card" style="margin-bottom:20px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-        <div class="card-label" style="margin:0;">Scenario: <span id="replay-scenario-name" style="color:var(--gold);">SPX Breakdown</span></div>
-        <div style="display:flex;gap:8px;">
-          <button class="mood-btn" onclick="loadReplayScenario('breakdown')" id="rbtn-breakdown">Breakdown</button>
-          <button class="mood-btn" onclick="loadReplayScenario('breakout')" id="rbtn-breakout">Breakout</button>
-          <button class="mood-btn" onclick="loadReplayScenario('chop')" id="rbtn-chop">Chop</button>
-          <button class="mood-btn" onclick="loadReplayScenario('reversal')" id="rbtn-reversal">Reversal</button>
+    <!-- MODE TABS -->
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="switchChartMode('scenarios', this)">Decision Scenarios</button>
+      <button class="tab-btn" onclick="switchChartMode('patterns', this)">Pattern ID</button>
+      <button class="tab-btn" onclick="switchChartMode('stats', this)">My Stats</button>
+    </div>
+
+    <!-- ── SCENARIO MODE ── -->
+    <div id="chart-mode-scenarios">
+      <div class="card" style="margin-bottom:20px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+          <div>
+            <span class="badge badge-gold" id="sc-badge" style="margin-right:8px;">SPX</span>
+            <span style="font-family:var(--serif);font-size:20px;font-weight:300;color:var(--cream);" id="sc-title">Loading...</span>
+          </div>
+          <div style="font-family:var(--mono);font-size:11px;color:var(--cream3);" id="sc-counter">1 / 20</div>
         </div>
-      </div>
-      <div style="background:var(--bg2);border-radius:10px;padding:20px;position:relative;overflow:hidden;">
-        <canvas id="replay-canvas" width="900" height="360" style="width:100%;height:auto;display:block;"></canvas>
-      </div>
-      <div class="replay-controls">
-        <button class="btn btn-gold" id="replay-play-btn" onclick="toggleReplay()">▶ Play</button>
-        <button class="btn btn-ghost" onclick="stepReplay()">Step →</button>
-        <button class="btn btn-ghost" onclick="resetReplay()">⟳ Reset</button>
-        <div style="flex:1;"></div>
-        <div style="font-family:var(--mono);font-size:12px;color:var(--cream3);">
-          Candle <span id="replay-candle-num">0</span> / <span id="replay-candle-total">0</span>
+        <div style="font-size:13px;color:var(--cream2);font-weight:300;line-height:1.6;margin-bottom:16px;" id="sc-context"></div>
+
+        <!-- CHART -->
+        <div style="background:var(--bg2);border-radius:10px;padding:20px;position:relative;overflow:hidden;margin-bottom:16px;">
+          <canvas id="sc-canvas" width="900" height="380" style="width:100%;height:auto;display:block;"></canvas>
+          <!-- Key levels legend -->
+          <div id="sc-levels-legend" style="position:absolute;top:12px;right:16px;font-family:var(--mono);font-size:10px;"></div>
         </div>
-        <div style="font-family:var(--mono);font-size:14px;color:var(--cream);" id="replay-price">—</div>
+
+        <!-- DECISION PHASE -->
+        <div id="sc-decision-phase">
+          <div style="padding:16px 20px;background:var(--gold-dim);border:1px solid var(--gold-border);border-radius:10px;margin-bottom:16px;">
+            <div style="font-family:var(--mono);font-size:10px;color:var(--gold);letter-spacing:0.15em;margin-bottom:8px;">DECISION POINT</div>
+            <div style="font-size:14px;color:var(--cream);font-weight:300;line-height:1.6;" id="sc-question">What would you do here?</div>
+          </div>
+          <div style="display:flex;gap:10px;margin-bottom:12px;">
+            <button class="btn btn-ghost" onclick="submitScenarioDecision('long')" style="flex:1;padding:14px;border-color:rgba(82,168,130,0.3);color:var(--green);font-size:14px;">▲ Long</button>
+            <button class="btn btn-ghost" onclick="submitScenarioDecision('flat')" style="flex:1;padding:14px;font-size:14px;">— Stay Flat</button>
+            <button class="btn btn-ghost" onclick="submitScenarioDecision('short')" style="flex:1;padding:14px;border-color:rgba(224,82,82,0.3);color:var(--red);font-size:14px;">▼ Short</button>
+          </div>
+          <textarea id="sc-reasoning" placeholder="Why? What do you see in the price action that supports this decision?" rows="2" style="font-size:13px;"></textarea>
+        </div>
+
+        <!-- REVEAL PHASE (hidden initially) -->
+        <div id="sc-reveal-phase" style="display:none;">
+          <div id="sc-result-banner" style="padding:16px 20px;border-radius:10px;margin-bottom:16px;"></div>
+          <div class="card" style="background:var(--bg2);margin-bottom:16px;">
+            <div class="card-label">What Actually Happened</div>
+            <div id="sc-explanation" style="font-size:13px;color:var(--cream2);font-weight:300;line-height:1.7;"></div>
+          </div>
+          <div class="card" style="background:var(--bg2);margin-bottom:16px;">
+            <div class="card-label">The Lesson</div>
+            <div id="sc-lesson" style="font-size:13px;color:var(--cream2);font-weight:300;line-height:1.7;font-style:italic;"></div>
+          </div>
+          <button class="btn btn-gold" onclick="nextScenario()" style="width:100%;padding:14px;font-size:14px;">Next Scenario →</button>
+        </div>
       </div>
     </div>
 
-    <div class="grid-2">
-      <div class="card">
-        <div class="card-label">Your Decision</div>
-        <div style="display:flex;gap:10px;margin-bottom:12px;">
-          <button class="btn btn-ghost" onclick="replayDecision('long')" style="flex:1;border-color:rgba(82,168,130,0.3);color:var(--green);">◂ Long</button>
-          <button class="btn btn-ghost" onclick="replayDecision('flat')" style="flex:1;">— Flat</button>
-          <button class="btn btn-ghost" onclick="replayDecision('short')" style="flex:1;border-color:rgba(224,82,82,0.3);color:var(--red);">Short ▸</button>
+    <!-- ── PATTERN ID MODE ── -->
+    <div id="chart-mode-patterns" style="display:none;">
+      <div class="card" style="margin-bottom:20px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <div class="card-label" style="margin:0;">Identify this pattern</div>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="font-family:var(--mono);font-size:11px;color:var(--cream3);">
+              <span id="pat-streak" style="color:var(--gold);">0</span> streak
+            </div>
+            <div style="font-family:var(--mono);font-size:11px;color:var(--cream3);">
+              <span id="pat-score">0</span>/<span id="pat-total">0</span> correct
+            </div>
+          </div>
         </div>
-        <textarea id="replay-notes" placeholder="Why this decision? What do you see in price action?" rows="3"></textarea>
+
+        <!-- Pattern chart -->
+        <div style="background:var(--bg2);border-radius:10px;padding:20px;position:relative;overflow:hidden;margin-bottom:16px;">
+          <canvas id="pat-canvas" width="900" height="320" style="width:100%;height:auto;display:block;"></canvas>
+        </div>
+
+        <!-- Answer options -->
+        <div id="pat-options" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;"></div>
+
+        <!-- Feedback -->
+        <div id="pat-feedback" style="display:none;padding:16px 20px;border-radius:10px;margin-bottom:16px;"></div>
+
+        <!-- Timer bar -->
+        <div style="height:4px;background:var(--bg4);border-radius:2px;overflow:hidden;">
+          <div id="pat-timer-bar" style="height:100%;background:var(--gold);border-radius:2px;width:100%;transition:width 10s linear;"></div>
+        </div>
       </div>
-      <div class="card">
-        <div class="card-label">Decision Log</div>
-        <div id="replay-decisions" style="max-height:200px;overflow-y:auto;font-size:13px;color:var(--cream2);font-weight:300;line-height:1.6;">
-          <div style="color:var(--cream3);font-style:italic;">Make decisions as candles reveal to practice real-time reads.</div>
+    </div>
+
+    <!-- ── STATS MODE ── -->
+    <div id="chart-mode-stats" style="display:none;">
+      <div class="stat-grid" style="margin-bottom:20px;">
+        <div class="stat-card">
+          <div class="stat-val" id="cp-total-attempts">0</div>
+          <div class="stat-label">Scenarios Attempted</div>
         </div>
+        <div class="stat-card">
+          <div class="stat-val" id="cp-correct-pct">—</div>
+          <div class="stat-label">Correct Reads</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val" id="cp-pat-total">0</div>
+          <div class="stat-label">Patterns ID'd</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val" id="cp-pat-pct">—</div>
+          <div class="stat-label">Pattern Accuracy</div>
+        </div>
+      </div>
+      <div class="chart-container">
+        <div class="card-label" style="margin-bottom:16px;">Accuracy Over Time</div>
+        <canvas id="cp-accuracy-chart" class="chart-canvas"></canvas>
+      </div>
+      <div class="grid-2" style="margin-top:20px;">
+        <div class="card">
+          <div class="card-label">Strongest Reads</div>
+          <div id="cp-strongest" style="font-size:13px;color:var(--cream2);font-weight:300;line-height:1.8;">Complete more scenarios to see patterns.</div>
+        </div>
+        <div class="card">
+          <div class="card-label">Weakest Reads</div>
+          <div id="cp-weakest" style="font-size:13px;color:var(--cream2);font-weight:300;line-height:1.8;">Complete more scenarios to see patterns.</div>
+        </div>
+      </div>
+      <div style="margin-top:20px;text-align:center;">
+        <button class="btn btn-ghost" onclick="resetChartPracticeStats()">Reset All Stats</button>
       </div>
     </div>
   </div>
@@ -4712,111 +4797,333 @@ function addCustomDrill() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-//  TRADE REPLAY SIMULATOR
+//  CHART PRACTICE — Decision Scenarios + Pattern Recognition
 // ═══════════════════════════════════════════════════════════════
 
-const replayScenarios = {
-  breakdown: {
-    name: 'SPX Breakdown',
-    candles: generateCandles('breakdown', 60),
-  },
-  breakout: {
-    name: 'SPX Breakout',
-    candles: generateCandles('breakout', 60),
-  },
-  chop: {
-    name: 'Choppy Range',
-    candles: generateCandles('chop', 60),
-  },
-  reversal: {
-    name: 'V-Reversal',
-    candles: generateCandles('reversal', 60),
-  },
-};
+function switchChartMode(mode, btn) {
+  ['scenarios','patterns','stats'].forEach(m => {
+    const el = document.getElementById('chart-mode-' + m);
+    if (el) el.style.display = m === mode ? 'block' : 'none';
+  });
+  btn.parentElement.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  if (mode === 'scenarios') loadScenario();
+  if (mode === 'patterns') loadPattern();
+  if (mode === 'stats') renderChartPracticeStats();
+}
 
-function generateCandles(type, count) {
+// ── SCENARIO DATA ──────────────────────────────────────────────
+// Each scenario: realistic SPX candle data, key levels, decision point, outcome
+
+function buildCandles(startPrice, moves) {
   const candles = [];
-  let price = 5800;
-  const volatility = type === 'chop' ? 4 : 8;
-  for (let i = 0; i < count; i++) {
-    let bias = 0;
-    if (type === 'breakdown') bias = i < 15 ? 0 : -0.6;
-    if (type === 'breakout') bias = i < 20 ? 0 : 0.5;
-    if (type === 'reversal') bias = i < 30 ? -0.7 : 0.8;
-    if (type === 'chop') bias = Math.sin(i * 0.3) * 0.2;
-
-    const change = (Math.random() - 0.5 + bias) * volatility;
-    const open = price;
-    const close = price + change;
-    const high = Math.max(open, close) + Math.random() * volatility * 0.5;
-    const low = Math.min(open, close) - Math.random() * volatility * 0.5;
-    candles.push({ o: open, h: high, l: low, c: close });
-    price = close;
-  }
+  let price = startPrice;
+  moves.forEach(m => {
+    const dir = m[0]; // bias direction
+    const vol = m[1]; // volatility
+    const count = m[2]; // num candles
+    for (let i = 0; i < count; i++) {
+      const change = (Math.random() * 0.6 + 0.2) * vol * dir + (Math.random() - 0.5) * vol * 0.5;
+      const open = price;
+      const close = price + change;
+      const high = Math.max(open, close) + Math.random() * vol * 0.4;
+      const low = Math.min(open, close) - Math.random() * vol * 0.4;
+      candles.push({ o: +open.toFixed(2), h: +high.toFixed(2), l: +low.toFixed(2), c: +close.toFixed(2) });
+      price = close;
+    }
+  });
   return candles;
 }
 
-let replayData = null;
-let replayIdx = 0;
-let replayTimer = null;
-let replayDecisions = [];
+const scenarioTemplates = [
+  {
+    title: "Morning Selloff into VWAP",
+    badge: "Reversal", category: "vwap_bounce",
+    context: "SPX sold off aggressively from the open, dropping through the first 30 minutes. Price is now approaching VWAP from below after a sharp bounce off the low of day.",
+    question: "Price has bounced off the LOD and is approaching VWAP. Three candles show higher lows. What's your move?",
+    answer: "long",
+    explanation: "The sharp selloff found support and established a clear low of day. The series of higher lows approaching VWAP shows buyers stepping in. A VWAP reclaim with momentum is a textbook long entry for a mean reversion back toward the opening range.",
+    lesson: "Steenbarger: Morning selloffs that establish a clear low and then build higher lows toward VWAP are among the highest-probability mean reversion setups. The key is waiting for the higher lows — not catching the falling knife.",
+    levels: [{price: 0, label: 'VWAP', color: '#C9A84C'}, {price: -8, label: 'LOD Support', color: '#52a882'}],
+    buildFn: (base) => {
+      const ctx = buildCandles(base, [[-1, 6, 8], [-1, 4, 4], [1, 3, 3], [1, 2, 3]]);
+      const out = buildCandles(ctx[ctx.length-1].c, [[1, 5, 5], [1, 3, 4], [1, 2, 3], [0, 2, 3]]);
+      return { context: ctx, outcome: out };
+    }
+  },
+  {
+    title: "Failed Breakout Above Resistance",
+    badge: "Trap", category: "failed_breakout",
+    context: "SPX has been grinding higher all morning and just broke above a key resistance level that held twice already. Volume was light on the breakout. The last 3 candles show long upper wicks.",
+    question: "Price broke resistance but candles show long upper wicks and the move is stalling. Volume is thin. What's your read?",
+    answer: "short",
+    explanation: "The breakout failed because there was no conviction behind it. Long upper wicks show sellers absorbing every push higher. Low volume breakouts are traps — smart money sells into retail breakout buyers.",
+    lesson: "Douglas: A breakout without volume is not a breakout — it's a trap. The long upper wicks are the market telling you that supply exists at this level. Failed breakouts often lead to sharp reversals as trapped longs liquidate.",
+    levels: [{price: 0, label: 'Resistance', color: '#e05252'}, {price: -15, label: 'Support', color: '#52a882'}],
+    buildFn: (base) => {
+      const ctx = buildCandles(base - 10, [[1, 3, 6], [1, 2, 4], [1, 4, 3], [0, 3, 3], [1, 5, 2]]);
+      // Add upper wicks manually to last few
+      const last3 = ctx.slice(-3);
+      last3.forEach(c => { c.h = c.h + 3; c.c = Math.min(c.o, c.c) + 0.5; });
+      const out = buildCandles(ctx[ctx.length-1].c, [[-1, 4, 3], [-1, 5, 4], [-1, 6, 3], [-1, 3, 3]]);
+      return { context: ctx, outcome: out };
+    }
+  },
+  {
+    title: "Bull Flag After Gap Up",
+    badge: "Continuation", category: "bull_flag",
+    context: "SPX gapped up on strong earnings data. The initial impulse moved 15 points in 20 minutes, then price consolidated in a tight descending channel for the last 25 minutes — a textbook bull flag.",
+    question: "After a strong impulse, price is pulling back in a tight orderly channel. Volume is declining on the pullback. What do you do?",
+    answer: "long",
+    explanation: "A bull flag is a continuation pattern — the pullback is just profit-taking from the initial move. Declining volume on the pullback confirms it's not real selling. The measured move targets another 15 points higher.",
+    lesson: "Livermore: After a powerful move in one direction, orderly pullbacks on declining volume are invitations to join the trend. The flag is the market catching its breath before the next leg. Patience here is rewarded.",
+    levels: [{price: 8, label: 'Flag Top', color: '#C9A84C'}, {price: 0, label: 'Flag Bottom', color: '#52a882'}],
+    buildFn: (base) => {
+      const ctx = buildCandles(base - 12, [[1, 6, 5], [1, 4, 3], [-0.3, 2, 5], [-0.2, 1.5, 5]]);
+      const out = buildCandles(ctx[ctx.length-1].c, [[1, 4, 3], [1, 5, 4], [1, 6, 3], [1, 3, 3], [0, 2, 2]]);
+      return { context: ctx, outcome: out };
+    }
+  },
+  {
+    title: "Double Bottom at Support",
+    badge: "Reversal", category: "double_bottom",
+    context: "SPX dropped to a support level established last week, bounced 8 points, then came back down to test the exact same level. The second test showed a strong bullish engulfing candle.",
+    question: "Price has tested this support level twice and held both times. The second test produced a bullish engulfing. Your move?",
+    answer: "long",
+    explanation: "A double bottom is a powerful reversal signal — the market tested a level, found buyers, pulled back, and found buyers AGAIN at the same level. The bullish engulfing on the second test is the trigger. Stop goes just below the double bottom.",
+    lesson: "Elder: Double bottoms work because they prove that demand exists at a specific price. The second test is more powerful than the first because it shows that the buying interest isn't just a one-time event — it's structural support.",
+    levels: [{price: 0, label: 'Double Bottom Support', color: '#52a882'}, {price: 12, label: 'Resistance', color: '#e05252'}],
+    buildFn: (base) => {
+      const ctx = buildCandles(base + 10, [[-1, 4, 5], [0, 2, 2], [1, 3, 4], [1, 2, 2], [-1, 4, 4], [1, 5, 1]]);
+      const out = buildCandles(ctx[ctx.length-1].c, [[1, 4, 4], [1, 3, 3], [1, 4, 3], [0, 2, 3]]);
+      return { context: ctx, outcome: out };
+    }
+  },
+  {
+    title: "Afternoon Breakdown Through Support",
+    badge: "Breakdown", category: "breakdown",
+    context: "SPX has been trading in a 10-point range all day. In the last 30 minutes, selling pressure has increased. Price is sitting right at the bottom of the range with three consecutive red candles and increasing volume.",
+    question: "All-day range is breaking down with accelerating momentum. Three red candles press into support. Volume is rising. What's your call?",
+    answer: "short",
+    explanation: "Range-bound markets resolve eventually, and the direction of the resolution is signaled by momentum and volume. Three red candles with rising volume attacking the bottom of the range indicates the resolution is to the downside. Late-day breakdowns are especially reliable.",
+    lesson: "Van Tharp: When a range holds all day and then breaks with conviction, it tends to move quickly because all the traders who were buying the range bottom are now trapped and become forced sellers. Their stops fuel the move.",
+    levels: [{price: 0, label: 'Range Low / Support', color: '#e05252'}, {price: 10, label: 'Range High', color: '#C9A84C'}],
+    buildFn: (base) => {
+      const ctx = buildCandles(base + 5, [[0, 2, 4], [0, 2, 4], [0, 1.5, 4], [-0.5, 3, 3], [-1, 3, 3]]);
+      const out = buildCandles(ctx[ctx.length-1].c, [[-1, 5, 3], [-1, 6, 4], [-1, 4, 3], [-0.5, 3, 3]]);
+      return { context: ctx, outcome: out };
+    }
+  },
+  {
+    title: "VWAP Rejection After Weak Rally",
+    badge: "Continuation", category: "vwap_rejection",
+    context: "SPX has been trending down all day. A weak bounce attempted to reclaim VWAP but stalled with three doji candles right at the VWAP level. Each push into VWAP was met with selling.",
+    question: "Price tried to reclaim VWAP three times and got rejected each time with doji candles. The trend is down. What do you do?",
+    answer: "short",
+    explanation: "In a downtrend, VWAP acts as resistance. Three failed attempts to reclaim it confirms that sellers are in control. Each rejection is a short entry opportunity with a stop just above VWAP — clean risk/reward aligned with the dominant trend.",
+    lesson: "Steenbarger: Trading with the trend is always higher probability. VWAP rejections in a downtrend are the 'bread and butter' setup for institutional traders. The trend tells you direction; VWAP gives you the entry level.",
+    levels: [{price: 0, label: 'VWAP', color: '#C9A84C'}, {price: -15, label: 'LOD', color: '#e05252'}],
+    buildFn: (base) => {
+      const ctx = buildCandles(base + 8, [[-1, 4, 6], [-1, 3, 2], [0.5, 2, 4], [0, 1, 3], [-0.3, 1.5, 3]]);
+      const out = buildCandles(ctx[ctx.length-1].c, [[-1, 4, 4], [-1, 5, 3], [-1, 3, 4], [-0.5, 2, 2]]);
+      return { context: ctx, outcome: out };
+    }
+  },
+  {
+    title: "Opening Range Breakout",
+    badge: "Momentum", category: "orb",
+    context: "In the first 15 minutes, SPX established a tight 6-point opening range. Price then consolidated at the top of the range for 10 minutes with volume building. A strong green candle just broke above the range high.",
+    question: "The opening range top just broke with a strong candle and building volume. What's your move?",
+    answer: "long",
+    explanation: "Opening range breakouts with volume confirmation are high-probability continuation moves. The consolidation at the top of the range before the break shows buyers accumulating. The measured move target equals the range height above the breakout.",
+    lesson: "The opening range establishes the day's initial battle zone. When one side wins decisively (with volume), the losing side becomes fuel for the move as their stops trigger. Consolidation before the breakout is bullish — it shows patience, not weakness.",
+    levels: [{price: 0, label: 'OR High (breakout)', color: '#52a882'}, {price: -6, label: 'OR Low', color: '#C9A84C'}],
+    buildFn: (base) => {
+      const ctx = buildCandles(base - 3, [[1, 3, 3], [-0.5, 2, 2], [0, 1.5, 5], [0.3, 1, 4], [1, 4, 1]]);
+      const out = buildCandles(ctx[ctx.length-1].c, [[1, 4, 3], [1, 3, 3], [0.5, 3, 3], [1, 4, 2], [0, 2, 2]]);
+      return { context: ctx, outcome: out };
+    }
+  },
+  {
+    title: "Exhaustion Gap Fade",
+    badge: "Reversal", category: "gap_fade",
+    context: "SPX gapped up 20 points on hype overnight. The gap was into a known resistance zone. The first 5 candles were red, filling the gap. Volume is heavy on the sellside.",
+    question: "The gap up opened into resistance and immediately started filling. Heavy sell volume from the open. This gap has no support behind it. Your decision?",
+    answer: "short",
+    explanation: "An exhaustion gap opens into resistance with no follow-through buying — it's the final burst of enthusiasm before a reversal. Heavy sell volume confirms institutions are distributing into the gap. These gaps tend to fill completely.",
+    lesson: "Elder: Not all gaps are bullish. Exhaustion gaps occur at the END of a move, not the beginning. The key tells are: gap into resistance, immediate selling on the open, and heavy volume on the sell side. Fade these aggressively.",
+    levels: [{price: 0, label: 'Gap Fill Target', color: '#52a882'}, {price: 20, label: 'Gap High / Resistance', color: '#e05252'}],
+    buildFn: (base) => {
+      const ctx = buildCandles(base + 18, [[-1, 4, 5], [-0.5, 3, 3], [0.3, 2, 3], [-0.5, 2, 2], [-1, 3, 2]]);
+      const out = buildCandles(ctx[ctx.length-1].c, [[-1, 4, 3], [-1, 3, 4], [-0.5, 3, 3], [0, 2, 3]]);
+      return { context: ctx, outcome: out };
+    }
+  },
+  {
+    title: "Bear Trap at Prior Low",
+    badge: "Trap", category: "bear_trap",
+    context: "SPX sold off and broke below yesterday's low by 2 points. But the breakdown candle was immediately followed by a massive bullish engulfing that reclaimed the prior low. Volume on the recovery candle was 3x average.",
+    question: "Price briefly broke the prior low then immediately snapped back above it with huge volume. Shorts are trapped below. What's your read?",
+    answer: "long",
+    explanation: "This is a textbook bear trap. The break below the prior low triggered stop losses from longs and attracted new shorts. When price immediately reversed on massive volume, all those new shorts are now underwater and trapped. Their covering fuels a squeeze higher.",
+    lesson: "Douglas: Failed breakdowns (bear traps) are often MORE powerful than the pattern they break. The traders who shorted the breakdown are now forced buyers — and forced buying is the most powerful fuel for a move.",
+    levels: [{price: 0, label: "Prior Low", color: '#C9A84C'}, {price: 12, label: 'Target', color: '#52a882'}],
+    buildFn: (base) => {
+      const ctx = buildCandles(base + 6, [[-1, 3, 5], [-0.5, 2, 3], [-1, 4, 3], [-1, 5, 2], [1, 7, 1]]);
+      const out = buildCandles(ctx[ctx.length-1].c, [[1, 5, 3], [1, 4, 3], [1, 3, 3], [0.5, 2, 3], [0, 2, 2]]);
+      return { context: ctx, outcome: out };
+    }
+  },
+  {
+    title: "Choppy Range — No Trade",
+    badge: "Discipline", category: "chop",
+    context: "SPX has been oscillating in a 6-point range for 2 hours. Volume is declining. There are alternating red and green candles with no clear direction. VWAP is flat. No news catalysts on the horizon.",
+    question: "Two hours of directionless chop. Volume dying. No catalyst. Alternating candles. What do you do?",
+    answer: "flat",
+    explanation: "This is a no-trade zone. There's no edge in choppy, low-volume conditions. Every entry is a coin flip with the spread working against you. The disciplined move is to stay flat and wait for conditions to change.",
+    lesson: "Livermore: 'There is a time to go long, a time to go short, and a time to go fishing.' Recognizing when there is NO setup is just as important as recognizing when there is one. The money saved by not trading chop is real profit.",
+    levels: [{price: 3, label: 'Range High', color: '#C9A84C'}, {price: -3, label: 'Range Low', color: '#C9A84C'}],
+    buildFn: (base) => {
+      const ctx = buildCandles(base, [[0, 2, 4], [0, 1.5, 4], [0, 1, 4], [0, 1.5, 3], [0, 1, 3]]);
+      const out = buildCandles(ctx[ctx.length-1].c, [[0, 1.5, 3], [0, 1, 3], [0, 2, 3], [-0.3, 1.5, 2], [0, 1, 2]]);
+      return { context: ctx, outcome: out };
+    }
+  },
+  {
+    title: "Higher Low in Uptrend",
+    badge: "Trend", category: "higher_low",
+    context: "SPX has been making higher highs and higher lows all day. Price just pulled back to the last swing low area and bounced with a hammer candle. The uptrend structure is intact.",
+    question: "Uptrend intact, price pulled back to the prior swing low and bounced with a hammer. The structure of higher highs and higher lows is preserved. Your call?",
+    answer: "long",
+    explanation: "In an established uptrend, pullbacks to prior swing lows are the highest-probability entries. The hammer candle confirms buyers are defending the trend structure. Your stop goes just below the new higher low — tight risk, open-ended reward.",
+    lesson: "Elder: The easiest money in trading comes from buying pullbacks in uptrends and selling rallies in downtrends. The trend does the heavy lifting. Your job is just to find the entry within the trend's rhythm.",
+    levels: [{price: 0, label: 'Higher Low / Support', color: '#52a882'}, {price: 10, label: 'Prior High', color: '#C9A84C'}],
+    buildFn: (base) => {
+      const ctx = buildCandles(base - 4, [[1, 3, 4], [1, 4, 3], [-0.5, 3, 4], [-0.5, 2, 3], [1, 4, 1]]);
+      const out = buildCandles(ctx[ctx.length-1].c, [[1, 4, 3], [1, 3, 3], [1, 4, 3], [1, 2, 2], [0, 2, 2]]);
+      return { context: ctx, outcome: out };
+    }
+  },
+  {
+    title: "Resistance Rejection After Extended Rally",
+    badge: "Exhaustion", category: "resistance_rejection",
+    context: "SPX rallied 25 points over 90 minutes without a meaningful pullback. Price has now reached a major resistance level from last week. The last 4 candles are getting smaller with long upper wicks. Momentum is fading.",
+    question: "Extended rally into major resistance. Candles shrinking. Long upper wicks. No pullback for 90 minutes. What's your read?",
+    answer: "short",
+    explanation: "An extended rally without pullbacks into major resistance with shrinking candles and long upper wicks is exhaustion. The move has used up its energy. At minimum, a sharp pullback is coming. Aggressive shorts fade here; conservative traders wait for the first lower high.",
+    lesson: "Van Tharp: Trends don't last forever, and the signs of exhaustion are readable. Shrinking candles (decreasing range), long wicks into resistance, and an extended move without retracement all signal that the last buyers are buying — and there's no one left to buy after them.",
+    levels: [{price: 0, label: 'Major Resistance', color: '#e05252'}, {price: -15, label: 'Support', color: '#52a882'}],
+    buildFn: (base) => {
+      const ctx = buildCandles(base - 20, [[1, 5, 4], [1, 4, 3], [1, 3, 3], [0.3, 2, 3], [0, 1.5, 3]]);
+      ctx.slice(-4).forEach(c => { c.h += 2.5; c.c = Math.min(c.o, c.c) + 0.3; });
+      const out = buildCandles(ctx[ctx.length-1].c, [[-1, 4, 3], [-1, 5, 4], [-0.5, 3, 3], [-1, 4, 3]]);
+      return { context: ctx, outcome: out };
+    }
+  },
+  {
+    title: "News Spike Reversal",
+    badge: "Volatility", category: "news_reversal",
+    context: "An unexpected economic data release caused SPX to spike 12 points in 3 candles. But the spike immediately stalled and the next 5 candles are red, giving back more than half the move. The spike is being faded.",
+    question: "News spike already gave back 60% of the move. Five consecutive red candles after the spike. The news reaction is being sold. What do you do?",
+    answer: "short",
+    explanation: "When a news spike is immediately faded and gives back more than half the move, the smart money disagrees with the initial reaction. Five red candles confirm distribution. These spike-and-fade patterns often result in a complete reversal below the pre-spike level.",
+    lesson: "Steenbarger: The initial reaction to news is driven by algorithms and emotional retail traders. The subsequent price action reveals what institutional money actually thinks. If they're selling the spike, the news wasn't as bullish as it seemed.",
+    levels: [{price: 12, label: 'Spike High', color: '#e05252'}, {price: 0, label: 'Pre-spike Level', color: '#C9A84C'}],
+    buildFn: (base) => {
+      const ctx = buildCandles(base, [[1, 8, 3], [-1, 3, 5], [-0.5, 2, 3], [0.3, 2, 2], [-0.5, 2, 2]]);
+      const out = buildCandles(ctx[ctx.length-1].c, [[-1, 4, 3], [-1, 3, 3], [-1, 5, 3], [-0.5, 2, 3], [0, 2, 2]]);
+      return { context: ctx, outcome: out };
+    }
+  },
+  {
+    title: "Ascending Triangle Breakout",
+    badge: "Continuation", category: "ascending_triangle",
+    context: "SPX has been making higher lows over 45 minutes while testing the same resistance level 4 times. The triangle is tightening — each higher low is closer to resistance. Volume is building.",
+    question: "Ascending triangle forming with higher lows pressing into flat resistance. Volume building on each test. The coil is tightening. Your move?",
+    answer: "long",
+    explanation: "An ascending triangle with higher lows shows increasing buying pressure. Each test of resistance weakens the sellers at that level. When the breakout happens (often on the 4th or 5th test), the move is explosive because all the overhead supply has been absorbed.",
+    lesson: "The ascending triangle is one of the most reliable continuation patterns because it tells a clear story: buyers are getting more aggressive (higher lows) while sellers are getting exhausted (same resistance, weakening). The breakout often equals the height of the triangle.",
+    levels: [{price: 0, label: 'Resistance (4 tests)', color: '#C9A84C'}, {price: -8, label: 'Rising Support', color: '#52a882'}],
+    buildFn: (base) => {
+      const ctx = buildCandles(base - 6, [[1, 3, 3], [0, 2, 2], [-0.3, 2, 2], [1, 3, 2], [0, 1.5, 2], [-0.2, 1.5, 2], [0.5, 2, 2], [0, 1, 2]]);
+      const out = buildCandles(ctx[ctx.length-1].c, [[1, 5, 2], [1, 4, 3], [1, 3, 3], [0.5, 3, 3], [0, 2, 2]]);
+      return { context: ctx, outcome: out };
+    }
+  },
+  {
+    title: "Head and Shoulders Neckline Break",
+    badge: "Reversal", category: "head_shoulders",
+    context: "SPX formed a clear head and shoulders pattern over 2 hours. The right shoulder is lower than the left. Price is now pressing into the neckline with increasing selling pressure. Last candle closed right on the neckline.",
+    question: "Textbook head and shoulders with a lower right shoulder. Price is pressing the neckline with momentum. What do you do?",
+    answer: "short",
+    explanation: "Head and shoulders is one of the most reliable reversal patterns. The lower right shoulder shows diminishing buying power. A neckline break triggers stops from all the traders who bought the pattern's rallies. Target: head height projected below the neckline.",
+    lesson: "Douglas: The head and shoulders works because it represents a visible shift in the balance of power. The head made a high. The right shoulder couldn't match it. Buyers are weakening. Sellers sense blood. The neckline break is the confirmation.",
+    levels: [{price: 0, label: 'Neckline', color: '#e05252'}, {price: 12, label: 'Head', color: '#C9A84C'}],
+    buildFn: (base) => {
+      const ctx = buildCandles(base + 3, [[1, 3, 3], [-1, 3, 3], [1, 4, 3], [1, 3, 2], [-1, 3, 3], [-1, 2, 2], [1, 2, 2], [0.3, 2, 1], [-1, 3, 2]]);
+      const out = buildCandles(ctx[ctx.length-1].c, [[-1, 5, 3], [-1, 4, 3], [-1, 3, 3], [-0.5, 3, 3], [0, 2, 2]]);
+      return { context: ctx, outcome: out };
+    }
+  },
+];
+
+let currentScenarioIdx = 0;
+let scenarioOrder = [];
+let scenarioRevealed = false;
+let currentScenarioData = null;
 
 function initReplay() {
-  loadReplayScenario('breakdown');
+  scenarioOrder = scenarioTemplates.map((_, i) => i);
+  for (let i = scenarioOrder.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [scenarioOrder[i], scenarioOrder[j]] = [scenarioOrder[j], scenarioOrder[i]];
+  }
+  currentScenarioIdx = 0;
+  loadScenario();
 }
 
-function loadReplayScenario(type) {
-  // Regenerate candles each time
-  replayScenarios[type].candles = generateCandles(type, 60);
-  replayData = replayScenarios[type];
-  replayIdx = 0;
-  replayDecisions = [];
-  if (replayTimer) { clearInterval(replayTimer); replayTimer = null; }
-  document.getElementById('replay-play-btn').textContent = '▶ Play';
-  document.getElementById('replay-scenario-name').textContent = replayData.name;
-  document.getElementById('replay-candle-total').textContent = replayData.candles.length;
-  document.getElementById('replay-decisions').innerHTML = '<div style="color:var(--cream3);font-style:italic;">Make decisions as candles reveal to practice real-time reads.</div>';
-  // Highlight button
-  ['breakdown','breakout','chop','reversal'].forEach(t => {
-    const b = document.getElementById('rbtn-' + t);
-    if (b) { b.classList.toggle('active', t === type); }
-  });
-  drawReplayChart();
+function loadScenario() {
+  if (!scenarioOrder.length) initReplay();
+  const template = scenarioTemplates[scenarioOrder[currentScenarioIdx % scenarioOrder.length]];
+  const base = 5780 + Math.random() * 40;
+  const data = template.buildFn(base);
+  currentScenarioData = { template, ...data, base };
+  scenarioRevealed = false;
+
+  document.getElementById('sc-title').textContent = template.title;
+  document.getElementById('sc-badge').textContent = template.badge;
+  document.getElementById('sc-context').textContent = template.context;
+  document.getElementById('sc-question').textContent = template.question;
+  document.getElementById('sc-counter').textContent = (currentScenarioIdx + 1) + ' / ' + scenarioTemplates.length;
+
+  document.getElementById('sc-decision-phase').style.display = 'block';
+  document.getElementById('sc-reveal-phase').style.display = 'none';
+  document.getElementById('sc-reasoning').value = '';
+
+  drawScenarioChart(data.context, template.levels, base, false);
 }
 
-function drawReplayChart() {
-  const canvas = document.getElementById('replay-canvas');
-  if (!canvas || !replayData) return;
+function drawScenarioChart(candles, levels, base, showOutcome) {
+  const canvas = document.getElementById('sc-canvas');
+  if (!canvas) return;
   const ctx = canvas.getContext('2d');
   const dpr = window.devicePixelRatio || 1;
-  canvas.width = 900 * dpr;
-  canvas.height = 360 * dpr;
-  canvas.style.width = '100%';
-  canvas.style.height = 'auto';
+  canvas.width = 900 * dpr; canvas.height = 380 * dpr;
+  canvas.style.width = '100%'; canvas.style.height = 'auto';
   ctx.scale(dpr, dpr);
-  const W = 900, H = 360;
+  const W = 900, H = 380;
   ctx.clearRect(0, 0, W, H);
 
-  const visible = replayData.candles.slice(0, replayIdx);
-  if (!visible.length) {
-    ctx.fillStyle = '#8a8475'; ctx.font = '14px Outfit'; ctx.textAlign = 'center';
-    ctx.fillText('Press Play or Step to begin', W/2, H/2);
-    document.getElementById('replay-candle-num').textContent = '0';
-    document.getElementById('replay-price').textContent = '—';
-    return;
-  }
-
-  const allH = visible.map(c => c.h);
-  const allL = visible.map(c => c.l);
-  const maxP = Math.max(...allH);
-  const minP = Math.min(...allL);
+  const allH = candles.map(c => c.h);
+  const allL = candles.map(c => c.l);
+  const maxP = Math.max(...allH) + 2;
+  const minP = Math.min(...allL) - 2;
   const range = maxP - minP || 1;
-  const pad = { t: 20, r: 20, b: 20, l: 60 };
-  const cW = (W - pad.l - pad.r) / Math.max(visible.length, 1);
+  const pad = { t: 24, r: 24, b: 24, l: 64 };
+  const cW = (W - pad.l - pad.r) / candles.length;
 
   // Grid
-  ctx.strokeStyle = 'rgba(255,255,255,0.04)';
-  ctx.lineWidth = 1;
+  ctx.strokeStyle = 'rgba(255,255,255,0.04)'; ctx.lineWidth = 1;
   for (let i = 0; i <= 5; i++) {
     const y = pad.t + (H - pad.t - pad.b) * i / 5;
     ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(W - pad.r, y); ctx.stroke();
@@ -4824,91 +5131,329 @@ function drawReplayChart() {
     ctx.fillText((maxP - range * i / 5).toFixed(0), pad.l - 8, y + 3);
   }
 
+  // Key levels
+  const legendEl = document.getElementById('sc-levels-legend');
+  let legendHTML = '';
+  if (levels && levels.length) {
+    levels.forEach(lvl => {
+      const levelPrice = base + lvl.price;
+      if (levelPrice >= minP && levelPrice <= maxP) {
+        const y = pad.t + (H - pad.t - pad.b) * (1 - (levelPrice - minP) / range);
+        ctx.strokeStyle = lvl.color; ctx.lineWidth = 1; ctx.setLineDash([6, 4]);
+        ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(W - pad.r, y); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = lvl.color; ctx.font = '10px JetBrains Mono'; ctx.textAlign = 'left';
+        ctx.fillText(lvl.label + ' ' + levelPrice.toFixed(0), pad.l + 4, y - 5);
+      }
+      legendHTML += '<div style="color:' + lvl.color + ';">━ ' + lvl.label + '</div>';
+    });
+  }
+  legendEl.innerHTML = legendHTML;
+
+  // Decision point line (if showing context only)
+  const contextLen = currentScenarioData ? currentScenarioData.context.length : candles.length;
+  if (showOutcome && contextLen < candles.length) {
+    const dpX = pad.l + contextLen * cW;
+    ctx.strokeStyle = 'rgba(201,168,76,0.3)'; ctx.lineWidth = 2; ctx.setLineDash([4, 4]);
+    ctx.beginPath(); ctx.moveTo(dpX, pad.t); ctx.lineTo(dpX, H - pad.b); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = 'rgba(201,168,76,0.5)'; ctx.font = '10px JetBrains Mono'; ctx.textAlign = 'center';
+    ctx.fillText('YOUR DECISION', dpX, pad.t - 6);
+  }
+
   // Candles
-  visible.forEach((c, i) => {
+  candles.forEach((c, i) => {
     const x = pad.l + i * cW + cW * 0.15;
     const w = cW * 0.7;
     const bullish = c.c >= c.o;
+    const isOutcome = i >= contextLen;
     const color = bullish ? '#52a882' : '#e05252';
+    const alpha = isOutcome ? 0.9 : 1;
 
-    // Wick
+    ctx.globalAlpha = alpha;
     const wickX = x + w / 2;
     const highY = pad.t + (H - pad.t - pad.b) * (1 - (c.h - minP) / range);
     const lowY = pad.t + (H - pad.t - pad.b) * (1 - (c.l - minP) / range);
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 1;
+    ctx.strokeStyle = color; ctx.lineWidth = 1;
     ctx.beginPath(); ctx.moveTo(wickX, highY); ctx.lineTo(wickX, lowY); ctx.stroke();
 
-    // Body
     const openY = pad.t + (H - pad.t - pad.b) * (1 - (c.o - minP) / range);
     const closeY = pad.t + (H - pad.t - pad.b) * (1 - (c.c - minP) / range);
     const bodyTop = Math.min(openY, closeY);
     const bodyH = Math.max(Math.abs(closeY - openY), 1);
     ctx.fillStyle = color;
     ctx.fillRect(x, bodyTop, w, bodyH);
+    ctx.globalAlpha = 1;
+  });
+}
+
+function submitScenarioDecision(direction) {
+  if (scenarioRevealed || !currentScenarioData) return;
+  scenarioRevealed = true;
+  const template = currentScenarioData.template;
+  const correct = direction === template.answer;
+
+  // Save to stats
+  const stats = JSON.parse(localStorage.getItem(getUserKey('chart_practice')) || '{}');
+  if (!stats.scenarios) stats.scenarios = [];
+  stats.scenarios.push({
+    date: new Date().toISOString(),
+    category: template.category,
+    title: template.title,
+    userAnswer: direction,
+    correctAnswer: template.answer,
+    correct,
+    reasoning: document.getElementById('sc-reasoning').value.trim()
+  });
+  localStorage.setItem(getUserKey('chart_practice'), JSON.stringify(stats));
+
+  // Show outcome
+  const allCandles = [...currentScenarioData.context, ...currentScenarioData.outcome];
+  drawScenarioChart(allCandles, template.levels, currentScenarioData.base, true);
+
+  // Result banner
+  const banner = document.getElementById('sc-result-banner');
+  const dirLabels = { long: '▲ LONG', short: '▼ SHORT', flat: '— FLAT' };
+  if (correct) {
+    banner.style.background = 'rgba(82,168,130,0.1)';
+    banner.style.border = '1px solid rgba(82,168,130,0.3)';
+    banner.innerHTML = '<div style="font-family:var(--mono);font-size:12px;color:var(--green);margin-bottom:4px;">✓ CORRECT READ</div><div style="font-size:13px;color:var(--cream2);font-weight:300;">You chose ' + dirLabels[direction] + ' — the right call in this scenario.</div>';
+  } else {
+    banner.style.background = 'rgba(224,82,82,0.1)';
+    banner.style.border = '1px solid rgba(224,82,82,0.3)';
+    banner.innerHTML = '<div style="font-family:var(--mono);font-size:12px;color:var(--red);margin-bottom:4px;">✗ INCORRECT</div><div style="font-size:13px;color:var(--cream2);font-weight:300;">You chose ' + dirLabels[direction] + ' — the correct answer was ' + dirLabels[template.answer] + '.</div>';
+  }
+
+  document.getElementById('sc-explanation').textContent = template.explanation;
+  document.getElementById('sc-lesson').textContent = template.lesson;
+
+  document.getElementById('sc-decision-phase').style.display = 'none';
+  document.getElementById('sc-reveal-phase').style.display = 'block';
+}
+
+function nextScenario() {
+  currentScenarioIdx++;
+  loadScenario();
+}
+
+// ── PATTERN RECOGNITION ────────────────────────────────────────
+
+const patternDrills = [
+  { name: 'Bull Flag', fn: (b) => buildCandles(b, [[1,5,5],[1,3,2],[-0.3,2,5],[-0.2,1.5,5]]), desc: 'Strong impulse up followed by a tight descending pullback channel.' },
+  { name: 'Bear Flag', fn: (b) => buildCandles(b, [[-1,5,5],[-1,3,2],[0.3,2,5],[0.2,1.5,5]]), desc: 'Strong impulse down followed by a tight ascending pullback channel.' },
+  { name: 'Double Bottom', fn: (b) => buildCandles(b+10, [[-1,4,5],[0,2,2],[1,3,4],[1,2,2],[-1,4,4],[1,5,1]]), desc: 'Two tests of the same support level, second test with a strong rejection candle.' },
+  { name: 'Double Top', fn: (b) => buildCandles(b-10, [[1,4,5],[0,2,2],[-1,3,4],[-1,2,2],[1,4,4],[-1,5,1]]), desc: 'Two tests of the same resistance level, second test failing to hold.' },
+  { name: 'Head & Shoulders', fn: (b) => buildCandles(b, [[1,3,3],[-1,2,2],[1,4,4],[1,3,2],[-1,4,3],[-1,2,2],[1,2,3],[0,2,1],[-1,3,3]]), desc: 'Left shoulder, higher head, lower right shoulder — a reversal pattern.' },
+  { name: 'Ascending Triangle', fn: (b) => buildCandles(b-6, [[1,3,3],[0,2,2],[-0.3,2,2],[1,3,2],[0,1.5,2],[-0.2,1.5,2],[0.5,2,2],[0,1,2]]), desc: 'Flat resistance with rising support — higher lows pressing into the same top.' },
+  { name: 'Descending Triangle', fn: (b) => buildCandles(b+6, [[-1,3,3],[0,2,2],[0.3,2,2],[-1,3,2],[0,1.5,2],[0.2,1.5,2],[-0.5,2,2],[0,1,2]]), desc: 'Flat support with falling resistance — lower highs pressing into the same bottom.' },
+  { name: 'VWAP Rejection', fn: (b) => buildCandles(b+8, [[-1,4,6],[-1,3,2],[0.5,2,4],[0,1,3],[-0.3,1.5,3]]), desc: 'Price attempted to reclaim VWAP in a downtrend but was rejected with dojis.' },
+  { name: 'Opening Range Breakout', fn: (b) => buildCandles(b-3, [[1,3,3],[-0.5,2,2],[0,1.5,5],[0.3,1,4],[1,4,1]]), desc: 'Tight opening range followed by consolidation at the top and a strong breakout candle.' },
+  { name: 'Bearish Engulfing', fn: (b) => buildCandles(b-5, [[1,3,4],[1,2,3],[1,3,2],[0.3,1.5,2],[-1,6,1]]), desc: 'After an uptrend, a large red candle completely engulfs the prior green candle body.' },
+  { name: 'Bullish Engulfing', fn: (b) => buildCandles(b+5, [[-1,3,4],[-1,2,3],[-1,3,2],[-0.3,1.5,2],[1,6,1]]), desc: 'After a downtrend, a large green candle completely engulfs the prior red candle body.' },
+  { name: 'Choppy Range', fn: (b) => buildCandles(b, [[0,2,4],[0,1.5,4],[0,1,4],[0,1.5,3],[0,1,3]]), desc: 'Directionless sideways movement with alternating candles and no trend structure.' },
+  { name: 'Gap & Go', fn: (b) => buildCandles(b-8, [[1,6,1],[1,4,3],[0.5,3,3],[1,3,3],[1,2,3],[0.5,2,3]]), desc: 'Price gaps up and immediately continues higher with follow-through buying — no fill.' },
+  { name: 'Exhaustion Gap', fn: (b) => buildCandles(b, [[1,8,3],[-1,3,5],[-0.5,2,3],[0.3,2,2],[-0.5,2,2]]), desc: 'Price gaps up into resistance but immediately starts selling off — the gap begins to fill.' },
+  { name: 'Higher Low Pullback', fn: (b) => buildCandles(b-4, [[1,3,4],[1,4,3],[-0.5,3,4],[-0.5,2,3],[1,4,1]]), desc: 'In an uptrend, price pulls back but holds above the prior swing low — trend intact.' },
+];
+
+let patScore = 0;
+let patTotal = 0;
+let patStreak = 0;
+let patTimer = null;
+let currentPatternIdx = -1;
+let currentPatternName = '';
+
+function loadPattern() {
+  if (patTimer) clearTimeout(patTimer);
+  currentPatternIdx = Math.floor(Math.random() * patternDrills.length);
+  const pattern = patternDrills[currentPatternIdx];
+  currentPatternName = pattern.name;
+
+  const base = 5780 + Math.random() * 40;
+  const candles = pattern.fn(base);
+  drawPatternChart(candles);
+
+  // Generate options (correct + 3 random wrong)
+  const wrong = patternDrills.filter((_, i) => i !== currentPatternIdx).sort(() => Math.random() - 0.5).slice(0, 3);
+  const options = [pattern, ...wrong].sort(() => Math.random() - 0.5);
+
+  const optEl = document.getElementById('pat-options');
+  optEl.innerHTML = options.map(o => `
+    <button class="scenario-option" onclick="submitPatternAnswer('${o.name.replace(/'/g,"\\'")}', this)" style="justify-content:center;text-align:center;padding:16px;">
+      <span style="font-size:14px;">${o.name}</span>
+    </button>
+  `).join('');
+
+  document.getElementById('pat-feedback').style.display = 'none';
+  document.getElementById('pat-total').textContent = patTotal;
+  document.getElementById('pat-score').textContent = patScore;
+  document.getElementById('pat-streak').textContent = patStreak;
+
+  // Reset timer bar
+  const bar = document.getElementById('pat-timer-bar');
+  bar.style.transition = 'none';
+  bar.style.width = '100%';
+  setTimeout(() => {
+    bar.style.transition = 'width 15s linear';
+    bar.style.width = '0%';
+  }, 50);
+
+  patTimer = setTimeout(() => {
+    submitPatternAnswer('__timeout__', null);
+  }, 15000);
+}
+
+function drawPatternChart(candles) {
+  const canvas = document.getElementById('pat-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = 900 * dpr; canvas.height = 320 * dpr;
+  canvas.style.width = '100%'; canvas.style.height = 'auto';
+  ctx.scale(dpr, dpr);
+  const W = 900, H = 320;
+  ctx.clearRect(0, 0, W, H);
+
+  const maxP = Math.max(...candles.map(c => c.h)) + 2;
+  const minP = Math.min(...candles.map(c => c.l)) - 2;
+  const range = maxP - minP || 1;
+  const pad = { t: 16, r: 20, b: 16, l: 56 };
+  const cW = (W - pad.l - pad.r) / candles.length;
+
+  ctx.strokeStyle = 'rgba(255,255,255,0.03)'; ctx.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) {
+    const y = pad.t + (H - pad.t - pad.b) * i / 4;
+    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(W - pad.r, y); ctx.stroke();
+    ctx.fillStyle = '#8a8475'; ctx.font = '10px JetBrains Mono'; ctx.textAlign = 'right';
+    ctx.fillText((maxP - range * i / 4).toFixed(0), pad.l - 6, y + 3);
+  }
+
+  candles.forEach((c, i) => {
+    const x = pad.l + i * cW + cW * 0.15;
+    const w = cW * 0.7;
+    const bull = c.c >= c.o;
+    const color = bull ? '#52a882' : '#e05252';
+    const wickX = x + w / 2;
+    const highY = pad.t + (H - pad.t - pad.b) * (1 - (c.h - minP) / range);
+    const lowY = pad.t + (H - pad.t - pad.b) * (1 - (c.l - minP) / range);
+    ctx.strokeStyle = color; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(wickX, highY); ctx.lineTo(wickX, lowY); ctx.stroke();
+    const oY = pad.t + (H - pad.t - pad.b) * (1 - (c.o - minP) / range);
+    const cY = pad.t + (H - pad.t - pad.b) * (1 - (c.c - minP) / range);
+    ctx.fillStyle = color;
+    ctx.fillRect(x, Math.min(oY, cY), w, Math.max(Math.abs(cY - oY), 1));
+  });
+}
+
+function submitPatternAnswer(answer, btnEl) {
+  if (patTimer) clearTimeout(patTimer);
+  patTotal++;
+  const correct = answer === currentPatternName;
+  const timedOut = answer === '__timeout__';
+
+  if (correct) {
+    patScore++;
+    patStreak++;
+  } else {
+    patStreak = 0;
+  }
+
+  // Save stats
+  const stats = JSON.parse(localStorage.getItem(getUserKey('chart_practice')) || '{}');
+  if (!stats.patterns) stats.patterns = [];
+  stats.patterns.push({
+    date: new Date().toISOString(),
+    pattern: currentPatternName,
+    userAnswer: answer,
+    correct,
+    timedOut
+  });
+  localStorage.setItem(getUserKey('chart_practice'), JSON.stringify(stats));
+
+  // Disable options
+  document.querySelectorAll('#pat-options .scenario-option').forEach(b => {
+    b.onclick = null;
+    b.style.cursor = 'default';
+    if (b.textContent.trim() === currentPatternName) {
+      b.style.borderColor = 'var(--green)';
+      b.style.background = 'rgba(82,168,130,0.1)';
+    } else if (b === btnEl && !correct) {
+      b.style.borderColor = 'var(--red)';
+      b.style.background = 'rgba(224,82,82,0.1)';
+    }
   });
 
-  const last = visible[visible.length - 1];
-  document.getElementById('replay-candle-num').textContent = replayIdx;
-  document.getElementById('replay-price').textContent = last.c.toFixed(0);
-}
-
-function stepReplay() {
-  if (!replayData) return;
-  if (replayIdx < replayData.candles.length) {
-    replayIdx++;
-    drawReplayChart();
-  }
-}
-
-function toggleReplay() {
-  if (replayTimer) {
-    clearInterval(replayTimer);
-    replayTimer = null;
-    document.getElementById('replay-play-btn').textContent = '▶ Play';
+  const fb = document.getElementById('pat-feedback');
+  fb.style.display = 'block';
+  const pattern = patternDrills[currentPatternIdx];
+  if (timedOut) {
+    fb.style.background = 'rgba(201,168,76,0.1)';
+    fb.style.border = '1px solid var(--gold-border)';
+    fb.innerHTML = '<div style="font-family:var(--mono);font-size:11px;color:var(--gold);margin-bottom:4px;">⏱ TIME\'S UP</div><div style="font-size:13px;color:var(--cream2);font-weight:300;">This was <strong>' + currentPatternName + '</strong>. ' + pattern.desc + '</div>';
+  } else if (correct) {
+    fb.style.background = 'rgba(82,168,130,0.1)';
+    fb.style.border = '1px solid rgba(82,168,130,0.3)';
+    fb.innerHTML = '<div style="font-family:var(--mono);font-size:11px;color:var(--green);margin-bottom:4px;">✓ CORRECT</div><div style="font-size:13px;color:var(--cream2);font-weight:300;">' + pattern.desc + '</div>';
   } else {
-    replayTimer = setInterval(() => {
-      if (replayIdx >= replayData.candles.length) {
-        clearInterval(replayTimer);
-        replayTimer = null;
-        document.getElementById('replay-play-btn').textContent = '▶ Play';
-        return;
-      }
-      replayIdx++;
-      drawReplayChart();
-    }, 400);
-    document.getElementById('replay-play-btn').textContent = '⏸ Pause';
+    fb.style.background = 'rgba(224,82,82,0.1)';
+    fb.style.border = '1px solid rgba(224,82,82,0.3)';
+    fb.innerHTML = '<div style="font-family:var(--mono);font-size:11px;color:var(--red);margin-bottom:4px;">✗ INCORRECT</div><div style="font-size:13px;color:var(--cream2);font-weight:300;">This was <strong>' + currentPatternName + '</strong>. ' + pattern.desc + '</div>';
+  }
+
+  document.getElementById('pat-score').textContent = patScore;
+  document.getElementById('pat-total').textContent = patTotal;
+  document.getElementById('pat-streak').textContent = patStreak;
+
+  setTimeout(loadPattern, 3000);
+}
+
+// ── CHART PRACTICE STATS ───────────────────────────────────────
+
+function renderChartPracticeStats() {
+  const stats = JSON.parse(localStorage.getItem(getUserKey('chart_practice')) || '{}');
+  const scenarios = stats.scenarios || [];
+  const patterns = stats.patterns || [];
+
+  document.getElementById('cp-total-attempts').textContent = scenarios.length;
+  document.getElementById('cp-correct-pct').textContent = scenarios.length ? Math.round(scenarios.filter(s => s.correct).length / scenarios.length * 100) + '%' : '—';
+  document.getElementById('cp-pat-total').textContent = patterns.length;
+  document.getElementById('cp-pat-pct').textContent = patterns.length ? Math.round(patterns.filter(p => p.correct).length / patterns.length * 100) + '%' : '—';
+
+  // Accuracy over time chart
+  const allAttempts = [...scenarios.map(s => ({date: s.date, correct: s.correct})), ...patterns.map(p => ({date: p.date, correct: p.correct}))].sort((a,b) => a.date.localeCompare(b.date));
+
+  if (allAttempts.length >= 5) {
+    // Rolling 5-attempt accuracy
+    const rolling = [];
+    const dates = [];
+    for (let i = 4; i < allAttempts.length; i++) {
+      const window = allAttempts.slice(i - 4, i + 1);
+      rolling.push(Math.round(window.filter(a => a.correct).length / 5 * 100));
+      dates.push(i + 1);
+    }
+    if (typeof drawLineChart === 'function') {
+      drawLineChart('cp-accuracy-chart', dates, rolling, 'Accuracy %', 'var(--gold)', 0, 100);
+    }
+  }
+
+  // Strongest / weakest
+  if (scenarios.length >= 3) {
+    const catResults = {};
+    scenarios.forEach(s => {
+      if (!catResults[s.category]) catResults[s.category] = { correct: 0, total: 0, title: s.title };
+      catResults[s.category].total++;
+      if (s.correct) catResults[s.category].correct++;
+    });
+    const sorted = Object.entries(catResults).map(([k, v]) => ({ ...v, category: k, pct: v.correct / v.total })).sort((a, b) => b.pct - a.pct);
+    document.getElementById('cp-strongest').innerHTML = sorted.slice(0, 3).map(s => '<div style="margin-bottom:4px;"><span style="color:var(--green);font-family:var(--mono);font-size:11px;">' + Math.round(s.pct * 100) + '%</span> ' + s.title + '</div>').join('') || 'Not enough data yet.';
+    document.getElementById('cp-weakest').innerHTML = sorted.slice(-3).reverse().map(s => '<div style="margin-bottom:4px;"><span style="color:var(--red);font-family:var(--mono);font-size:11px;">' + Math.round(s.pct * 100) + '%</span> ' + s.title + '</div>').join('') || 'Not enough data yet.';
   }
 }
 
-function resetReplay() {
-  if (replayTimer) { clearInterval(replayTimer); replayTimer = null; }
-  document.getElementById('replay-play-btn').textContent = '▶ Play';
-  replayIdx = 0;
-  replayDecisions = [];
-  document.getElementById('replay-decisions').innerHTML = '<div style="color:var(--cream3);font-style:italic;">Make decisions as candles reveal to practice real-time reads.</div>';
-  drawReplayChart();
-}
-
-function replayDecision(dir) {
-  if (!replayData || replayIdx === 0) return;
-  const price = replayData.candles[replayIdx - 1].c.toFixed(0);
-  const notes = document.getElementById('replay-notes').value.trim();
-  const colors = { long: 'var(--green)', flat: 'var(--cream3)', short: 'var(--red)' };
-  const labels = { long: '▲ LONG', flat: '— FLAT', short: '▼ SHORT' };
-  replayDecisions.push({ candle: replayIdx, dir, price, notes });
-
-  const el = document.getElementById('replay-decisions');
-  if (replayDecisions.length === 1) el.innerHTML = '';
-  el.innerHTML += `<div style="margin-bottom:8px;padding:8px 10px;background:var(--bg4);border-radius:6px;border-left:2px solid ${colors[dir]};">
-    <div style="display:flex;justify-content:space-between;align-items:center;">
-      <span style="font-family:var(--mono);font-size:11px;color:${colors[dir]};">${labels[dir]}</span>
-      <span style="font-family:var(--mono);font-size:10px;color:var(--cream3);">Candle ${replayIdx} · ${price}</span>
-    </div>
-    ${notes ? `<div style="font-size:12px;color:var(--cream2);margin-top:4px;font-weight:300;">${notes}</div>` : ''}
-  </div>`;
-  el.scrollTop = el.scrollHeight;
-  document.getElementById('replay-notes').value = '';
+function resetChartPracticeStats() {
+  if (!confirm('Reset all chart practice stats? This cannot be undone.')) return;
+  localStorage.removeItem(getUserKey('chart_practice'));
+  renderChartPracticeStats();
 }
 
 // ═══════════════════════════════════════════════════════════════
