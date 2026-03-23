@@ -441,11 +441,243 @@
     to { opacity: 1; transform: translateY(0); }
   }
   .page.active { animation: fadeUp 0.35s ease; }
+  /* SCREENSHOT UPLOAD */
+  .screenshot-drop {
+    border: 2px dashed var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.25s;
+    position: relative;
+    min-height: 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .screenshot-drop:hover, .screenshot-drop.dragover {
+    border-color: var(--gold);
+    background: var(--gold-dim);
+  }
+  .screenshot-drop .drop-icon { font-size: 24px; opacity: 0.5; }
+  .screenshot-drop .drop-text { font-size: 12px; color: var(--cream3); font-weight: 300; }
+  .screenshot-preview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+  }
+  .screenshot-thumb {
+    position: relative;
+    width: 120px;
+    height: 80px;
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .screenshot-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .screenshot-thumb .remove-btn {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.7);
+    border: 1px solid var(--border);
+    color: var(--red);
+    font-size: 11px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  /* P&L FIELDS */
+  .pnl-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+  }
+  .pnl-field label {
+    display: block;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--cream3);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .pnl-field input {
+    background: var(--bg4);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--cream);
+    font-family: var(--mono);
+    font-size: 13px;
+    padding: 8px 10px;
+    width: 100%;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .pnl-field input:focus { border-color: var(--gold-border); }
+  .pnl-field input::placeholder { color: var(--cream3); font-size: 11px; }
+  /* ANALYTICS CHART */
+  .chart-container {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+  .chart-canvas { width: 100%; height: 200px; }
+  .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .stat-card {
+    background: var(--bg4);
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+  }
+  .stat-val {
+    font-family: var(--serif);
+    font-size: 28px;
+    font-weight: 300;
+    color: var(--cream);
+  }
+  .stat-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--cream3);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+  /* SCREENSHOT LIGHTBOX */
+  .lightbox {
+    position: fixed;
+    top: 0;left: 0;right: 0;bottom: 0;
+    background: rgba(0,0,0,0.9);
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: zoom-out;
+  }
+  .lightbox img {
+    max-width: 90vw;
+    max-height: 90vh;
+    border-radius: 8px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  }
+  /* CHECKLIST */
+  .checklist-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .checklist-item:hover { border-color: var(--gold-border); }
+  .checklist-item.checked {
+    border-color: var(--green);
+    background: rgba(82,168,130,0.06);
+  }
+  .checklist-check {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: transparent;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  .checklist-item.checked .checklist-check {
+    border-color: var(--green);
+    background: var(--green);
+    color: #fff;
+  }
+  .checklist-text {
+    font-size: 14px;
+    color: var(--cream2);
+    font-weight: 300;
+    line-height: 1.4;
+  }
+  /* FLASHCARD */
+  .flashcard {
+    perspective: 1000px;
+    width: 100%;
+    max-width: 560px;
+    height: 320px;
+    margin: 0 auto 24px;
+    cursor: pointer;
+  }
+  .flashcard-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+  }
+  .flashcard.flipped .flashcard-inner { transform: rotateY(180deg); }
+  .flashcard-front, .flashcard-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 32px;
+    text-align: center;
+  }
+  .flashcard-front {
+    background: linear-gradient(135deg, var(--bg3), var(--bg4));
+    border: 1px solid var(--gold-border);
+  }
+  .flashcard-back {
+    background: linear-gradient(135deg, var(--bg4), var(--bg3));
+    border: 1px solid var(--green);
+    border-left: 3px solid var(--green);
+    transform: rotateY(180deg);
+  }
+  /* NAV SEPARATOR */
+  .nav-sep {
+    height: 1px;
+    background: var(--border);
+    margin: 8px 12px;
+  }
+  /* REPLAY */
+  .candle { transition: opacity 0.3s; }
+  .replay-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .replay-controls .btn { min-width: 80px; }
   /* RESPONSIVE */
   @media (max-width: 900px) {
     .grid-2, .grid-3 { grid-template-columns: 1fr; }
     .page { padding: 24px; }
     .page-title { font-size: 32px; }
+    .pnl-row { grid-template-columns: 1fr; }
+    .stat-grid { grid-template-columns: 1fr 1fr; }
+    .flashcard { height: 260px; }
   }
 </style>
 </head>
@@ -484,6 +716,19 @@
     </button>
     <button class="nav-item" onclick="showPage('stoploss', this)">
       <span class="nav-icon">&#9646;</span> Stop Loss Calc
+    </button>
+    <div class="nav-sep"></div>
+    <button class="nav-item" onclick="showPage('premarket', this)">
+      <span class="nav-icon">☀</span> Pre-Market
+    </button>
+    <button class="nav-item" onclick="showPage('drills', this)">
+      <span class="nav-icon">⟳</span> Rule Drills
+    </button>
+    <button class="nav-item" onclick="showPage('replay', this)">
+      <span class="nav-icon">▶</span> Trade Replay
+    </button>
+    <button class="nav-item" onclick="showPage('analytics', this)">
+      <span class="nav-icon">◧</span> Analytics
     </button>
     <button class="nav-item" onclick="showPage('settings', this)">
       <span class="nav-icon">&#9900;</span> Settings
@@ -770,6 +1015,7 @@ The AI will assess your active biases and update the chart in real time.
         <div style="display:flex;gap:10px;">
           <button class="btn btn-ghost" onclick="showJournalView('calendar')" id="jbtn-calendar" style="font-size:12px;">Calendar</button>
           <button class="btn btn-ghost" onclick="showJournalView('list')" id="jbtn-list" style="font-size:12px;">All Entries</button>
+          <button class="btn btn-ghost" onclick="showJournalView('insights')" id="jbtn-insights" style="font-size:12px;">Insights</button>
           <button class="btn btn-gold" onclick="openNewEntry()" style="font-size:12px;">+ New Entry</button>
         </div>
       </div>
@@ -819,6 +1065,53 @@ The AI will assess your active biases and update the chart in real time.
           <div id="journal-list-entries"></div>
         </div>
       </div>
+
+      <!-- INSIGHTS VIEW -->
+      <div id="journal-insights-view" style="display:none;">
+        <!-- STATS ROW -->
+        <div class="stat-grid" style="margin-bottom:20px;">
+          <div class="stat-card">
+            <div class="stat-val" id="ins-total">0</div>
+            <div class="stat-label">Total Entries</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-val" id="ins-avg-rating">—</div>
+            <div class="stat-label">Avg Rating</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-val" id="ins-total-pnl" style="font-size:24px;">—</div>
+            <div class="stat-label">Total P&L</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-val" id="ins-win-rate">—</div>
+            <div class="stat-label">Win Rate</div>
+          </div>
+        </div>
+
+        <!-- MOOD TREND CHART -->
+        <div class="chart-container">
+          <div class="card-label" style="margin-bottom:16px;">Session Rating Trend</div>
+          <canvas id="mood-chart" class="chart-canvas"></canvas>
+        </div>
+
+        <!-- P&L CHART -->
+        <div class="chart-container">
+          <div class="card-label" style="margin-bottom:16px;">Cumulative P&L</div>
+          <canvas id="pnl-chart" class="chart-canvas"></canvas>
+        </div>
+
+        <!-- EMOTION HEATMAP -->
+        <div class="chart-container">
+          <div class="card-label" style="margin-bottom:16px;">Tag Frequency</div>
+          <div id="tag-heatmap" style="display:flex;flex-wrap:wrap;gap:10px;"></div>
+        </div>
+
+        <!-- DAY OF WEEK ANALYSIS -->
+        <div class="chart-container">
+          <div class="card-label" style="margin-bottom:16px;">Rating by Day of Week</div>
+          <canvas id="dow-chart" class="chart-canvas"></canvas>
+        </div>
+      </div>
     </div>
 
     <!-- NEW ENTRY OVERLAY -->
@@ -842,6 +1135,38 @@ The AI will assess your active biases and update the chart in real time.
         <div class="card-gold" style="margin-bottom:20px;">
           <div class="card-label">What did you learn?</div>
           <textarea id="entry-learn" placeholder="Key lesson, pattern noticed, or behavior to change..." rows="3" style="margin-bottom:0;"></textarea>
+        </div>
+        <div class="card" style="margin-bottom:20px;">
+          <div class="card-label">Trade Screenshots</div>
+          <div class="screenshot-drop" id="screenshot-drop" onclick="document.getElementById('screenshot-file').click()">
+            <div class="drop-icon">📷</div>
+            <div class="drop-text">Drag & drop charts here, paste from clipboard, or click to upload</div>
+            <input type="file" id="screenshot-file" accept="image/*" multiple style="display:none;" onchange="handleScreenshotFiles(this.files)">
+          </div>
+          <div class="screenshot-preview" id="screenshot-preview"></div>
+        </div>
+        <div class="card" style="margin-bottom:20px;">
+          <div class="card-label" style="margin-bottom:12px;">Trade P&L</div>
+          <div class="pnl-row">
+            <div class="pnl-field">
+              <label>Entry Price</label>
+              <input type="text" id="entry-price-in" placeholder="e.g. 5.20" inputmode="decimal">
+            </div>
+            <div class="pnl-field">
+              <label>Exit Price</label>
+              <input type="text" id="entry-price-out" placeholder="e.g. 7.80" inputmode="decimal">
+            </div>
+            <div class="pnl-field">
+              <label>Contracts</label>
+              <input type="text" id="entry-contracts" placeholder="e.g. 2" inputmode="numeric">
+            </div>
+          </div>
+          <div id="entry-pnl-preview" style="margin-top:12px;display:none;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="font-family:var(--mono);font-size:10px;color:var(--cream3);">CALCULATED P&L:</span>
+              <span id="entry-pnl-val" style="font-family:var(--mono);font-size:16px;font-weight:400;"></span>
+            </div>
+          </div>
         </div>
         <div class="card" style="margin-bottom:20px;">
           <div class="card-label" style="margin-bottom:12px;">Tag this session</div>
@@ -1245,6 +1570,219 @@ The AI will assess your active biases and update the chart in real time.
         </div>
       </div>
 
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════ PRE-MARKET CHECKLIST ═══════════════════════════════ -->
+  <div id="page-premarket" class="page">
+    <div class="page-header">
+      <div class="page-eyebrow">Preparation</div>
+      <h1 class="page-title">Pre-Market <em>Readiness</em></h1>
+      <p class="page-subtitle">A structured mental and technical check before you trade. Complete all items to get your readiness score.</p>
+    </div>
+
+    <div class="grid-2">
+      <div>
+        <div class="card-gold" style="margin-bottom:20px;">
+          <div class="card-label">Mental State</div>
+          <div id="checklist-mental"></div>
+        </div>
+        <div class="card-gold" style="margin-bottom:20px;">
+          <div class="card-label">Technical Prep</div>
+          <div id="checklist-technical"></div>
+        </div>
+        <div class="card-gold" style="margin-bottom:20px;">
+          <div class="card-label">Risk Management</div>
+          <div id="checklist-risk"></div>
+        </div>
+      </div>
+      <div>
+        <div class="card" style="margin-bottom:20px;text-align:center;">
+          <div class="card-label">Readiness Score</div>
+          <div style="position:relative;width:180px;height:180px;margin:20px auto;">
+            <svg viewBox="0 0 120 120" style="width:100%;height:100%;transform:rotate(-90deg);">
+              <circle cx="60" cy="60" r="52" fill="none" stroke="var(--bg4)" stroke-width="8"/>
+              <circle id="readiness-ring" cx="60" cy="60" r="52" fill="none" stroke="var(--gold)" stroke-width="8" stroke-linecap="round" stroke-dasharray="326.73" stroke-dashoffset="326.73" style="transition:stroke-dashoffset 0.8s ease;"/>
+            </svg>
+            <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;">
+              <div id="readiness-pct" style="font-family:var(--serif);font-size:42px;font-weight:300;color:var(--gold);">0%</div>
+              <div style="font-family:var(--mono);font-size:9px;color:var(--cream3);letter-spacing:0.1em;">READINESS</div>
+            </div>
+          </div>
+          <div id="readiness-verdict" style="font-size:14px;color:var(--cream2);font-weight:300;margin-top:8px;"></div>
+        </div>
+        <div class="card" style="margin-bottom:20px;">
+          <div class="card-label">Today's Intention</div>
+          <textarea id="premarket-intention" placeholder="What is my ONE focus for today's session? What will I NOT do?" rows="3"></textarea>
+          <button class="btn btn-gold" onclick="savePremarketIntention()" style="width:100%;margin-top:12px;">Lock In Intention</button>
+          <div id="premarket-saved-intention" style="display:none;margin-top:12px;padding:12px 16px;background:var(--bg2);border-left:2px solid var(--gold);font-size:13px;color:var(--cream2);line-height:1.6;font-weight:300;"></div>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <button class="btn btn-ghost" onclick="resetChecklist()" style="flex:1;">Reset All</button>
+          <button class="btn btn-gold" onclick="getPremarketAIAdvice()" style="flex:1;">AI Readiness Advice</button>
+        </div>
+        <div id="premarket-ai-response" class="ai-response" style="display:none;margin-top:16px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════ RULE DRILLS ═══════════════════════════════ -->
+  <div id="page-drills" class="page">
+    <div class="page-header">
+      <div class="page-eyebrow">Spaced Repetition</div>
+      <h1 class="page-title">Rule <em>Drills</em></h1>
+      <p class="page-subtitle">Flashcard-style drilling on trading rules and psychology principles. Knowledge that sticks.</p>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-bottom:28px;flex-wrap:wrap;">
+      <button class="mood-btn active" onclick="filterDrillDeck('all',this)" id="drill-filter-all">All Cards</button>
+      <button class="mood-btn" onclick="filterDrillDeck('psychology',this)">Psychology</button>
+      <button class="mood-btn" onclick="filterDrillDeck('risk',this)">Risk Management</button>
+      <button class="mood-btn" onclick="filterDrillDeck('execution',this)">Execution</button>
+      <button class="mood-btn" onclick="filterDrillDeck('mindset',this)">Mindset</button>
+      <button class="mood-btn" onclick="filterDrillDeck('custom',this)">My Rules</button>
+    </div>
+
+    <div class="flashcard" id="drill-flashcard" onclick="flipFlashcard()">
+      <div class="flashcard-inner" id="drill-flashcard-inner">
+        <div class="flashcard-front">
+          <div style="font-family:var(--mono);font-size:10px;color:var(--gold);letter-spacing:0.15em;margin-bottom:16px;" id="drill-category">PSYCHOLOGY</div>
+          <div style="font-family:var(--serif);font-size:24px;font-weight:300;color:var(--cream);line-height:1.4;" id="drill-question">Loading...</div>
+          <div style="font-size:12px;color:var(--cream3);margin-top:20px;">Click to reveal answer</div>
+        </div>
+        <div class="flashcard-back">
+          <div style="font-family:var(--mono);font-size:10px;color:var(--green);letter-spacing:0.15em;margin-bottom:16px;">ANSWER</div>
+          <div style="font-size:15px;font-weight:300;color:var(--cream);line-height:1.7;" id="drill-answer"></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:12px;justify-content:center;margin-bottom:28px;">
+      <button class="btn btn-ghost" onclick="rateDrill('hard')" style="min-width:100px;border-color:rgba(224,82,82,0.3);color:var(--red);">Hard ✗</button>
+      <button class="btn btn-ghost" onclick="rateDrill('ok')" style="min-width:100px;border-color:var(--gold-border);color:var(--gold);">Got It ≈</button>
+      <button class="btn btn-ghost" onclick="rateDrill('easy')" style="min-width:100px;border-color:rgba(82,168,130,0.3);color:var(--green);">Easy ✓</button>
+    </div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <div style="font-family:var(--mono);font-size:11px;color:var(--cream3);">Card <span id="drill-current">1</span> of <span id="drill-total">0</span></div>
+      <div style="display:flex;gap:4px;" id="drill-progress-dots"></div>
+    </div>
+
+    <hr class="divider">
+
+    <div class="card-gold" style="margin-top:20px;">
+      <div class="card-label">Add Your Own Rule</div>
+      <div class="grid-2" style="gap:12px;">
+        <div>
+          <input type="text" id="custom-drill-q" placeholder="Rule / Question (front of card)" style="margin-bottom:8px;">
+        </div>
+        <div>
+          <input type="text" id="custom-drill-a" placeholder="Explanation / Answer (back of card)" style="margin-bottom:8px;">
+        </div>
+      </div>
+      <button class="btn btn-gold" onclick="addCustomDrill()" style="margin-top:8px;">Add to My Rules Deck</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════ TRADE REPLAY ═══════════════════════════════ -->
+  <div id="page-replay" class="page">
+    <div class="page-header">
+      <div class="page-eyebrow">Practice</div>
+      <h1 class="page-title">Trade <em>Replay</em></h1>
+      <p class="page-subtitle">Watch price action unfold candle by candle. Practice reading the tape and making decisions without real money.</p>
+    </div>
+
+    <div class="card" style="margin-bottom:20px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <div class="card-label" style="margin:0;">Scenario: <span id="replay-scenario-name" style="color:var(--gold);">SPX Breakdown</span></div>
+        <div style="display:flex;gap:8px;">
+          <button class="mood-btn" onclick="loadReplayScenario('breakdown')" id="rbtn-breakdown">Breakdown</button>
+          <button class="mood-btn" onclick="loadReplayScenario('breakout')" id="rbtn-breakout">Breakout</button>
+          <button class="mood-btn" onclick="loadReplayScenario('chop')" id="rbtn-chop">Chop</button>
+          <button class="mood-btn" onclick="loadReplayScenario('reversal')" id="rbtn-reversal">Reversal</button>
+        </div>
+      </div>
+      <div style="background:var(--bg2);border-radius:10px;padding:20px;position:relative;overflow:hidden;">
+        <canvas id="replay-canvas" width="900" height="360" style="width:100%;height:auto;display:block;"></canvas>
+      </div>
+      <div class="replay-controls">
+        <button class="btn btn-gold" id="replay-play-btn" onclick="toggleReplay()">▶ Play</button>
+        <button class="btn btn-ghost" onclick="stepReplay()">Step →</button>
+        <button class="btn btn-ghost" onclick="resetReplay()">⟳ Reset</button>
+        <div style="flex:1;"></div>
+        <div style="font-family:var(--mono);font-size:12px;color:var(--cream3);">
+          Candle <span id="replay-candle-num">0</span> / <span id="replay-candle-total">0</span>
+        </div>
+        <div style="font-family:var(--mono);font-size:14px;color:var(--cream);" id="replay-price">—</div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-label">Your Decision</div>
+        <div style="display:flex;gap:10px;margin-bottom:12px;">
+          <button class="btn btn-ghost" onclick="replayDecision('long')" style="flex:1;border-color:rgba(82,168,130,0.3);color:var(--green);">◂ Long</button>
+          <button class="btn btn-ghost" onclick="replayDecision('flat')" style="flex:1;">— Flat</button>
+          <button class="btn btn-ghost" onclick="replayDecision('short')" style="flex:1;border-color:rgba(224,82,82,0.3);color:var(--red);">Short ▸</button>
+        </div>
+        <textarea id="replay-notes" placeholder="Why this decision? What do you see in price action?" rows="3"></textarea>
+      </div>
+      <div class="card">
+        <div class="card-label">Decision Log</div>
+        <div id="replay-decisions" style="max-height:200px;overflow-y:auto;font-size:13px;color:var(--cream2);font-weight:300;line-height:1.6;">
+          <div style="color:var(--cream3);font-style:italic;">Make decisions as candles reveal to practice real-time reads.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════ ANALYTICS DASHBOARD ═══════════════════════════════ -->
+  <div id="page-analytics" class="page">
+    <div class="page-header">
+      <div class="page-eyebrow">Intelligence</div>
+      <h1 class="page-title">Performance <em>Analytics</em></h1>
+      <p class="page-subtitle">Behavioral patterns across your trading data. Find the edge inside yourself.</p>
+    </div>
+
+    <div class="stat-grid" style="margin-bottom:24px;">
+      <div class="stat-card">
+        <div class="stat-val" id="an-total-trades">0</div>
+        <div class="stat-label">Total Trades</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="an-win-rate">—</div>
+        <div class="stat-label">Win Rate</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="an-avg-win">—</div>
+        <div class="stat-label">Avg Win</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="an-avg-loss">—</div>
+        <div class="stat-label">Avg Loss</div>
+      </div>
+    </div>
+
+    <div class="grid-2" style="margin-bottom:24px;">
+      <div class="chart-container">
+        <div class="card-label" style="margin-bottom:16px;">P&L by Emotion Tag</div>
+        <canvas id="an-emotion-pnl-chart" class="chart-canvas"></canvas>
+      </div>
+      <div class="chart-container">
+        <div class="card-label" style="margin-bottom:16px;">Rating vs P&L Correlation</div>
+        <canvas id="an-rating-pnl-chart" class="chart-canvas"></canvas>
+      </div>
+    </div>
+
+    <div class="chart-container" style="margin-bottom:24px;">
+      <div class="card-label" style="margin-bottom:16px;">Win Rate by Day of Week</div>
+      <canvas id="an-dow-winrate-chart" class="chart-canvas"></canvas>
+    </div>
+
+    <div class="card" style="margin-bottom:24px;">
+      <div class="card-label" style="margin-bottom:12px;">AI Pattern Analysis</div>
+      <button class="btn btn-gold" onclick="runAnalyticsAI()">Analyze My Patterns</button>
+      <div id="analytics-ai-response" class="ai-response" style="display:none;margin-top:16px;"></div>
     </div>
   </div>
 
@@ -1997,14 +2535,14 @@ function showPage(id, btn) {
   if (id === 'biases') renderBiases();
   if (id === 'journal') initJournal();
   if (id === 'analyzer') renderAnalysisHistory();
-  loadBiasScores();
-  if(document.getElementById("page-progress")) {}
   if (id === 'progress') renderProgress();
   if (id === 'stoploss') { selectSL(selectedSLPct); }
   if (id === 'settings') initSettings();
-  if (id === 'analyzer') renderAnalysisHistory();
-  if (id === 'progress') renderProgress();
-  if (id === 'settings') initSettings();
+  if (id === 'premarket') initPremarket();
+  if (id === 'drills') initDrills();
+  if (id === 'replay') initReplay();
+  if (id === 'analytics') initAnalyticsDashboard();
+  loadBiasScores();
 }
 
 function switchTab(section, tab, btn) {
@@ -2678,12 +3216,14 @@ function renderStreak() {
 function showJournalView(view) {
   document.getElementById('journal-calendar-view').style.display = view === 'calendar' ? 'block' : 'none';
   document.getElementById('journal-list-view').style.display = view === 'list' ? 'block' : 'none';
-  document.getElementById('jbtn-calendar').style.borderColor = view === 'calendar' ? 'var(--gold-border)' : '';
-  document.getElementById('jbtn-calendar').style.color = view === 'calendar' ? 'var(--gold)' : '';
-  document.getElementById('jbtn-list').style.borderColor = view === 'list' ? 'var(--gold-border)' : '';
-  document.getElementById('jbtn-list').style.color = view === 'list' ? 'var(--gold)' : '';
+  document.getElementById('journal-insights-view').style.display = view === 'insights' ? 'block' : 'none';
+  ['calendar','list','insights'].forEach(v => {
+    const b = document.getElementById('jbtn-' + v);
+    if (b) { b.style.borderColor = view === v ? 'var(--gold-border)' : ''; b.style.color = view === v ? 'var(--gold)' : ''; }
+  });
   if (view === 'list') renderListView();
   if (view === 'calendar') renderCalendar();
+  if (view === 'insights') renderInsights();
 }
 
 function changeMonth(delta) {
@@ -2731,11 +3271,13 @@ function selectCalDay(dateKey, label) {
       <div style="margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border);">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
           ${(e.tags||[]).map(t=>`<span class="badge badge-gold" style="font-size:9px;">${t}</span>`).join('')}
-          <span style="font-family:var(--mono);font-size:11px;color:var(--gold);margin-left:auto;">Rating: ${e.rating}/10</span>
+          ${e.pnl != null ? `<span style="font-family:var(--mono);font-size:11px;color:${e.pnl >= 0 ? 'var(--green)' : 'var(--red)'};margin-left:auto;">${e.pnl >= 0 ? '+' : ''}$${e.pnl.toFixed(2)}</span>` : ''}
+          <span style="font-family:var(--mono);font-size:11px;color:var(--gold);${e.pnl == null ? 'margin-left:auto;' : ''}">Rating: ${e.rating}/10</span>
         </div>
         ${e.what ? `<div style="font-size:13px;color:var(--cream2);margin-bottom:8px;font-weight:300;line-height:1.6;"><span style="color:var(--cream3);font-size:11px;display:block;margin-bottom:4px;font-family:var(--mono);">WHAT HAPPENED</span>${e.what}</div>` : ''}
         ${e.feel ? `<div style="font-size:13px;color:var(--cream2);margin-bottom:8px;font-weight:300;line-height:1.6;"><span style="color:var(--cream3);font-size:11px;display:block;margin-bottom:4px;font-family:var(--mono);">HOW I FELT</span>${e.feel}</div>` : ''}
         ${e.learn ? `<div style="font-size:13px;color:var(--cream2);font-weight:300;line-height:1.6;"><span style="color:var(--cream3);font-size:11px;display:block;margin-bottom:4px;font-family:var(--mono);">WHAT I LEARNED</span>${e.learn}</div>` : ''}
+        ${(e.screenshots && e.screenshots.length) ? `<div style="margin-top:10px;"><span style="color:var(--cream3);font-size:11px;display:block;margin-bottom:6px;font-family:var(--mono);">SCREENSHOTS</span><div style="display:flex;gap:8px;flex-wrap:wrap;">${e.screenshots.map((s,i)=>`<img src="${s}" onclick="openLightbox('${s.replace(/'/g,"\\'")}')" style="width:140px;height:90px;object-fit:cover;border-radius:6px;border:1px solid var(--border);cursor:zoom-in;">`).join('')}</div></div>` : ''}
         ${e.aiReflection ? `<div style="margin-top:12px;padding:12px 16px;background:var(--bg2);border-left:2px solid var(--gold);font-size:12px;color:var(--cream3);line-height:1.6;">${e.aiReflection}</div>` : ''}
         <button onclick="deleteEntry('${e.id}')" style="margin-top:10px;background:none;border:none;color:var(--red);font-size:11px;cursor:pointer;font-family:var(--mono);">Delete entry</button>
       </div>
@@ -2754,11 +3296,13 @@ function renderListView(filterTag) {
       <div class="journal-date" style="min-width:90px;">
         <div>${new Date(e.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'})}</div>
         <div style="font-size:10px;color:var(--gold);margin-top:2px;">${e.rating}/10</div>
+        ${e.pnl != null ? `<div style="font-size:10px;color:${e.pnl >= 0 ? 'var(--green)' : 'var(--red)'};margin-top:2px;font-family:var(--mono);">${e.pnl >= 0 ? '+' : ''}$${e.pnl.toFixed(0)}</div>` : ''}
       </div>
       <div class="journal-content">
         <div style="margin-bottom:6px;">${(e.tags||[]).map(t=>`<span class="journal-tag tag-${t.toLowerCase()}">${t}</span>`).join('')}</div>
         ${e.what ? `<div style="margin-bottom:4px;">${e.what.substring(0,120)}${e.what.length>120?'...':''}</div>` : ''}
         ${e.learn ? `<div style="font-size:12px;color:var(--cream3);font-style:italic;">${e.learn.substring(0,80)}${e.learn.length>80?'...':''}</div>` : ''}
+        ${(e.screenshots && e.screenshots.length) ? `<div style="margin-top:6px;display:flex;gap:4px;">${e.screenshots.slice(0,3).map(s=>`<img src="${s}" style="width:48px;height:32px;object-fit:cover;border-radius:4px;border:1px solid var(--border);cursor:zoom-in;" onclick="event.stopPropagation();openLightbox('${s.replace(/'/g,"\\'")}')">`).join('')}${e.screenshots.length>3?`<span style="font-size:10px;color:var(--cream3);align-self:center;">+${e.screenshots.length-3}</span>`:''}</div>` : ''}
       </div>
     </div>
   `).join('');
@@ -2781,6 +3325,14 @@ function openNewEntry(dateKey) {
   document.getElementById('entry-rating-val').textContent = '5';
   document.getElementById('entry-ai-response').style.display = 'none';
   document.querySelectorAll('#entry-tags .mood-btn').forEach(b => b.classList.remove('active'));
+  // Reset screenshots
+  pendingScreenshots = [];
+  document.getElementById('screenshot-preview').innerHTML = '';
+  // Reset P&L fields
+  document.getElementById('entry-price-in').value = '';
+  document.getElementById('entry-price-out').value = '';
+  document.getElementById('entry-contracts').value = '';
+  document.getElementById('entry-pnl-preview').style.display = 'none';
   document.getElementById('journal-entry-form').dataset.dateKey = dateKey || new Date().toISOString().split('T')[0];
   document.getElementById('journal-entry-form').style.display = 'block';
   document.getElementById('cal-day-panel').style.display = 'none';
@@ -2795,6 +3347,13 @@ function closeNewEntry() {
 function buildEntryObject(aiReflection) {
   const form = document.getElementById('journal-entry-form');
   const tags = [...form.querySelectorAll('#entry-tags .mood-btn.active')].map(b => b.textContent);
+  const priceIn = parseFloat(document.getElementById('entry-price-in').value) || null;
+  const priceOut = parseFloat(document.getElementById('entry-price-out').value) || null;
+  const contracts = parseInt(document.getElementById('entry-contracts').value) || null;
+  let pnl = null;
+  if (priceIn && priceOut && contracts) {
+    pnl = parseFloat(((priceOut - priceIn) * 100 * contracts).toFixed(2));
+  }
   return {
     id: Date.now().toString(),
     date: form.dataset.dateKey,
@@ -2803,6 +3362,8 @@ function buildEntryObject(aiReflection) {
     learn: document.getElementById('entry-learn').value.trim(),
     tags,
     rating: parseInt(document.getElementById('entry-rating').value),
+    screenshots: pendingScreenshots.slice(0, 5), // max 5 per entry
+    priceIn, priceOut, contracts, pnl,
     aiReflection: aiReflection || null,
     createdAt: new Date().toISOString()
   };
@@ -3435,6 +3996,909 @@ function calcStopLoss() {
 }
 
 // ═══════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
+//  SCREENSHOT UPLOAD SYSTEM
+// ═══════════════════════════════════════════════════════════════
+
+let pendingScreenshots = [];
+
+function initScreenshotDrop() {
+  const drop = document.getElementById('screenshot-drop');
+  if (!drop) return;
+  drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('dragover'); });
+  drop.addEventListener('dragleave', () => drop.classList.remove('dragover'));
+  drop.addEventListener('drop', e => {
+    e.preventDefault(); drop.classList.remove('dragover');
+    if (e.dataTransfer.files.length) handleScreenshotFiles(e.dataTransfer.files);
+  });
+}
+
+document.addEventListener('paste', e => {
+  if (document.getElementById('journal-entry-form').style.display !== 'block') return;
+  const items = e.clipboardData?.items;
+  if (!items) return;
+  for (const item of items) {
+    if (item.type.startsWith('image/')) {
+      const file = item.getAsFile();
+      if (file) processScreenshotFile(file);
+    }
+  }
+});
+
+function handleScreenshotFiles(files) {
+  for (const f of files) {
+    if (f.type.startsWith('image/') && pendingScreenshots.length < 5) processScreenshotFile(f);
+  }
+}
+
+function processScreenshotFile(file) {
+  if (pendingScreenshots.length >= 5) { alert('Maximum 5 screenshots per entry.'); return; }
+  const reader = new FileReader();
+  reader.onload = e => {
+    // Compress to max 400px wide for storage
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const maxW = 800;
+      const scale = Math.min(1, maxW / img.width);
+      canvas.width = img.width * scale;
+      canvas.height = img.height * scale;
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+      pendingScreenshots.push(dataUrl);
+      renderScreenshotPreviews();
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function renderScreenshotPreviews() {
+  const el = document.getElementById('screenshot-preview');
+  el.innerHTML = pendingScreenshots.map((s, i) => `
+    <div class="screenshot-thumb">
+      <img src="${s}" onclick="openLightbox('${s.substring(0,50)}...')">
+      <div class="remove-btn" onclick="removeScreenshot(${i})">✕</div>
+    </div>
+  `).join('');
+}
+
+function removeScreenshot(idx) {
+  pendingScreenshots.splice(idx, 1);
+  renderScreenshotPreviews();
+}
+
+function openLightbox(src) {
+  // For truncated src in previews, find full src
+  const fullSrc = pendingScreenshots.find(s => s.startsWith(src.replace('...',''))) || src;
+  const lb = document.createElement('div');
+  lb.className = 'lightbox';
+  lb.onclick = () => lb.remove();
+  lb.innerHTML = `<img src="${fullSrc}">`;
+  document.body.appendChild(lb);
+}
+
+// P&L auto-calculate
+['entry-price-in','entry-price-out','entry-contracts'].forEach(id => {
+  document.getElementById(id)?.addEventListener('input', () => {
+    const pIn = parseFloat(document.getElementById('entry-price-in').value);
+    const pOut = parseFloat(document.getElementById('entry-price-out').value);
+    const c = parseInt(document.getElementById('entry-contracts').value);
+    const preview = document.getElementById('entry-pnl-preview');
+    const val = document.getElementById('entry-pnl-val');
+    if (pIn && pOut && c) {
+      const pnl = (pOut - pIn) * 100 * c;
+      preview.style.display = 'block';
+      val.textContent = (pnl >= 0 ? '+' : '') + '$' + pnl.toFixed(2);
+      val.style.color = pnl >= 0 ? 'var(--green)' : 'var(--red)';
+    } else {
+      preview.style.display = 'none';
+    }
+  });
+});
+
+setTimeout(initScreenshotDrop, 100);
+
+// ═══════════════════════════════════════════════════════════════
+//  JOURNAL INSIGHTS — Charts & Analytics
+// ═══════════════════════════════════════════════════════════════
+
+function renderInsights() {
+  const entries = loadJournalEntries().sort((a,b) => a.date.localeCompare(b.date));
+  if (!entries.length) {
+    document.getElementById('ins-total').textContent = '0';
+    document.getElementById('ins-avg-rating').textContent = '—';
+    document.getElementById('ins-total-pnl').textContent = '—';
+    document.getElementById('ins-win-rate').textContent = '—';
+    return;
+  }
+
+  // Stats
+  document.getElementById('ins-total').textContent = entries.length;
+  const avgR = (entries.reduce((s,e) => s + (e.rating||0), 0) / entries.length).toFixed(1);
+  document.getElementById('ins-avg-rating').textContent = avgR;
+
+  const pnlEntries = entries.filter(e => e.pnl != null);
+  if (pnlEntries.length) {
+    const totalPnl = pnlEntries.reduce((s,e) => s + e.pnl, 0);
+    document.getElementById('ins-total-pnl').textContent = (totalPnl >= 0 ? '+$' : '-$') + Math.abs(totalPnl).toFixed(0);
+    document.getElementById('ins-total-pnl').style.color = totalPnl >= 0 ? 'var(--green)' : 'var(--red)';
+    const wins = pnlEntries.filter(e => e.pnl > 0).length;
+    document.getElementById('ins-win-rate').textContent = Math.round(wins / pnlEntries.length * 100) + '%';
+  } else {
+    document.getElementById('ins-total-pnl').textContent = '—';
+    document.getElementById('ins-win-rate').textContent = '—';
+  }
+
+  // Mood Trend Chart
+  drawLineChart('mood-chart', entries.map(e => e.date), entries.map(e => e.rating), 'Rating', 'var(--gold)', 1, 10);
+
+  // Cumulative P&L
+  if (pnlEntries.length > 1) {
+    let cum = 0;
+    const cumVals = pnlEntries.map(e => { cum += e.pnl; return cum; });
+    drawLineChart('pnl-chart', pnlEntries.map(e => e.date), cumVals, 'P&L', 'var(--green)');
+  } else {
+    const c = document.getElementById('pnl-chart');
+    if (c) { const ctx = c.getContext('2d'); ctx.clearRect(0,0,c.width,c.height); ctx.fillStyle='#8a8475'; ctx.font='13px Outfit'; ctx.textAlign='center'; ctx.fillText('Add P&L data to entries to see chart', c.width/2, c.height/2); }
+  }
+
+  // Tag Frequency
+  const tagCounts = {};
+  entries.forEach(e => (e.tags||[]).forEach(t => { tagCounts[t] = (tagCounts[t]||0) + 1; }));
+  const maxTag = Math.max(...Object.values(tagCounts), 1);
+  document.getElementById('tag-heatmap').innerHTML = Object.entries(tagCounts).sort((a,b)=>b[1]-a[1]).map(([tag, count]) => {
+    const pct = count / maxTag;
+    const alpha = 0.2 + pct * 0.8;
+    return `<div style="padding:10px 16px;border-radius:8px;background:rgba(201,168,76,${alpha});border:1px solid var(--gold-border);text-align:center;">
+      <div style="font-size:14px;color:var(--cream);font-weight:400;">${tag}</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--cream3);margin-top:2px;">${count}×</div>
+    </div>`;
+  }).join('');
+
+  // Day of Week chart
+  const dowData = [0,0,0,0,0,0,0];
+  const dowCount = [0,0,0,0,0,0,0];
+  entries.forEach(e => {
+    const dow = new Date(e.date+'T12:00:00').getDay();
+    dowData[dow] += e.rating || 0;
+    dowCount[dow]++;
+  });
+  const dowAvg = dowData.map((v,i) => dowCount[i] ? v/dowCount[i] : 0);
+  drawBarChart('dow-chart', ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], dowAvg, 'Avg Rating', 10);
+}
+
+function drawLineChart(canvasId, labels, data, label, color, minY, maxY) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.parentElement.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = 200 * dpr;
+  canvas.style.width = rect.width + 'px';
+  canvas.style.height = '200px';
+  ctx.scale(dpr, dpr);
+  const W = rect.width, H = 200;
+  const pad = { t: 20, r: 20, b: 30, l: 50 };
+  const cW = W - pad.l - pad.r, cH = H - pad.t - pad.b;
+
+  ctx.clearRect(0, 0, W, H);
+  if (data.length < 2) {
+    ctx.fillStyle = '#8a8475'; ctx.font = '13px Outfit'; ctx.textAlign = 'center';
+    ctx.fillText('Need at least 2 entries to chart', W/2, H/2);
+    return;
+  }
+
+  const mn = minY != null ? minY : Math.min(...data);
+  const mx = maxY != null ? maxY : Math.max(...data);
+  const range = mx - mn || 1;
+
+  // Grid
+  ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) {
+    const y = pad.t + cH * (1 - i/4);
+    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(W - pad.r, y); ctx.stroke();
+    ctx.fillStyle = '#8a8475'; ctx.font = '10px JetBrains Mono'; ctx.textAlign = 'right';
+    ctx.fillText((mn + range * i/4).toFixed(mn < 10 ? 1 : 0), pad.l - 8, y + 3);
+  }
+
+  // Line
+  ctx.beginPath();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2;
+  ctx.lineJoin = 'round';
+  data.forEach((v, i) => {
+    const x = pad.l + (i / (data.length - 1)) * cW;
+    const y = pad.t + cH * (1 - (v - mn) / range);
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  // Fill
+  const last = data.length - 1;
+  ctx.lineTo(pad.l + cW, pad.t + cH);
+  ctx.lineTo(pad.l, pad.t + cH);
+  ctx.closePath();
+  const grad = ctx.createLinearGradient(0, pad.t, 0, H);
+  grad.addColorStop(0, color.replace(')', ',0.15)').replace('var(', '').replace('--gold', 'rgba(201,168,76').replace('--green', 'rgba(82,168,130'));
+  grad.addColorStop(1, 'transparent');
+  // Simple fallback gradient
+  const gc = ctx.createLinearGradient(0, pad.t, 0, H);
+  gc.addColorStop(0, 'rgba(201,168,76,0.12)');
+  gc.addColorStop(1, 'rgba(201,168,76,0)');
+  ctx.fillStyle = gc;
+  ctx.fill();
+
+  // Dots
+  data.forEach((v, i) => {
+    const x = pad.l + (i / (data.length - 1)) * cW;
+    const y = pad.t + cH * (1 - (v - mn) / range);
+    ctx.beginPath(); ctx.arc(x, y, 3, 0, Math.PI * 2);
+    ctx.fillStyle = '#C9A84C'; ctx.fill();
+  });
+}
+
+function drawBarChart(canvasId, labels, data, label, maxVal) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.parentElement.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = 200 * dpr;
+  canvas.style.width = rect.width + 'px';
+  canvas.style.height = '200px';
+  ctx.scale(dpr, dpr);
+  const W = rect.width, H = 200;
+  const pad = { t: 20, r: 20, b: 30, l: 50 };
+  const cW = W - pad.l - pad.r, cH = H - pad.t - pad.b;
+  ctx.clearRect(0, 0, W, H);
+
+  const mx = maxVal || Math.max(...data) || 1;
+  const barW = cW / labels.length * 0.6;
+  const gap = cW / labels.length;
+
+  labels.forEach((lbl, i) => {
+    const x = pad.l + i * gap + (gap - barW) / 2;
+    const h = (data[i] / mx) * cH;
+    const y = pad.t + cH - h;
+
+    // Bar
+    const barColor = data[i] >= 7 ? '#52a882' : data[i] >= 4 ? '#C9A84C' : data[i] > 0 ? '#e05252' : 'rgba(255,255,255,0.05)';
+    ctx.fillStyle = barColor;
+    ctx.beginPath();
+    ctx.fillRect(x, y, barW, h);
+
+    // Value on top
+    if (data[i] > 0) {
+      ctx.fillStyle = '#F0EAD6'; ctx.font = '11px JetBrains Mono'; ctx.textAlign = 'center';
+      ctx.fillText(data[i].toFixed(1), x + barW/2, y - 6);
+    }
+
+    // Label
+    ctx.fillStyle = '#8a8475'; ctx.font = '10px JetBrains Mono'; ctx.textAlign = 'center';
+    ctx.fillText(lbl, x + barW/2, H - 8);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  PRE-MARKET CHECKLIST
+// ═══════════════════════════════════════════════════════════════
+
+const checklistItems = {
+  mental: [
+    "I slept at least 6 hours and feel rested",
+    "I've done a mindfulness / breathing exercise (2+ min)",
+    "My emotional state is neutral or positive — no anger, grief, or anxiety",
+    "I have no active personal conflicts weighing on me",
+    "I've reviewed yesterday's journal entry and learned from it",
+  ],
+  technical: [
+    "I've reviewed the daily chart / higher timeframe context",
+    "I've identified key support and resistance levels",
+    "I've checked the economic calendar for news events",
+    "I know what setups I'm looking for today",
+    "My platform / charts / tools are loaded and ready",
+  ],
+  risk: [
+    "I've set my max daily loss limit before starting",
+    "I know my position sizing rules for today",
+    "I have a plan for what happens if I hit max loss",
+    "I will NOT average down or revenge trade",
+    "I will follow my stop loss rules without exception",
+  ],
+};
+
+let checklistState = {};
+
+function initPremarket() {
+  checklistState = JSON.parse(localStorage.getItem(getUserKey('checklist_today')) || '{}');
+  const today = new Date().toISOString().split('T')[0];
+  if (checklistState._date !== today) { checklistState = { _date: today }; }
+  renderChecklist('mental', 'checklist-mental');
+  renderChecklist('technical', 'checklist-technical');
+  renderChecklist('risk', 'checklist-risk');
+  updateReadiness();
+  const saved = localStorage.getItem(getUserKey('premarket_intention_' + today));
+  if (saved) {
+    document.getElementById('premarket-saved-intention').style.display = 'block';
+    document.getElementById('premarket-saved-intention').textContent = saved;
+  } else {
+    document.getElementById('premarket-saved-intention').style.display = 'none';
+  }
+}
+
+function renderChecklist(category, containerId) {
+  const el = document.getElementById(containerId);
+  el.innerHTML = checklistItems[category].map((text, i) => {
+    const key = category + '_' + i;
+    const checked = checklistState[key];
+    return `<div class="checklist-item ${checked ? 'checked' : ''}" onclick="toggleCheckItem('${key}', this)">
+      <div class="checklist-check">${checked ? '✓' : ''}</div>
+      <div class="checklist-text">${text}</div>
+    </div>`;
+  }).join('');
+}
+
+function toggleCheckItem(key, el) {
+  checklistState[key] = !checklistState[key];
+  el.classList.toggle('checked');
+  el.querySelector('.checklist-check').textContent = checklistState[key] ? '✓' : '';
+  localStorage.setItem(getUserKey('checklist_today'), JSON.stringify(checklistState));
+  updateReadiness();
+}
+
+function updateReadiness() {
+  const total = Object.keys(checklistItems).reduce((s, k) => s + checklistItems[k].length, 0);
+  const checked = Object.keys(checklistState).filter(k => k !== '_date' && checklistState[k]).length;
+  const pct = Math.round(checked / total * 100);
+  document.getElementById('readiness-pct').textContent = pct + '%';
+  const circumference = 2 * Math.PI * 52;
+  document.getElementById('readiness-ring').style.strokeDashoffset = circumference * (1 - pct / 100);
+  const ring = document.getElementById('readiness-ring');
+  ring.style.stroke = pct >= 80 ? 'var(--green)' : pct >= 50 ? 'var(--gold)' : 'var(--red)';
+  document.getElementById('readiness-pct').style.color = pct >= 80 ? 'var(--green)' : pct >= 50 ? 'var(--gold)' : 'var(--red)';
+
+  const verdicts = {
+    100: "You're fully locked in. Go execute your plan.",
+    80: "Strong readiness. Minor gaps — address them before first trade.",
+    50: "Moderate readiness. Consider whether you should trade today.",
+    0: "Low readiness. Steenbarger would say: sit this one out.",
+  };
+  const v = pct >= 100 ? verdicts[100] : pct >= 80 ? verdicts[80] : pct >= 50 ? verdicts[50] : verdicts[0];
+  document.getElementById('readiness-verdict').textContent = v;
+}
+
+function resetChecklist() {
+  const today = new Date().toISOString().split('T')[0];
+  checklistState = { _date: today };
+  localStorage.setItem(getUserKey('checklist_today'), JSON.stringify(checklistState));
+  initPremarket();
+}
+
+function savePremarketIntention() {
+  const text = document.getElementById('premarket-intention').value.trim();
+  if (!text) return;
+  const today = new Date().toISOString().split('T')[0];
+  localStorage.setItem(getUserKey('premarket_intention_' + today), text);
+  document.getElementById('premarket-saved-intention').style.display = 'block';
+  document.getElementById('premarket-saved-intention').textContent = text;
+}
+
+async function getPremarketAIAdvice() {
+  const total = Object.keys(checklistItems).reduce((s, k) => s + checklistItems[k].length, 0);
+  const checked = Object.keys(checklistState).filter(k => k !== '_date' && checklistState[k]).length;
+  const unchecked = [];
+  Object.keys(checklistItems).forEach(cat => {
+    checklistItems[cat].forEach((text, i) => {
+      if (!checklistState[cat + '_' + i]) unchecked.push(text);
+    });
+  });
+  const intention = document.getElementById('premarket-intention').value.trim();
+  const el = document.getElementById('premarket-ai-response');
+  await callClaude(
+    `Pre-Market Readiness Assessment:\n\nScore: ${checked}/${total} items checked\nUnchecked items: ${unchecked.join('; ')}\nTrader's intention: "${intention || 'Not set'}"\n\nAs a trading psychology coach (Steenbarger methodology):\n1. Assess this trader's readiness to trade today.\n2. Address the unchecked items — which are most critical?\n3. If readiness is low, give a specific recommendation.\n4. End with one powerful question for the trader to sit with.`,
+    el
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  RULE DRILLS — Spaced Repetition Flashcards
+// ═══════════════════════════════════════════════════════════════
+
+const drillDecks = {
+  psychology: [
+    { q: "What is 'outcome bias' in trading?", a: "Judging a trade by its result rather than the quality of the decision. A good trade can lose money; a bad trade can make money. Process over outcome — always." },
+    { q: "What triggers revenge trading?", a: "The ego's need to 'get back' at the market after a loss. The belief that you're 'owed' a winning trade. It bypasses your system and leads to impulsive, oversized positions." },
+    { q: "Mark Douglas: Why must you 'think in probabilities'?", a: "No single trade outcome matters. Your edge plays out over a large sample. Each trade is independent. Emotional attachment to any single outcome destroys discipline." },
+    { q: "What is confirmation bias in trading?", a: "Seeking information that supports your existing position while ignoring contradictory evidence. Traders often see what they want to see on a chart." },
+    { q: "What is the 'disposition effect'?", a: "The tendency to sell winners too early (locking in pleasure) and hold losers too long (avoiding the pain of realizing a loss). It's one of the most costly behavioral biases." },
+    { q: "What causes FOMO entries?", a: "Fear of Missing Out comes from comparing yourself to an imagined alternative. It leads to chasing moves after they've already happened, entering at the worst risk/reward." },
+    { q: "What is 'anchoring bias'?", a: "Fixating on a specific price level (like your entry) rather than objectively reading current price action. 'It was at X, so it must go back' is anchoring." },
+    { q: "Steenbarger: What is a 'process goal'?", a: "A goal focused on execution quality, not P&L. Example: 'I will follow my entry checklist on every trade today.' Process goals build consistency; outcome goals create anxiety." },
+  ],
+  risk: [
+    { q: "What should you risk per trade as a maximum?", a: "Most professional traders risk 1-2% of total capital per trade. Never more than you can afford to lose without emotional impact on your next decision." },
+    { q: "Why is a max daily loss essential?", a: "It creates a hard stop that prevents spiral days. After 2-3 losing trades, cognitive ability declines. A daily max preserves capital AND mental energy." },
+    { q: "What is position sizing and why does it matter more than entry?", a: "Position sizing determines how much you gain or lose. Van Tharp: 'You could have a random entry and still be profitable with proper position sizing.' It's the #1 determinant of long-term survival." },
+    { q: "What does 'risk of ruin' mean?", a: "The probability that a series of losses will wipe out your account. Even a 60% win rate with 10% risk per trade can lead to ruin. Small consistent risk = survival." },
+    { q: "Why should you never move a stop loss further away?", a: "Moving a stop widens your risk after you've already defined it. It's almost always driven by hope, not analysis. If the stop was right when you entered, honor it." },
+  ],
+  execution: [
+    { q: "Why is a pre-trade checklist critical?", a: "It forces deliberate thinking before committing capital. Without it, trades are reactive (System 1). A checklist engages analytical thinking (System 2)." },
+    { q: "What's the difference between a setup and a trigger?", a: "A setup is the condition (e.g., price at support with bullish divergence). A trigger is the specific action signal (e.g., a bullish engulfing candle). Setup without trigger = no trade." },
+    { q: "Should you trade every day? Why or why not?", a: "No. Forcing trades when conditions don't match your edge is negative expectancy. The best traders know when NOT to trade. Flat is a position." },
+    { q: "What is 'time stop' in trading?", a: "Exiting a trade that hasn't moved as expected within a defined time window. If your thesis was a quick move and it hasn't happened, the thesis is likely wrong." },
+    { q: "Why journal every trade — even the wins?", a: "Winning trades can mask poor process. Journaling reveals if you're winning for the right reasons and losing for fixable reasons. It separates luck from skill." },
+  ],
+  mindset: [
+    { q: "Jesse Livermore: 'It was never my thinking that made the big money.' What did?", a: "'It was always my sitting.' Patience — waiting for the right setup and then letting winners run — is harder than analysis but more profitable." },
+    { q: "How do you build 'emotional capital'?", a: "By keeping losses small and following your plan. Every time you honor a stop or skip a bad setup, you build confidence in yourself. That confidence compounds." },
+    { q: "What's the difference between confidence and overconfidence?", a: "Confidence: 'I trust my process and can handle any outcome.' Overconfidence: 'I know this trade will work.' One respects uncertainty; the other denies it." },
+    { q: "Alexander Elder: 'The market is like an ocean.' What does this mean?", a: "You can't control the ocean — only choose when to swim. The market doesn't care about you. Your job is to read conditions and act accordingly, not to fight." },
+    { q: "Why is 'being right' dangerous in trading?", a: "The need to be right causes you to hold losers, ignore stops, and double down. Trading is about making money, not being right. You can be wrong often and still profit." },
+    { q: "Van Tharp: What is a 'low-risk idea'?", a: "Not a trade with a high win rate, but one where the potential reward far exceeds the risk, and the loss is predetermined and acceptable. R-multiple thinking." },
+  ],
+};
+
+let currentDeck = [];
+let currentDrillIdx = 0;
+let drillFilter = 'all';
+let customDrills = [];
+
+function initDrills() {
+  customDrills = JSON.parse(localStorage.getItem(getUserKey('custom_drills')) || '[]');
+  buildDeck();
+  showDrill();
+}
+
+function buildDeck() {
+  if (drillFilter === 'all') {
+    currentDeck = [];
+    Object.entries(drillDecks).forEach(([cat, cards]) => cards.forEach(c => currentDeck.push({ ...c, cat })));
+    customDrills.forEach(c => currentDeck.push({ ...c, cat: 'custom' }));
+  } else if (drillFilter === 'custom') {
+    currentDeck = customDrills.map(c => ({ ...c, cat: 'custom' }));
+  } else {
+    currentDeck = (drillDecks[drillFilter] || []).map(c => ({ ...c, cat: drillFilter }));
+  }
+  // Shuffle
+  for (let i = currentDeck.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [currentDeck[i], currentDeck[j]] = [currentDeck[j], currentDeck[i]];
+  }
+  currentDrillIdx = 0;
+  document.getElementById('drill-total').textContent = currentDeck.length;
+}
+
+function filterDrillDeck(filter, btn) {
+  drillFilter = filter;
+  document.querySelectorAll('#page-drills .mood-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  buildDeck();
+  showDrill();
+}
+
+function showDrill() {
+  if (!currentDeck.length) {
+    document.getElementById('drill-question').textContent = drillFilter === 'custom' ? 'No custom rules yet. Add one below!' : 'No cards in this deck.';
+    document.getElementById('drill-answer').textContent = '';
+    document.getElementById('drill-category').textContent = '';
+    return;
+  }
+  const card = currentDeck[currentDrillIdx];
+  document.getElementById('drill-question').textContent = card.q;
+  document.getElementById('drill-answer').textContent = card.a;
+  document.getElementById('drill-category').textContent = card.cat.toUpperCase();
+  document.getElementById('drill-current').textContent = currentDrillIdx + 1;
+  // Unflip
+  document.getElementById('drill-flashcard').classList.remove('flipped');
+  // Progress dots
+  const dotsEl = document.getElementById('drill-progress-dots');
+  if (currentDeck.length <= 30) {
+    dotsEl.innerHTML = currentDeck.map((_, i) =>
+      `<div style="width:8px;height:8px;border-radius:50%;background:${i === currentDrillIdx ? 'var(--gold)' : i < currentDrillIdx ? 'var(--green)' : 'var(--bg4)'};transition:all 0.2s;"></div>`
+    ).join('');
+  } else {
+    dotsEl.innerHTML = `<span style="font-family:var(--mono);font-size:10px;color:var(--cream3);">${currentDrillIdx+1}/${currentDeck.length}</span>`;
+  }
+}
+
+function flipFlashcard() {
+  document.getElementById('drill-flashcard').classList.toggle('flipped');
+}
+
+function rateDrill(rating) {
+  // Move to next card
+  currentDrillIdx++;
+  if (currentDrillIdx >= currentDeck.length) {
+    currentDrillIdx = 0;
+    // Reshuffle
+    for (let i = currentDeck.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [currentDeck[i], currentDeck[j]] = [currentDeck[j], currentDeck[i]];
+    }
+  }
+  showDrill();
+}
+
+function addCustomDrill() {
+  const q = document.getElementById('custom-drill-q').value.trim();
+  const a = document.getElementById('custom-drill-a').value.trim();
+  if (!q || !a) { alert('Please fill in both fields.'); return; }
+  customDrills.push({ q, a });
+  localStorage.setItem(getUserKey('custom_drills'), JSON.stringify(customDrills));
+  document.getElementById('custom-drill-q').value = '';
+  document.getElementById('custom-drill-a').value = '';
+  buildDeck();
+  showDrill();
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  TRADE REPLAY SIMULATOR
+// ═══════════════════════════════════════════════════════════════
+
+const replayScenarios = {
+  breakdown: {
+    name: 'SPX Breakdown',
+    candles: generateCandles('breakdown', 60),
+  },
+  breakout: {
+    name: 'SPX Breakout',
+    candles: generateCandles('breakout', 60),
+  },
+  chop: {
+    name: 'Choppy Range',
+    candles: generateCandles('chop', 60),
+  },
+  reversal: {
+    name: 'V-Reversal',
+    candles: generateCandles('reversal', 60),
+  },
+};
+
+function generateCandles(type, count) {
+  const candles = [];
+  let price = 5800;
+  const volatility = type === 'chop' ? 4 : 8;
+  for (let i = 0; i < count; i++) {
+    let bias = 0;
+    if (type === 'breakdown') bias = i < 15 ? 0 : -0.6;
+    if (type === 'breakout') bias = i < 20 ? 0 : 0.5;
+    if (type === 'reversal') bias = i < 30 ? -0.7 : 0.8;
+    if (type === 'chop') bias = Math.sin(i * 0.3) * 0.2;
+
+    const change = (Math.random() - 0.5 + bias) * volatility;
+    const open = price;
+    const close = price + change;
+    const high = Math.max(open, close) + Math.random() * volatility * 0.5;
+    const low = Math.min(open, close) - Math.random() * volatility * 0.5;
+    candles.push({ o: open, h: high, l: low, c: close });
+    price = close;
+  }
+  return candles;
+}
+
+let replayData = null;
+let replayIdx = 0;
+let replayTimer = null;
+let replayDecisions = [];
+
+function initReplay() {
+  loadReplayScenario('breakdown');
+}
+
+function loadReplayScenario(type) {
+  // Regenerate candles each time
+  replayScenarios[type].candles = generateCandles(type, 60);
+  replayData = replayScenarios[type];
+  replayIdx = 0;
+  replayDecisions = [];
+  if (replayTimer) { clearInterval(replayTimer); replayTimer = null; }
+  document.getElementById('replay-play-btn').textContent = '▶ Play';
+  document.getElementById('replay-scenario-name').textContent = replayData.name;
+  document.getElementById('replay-candle-total').textContent = replayData.candles.length;
+  document.getElementById('replay-decisions').innerHTML = '<div style="color:var(--cream3);font-style:italic;">Make decisions as candles reveal to practice real-time reads.</div>';
+  // Highlight button
+  ['breakdown','breakout','chop','reversal'].forEach(t => {
+    const b = document.getElementById('rbtn-' + t);
+    if (b) { b.classList.toggle('active', t === type); }
+  });
+  drawReplayChart();
+}
+
+function drawReplayChart() {
+  const canvas = document.getElementById('replay-canvas');
+  if (!canvas || !replayData) return;
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = 900 * dpr;
+  canvas.height = 360 * dpr;
+  canvas.style.width = '100%';
+  canvas.style.height = 'auto';
+  ctx.scale(dpr, dpr);
+  const W = 900, H = 360;
+  ctx.clearRect(0, 0, W, H);
+
+  const visible = replayData.candles.slice(0, replayIdx);
+  if (!visible.length) {
+    ctx.fillStyle = '#8a8475'; ctx.font = '14px Outfit'; ctx.textAlign = 'center';
+    ctx.fillText('Press Play or Step to begin', W/2, H/2);
+    document.getElementById('replay-candle-num').textContent = '0';
+    document.getElementById('replay-price').textContent = '—';
+    return;
+  }
+
+  const allH = visible.map(c => c.h);
+  const allL = visible.map(c => c.l);
+  const maxP = Math.max(...allH);
+  const minP = Math.min(...allL);
+  const range = maxP - minP || 1;
+  const pad = { t: 20, r: 20, b: 20, l: 60 };
+  const cW = (W - pad.l - pad.r) / Math.max(visible.length, 1);
+
+  // Grid
+  ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 5; i++) {
+    const y = pad.t + (H - pad.t - pad.b) * i / 5;
+    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(W - pad.r, y); ctx.stroke();
+    ctx.fillStyle = '#8a8475'; ctx.font = '10px JetBrains Mono'; ctx.textAlign = 'right';
+    ctx.fillText((maxP - range * i / 5).toFixed(0), pad.l - 8, y + 3);
+  }
+
+  // Candles
+  visible.forEach((c, i) => {
+    const x = pad.l + i * cW + cW * 0.15;
+    const w = cW * 0.7;
+    const bullish = c.c >= c.o;
+    const color = bullish ? '#52a882' : '#e05252';
+
+    // Wick
+    const wickX = x + w / 2;
+    const highY = pad.t + (H - pad.t - pad.b) * (1 - (c.h - minP) / range);
+    const lowY = pad.t + (H - pad.t - pad.b) * (1 - (c.l - minP) / range);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(wickX, highY); ctx.lineTo(wickX, lowY); ctx.stroke();
+
+    // Body
+    const openY = pad.t + (H - pad.t - pad.b) * (1 - (c.o - minP) / range);
+    const closeY = pad.t + (H - pad.t - pad.b) * (1 - (c.c - minP) / range);
+    const bodyTop = Math.min(openY, closeY);
+    const bodyH = Math.max(Math.abs(closeY - openY), 1);
+    ctx.fillStyle = color;
+    ctx.fillRect(x, bodyTop, w, bodyH);
+  });
+
+  const last = visible[visible.length - 1];
+  document.getElementById('replay-candle-num').textContent = replayIdx;
+  document.getElementById('replay-price').textContent = last.c.toFixed(0);
+}
+
+function stepReplay() {
+  if (!replayData) return;
+  if (replayIdx < replayData.candles.length) {
+    replayIdx++;
+    drawReplayChart();
+  }
+}
+
+function toggleReplay() {
+  if (replayTimer) {
+    clearInterval(replayTimer);
+    replayTimer = null;
+    document.getElementById('replay-play-btn').textContent = '▶ Play';
+  } else {
+    replayTimer = setInterval(() => {
+      if (replayIdx >= replayData.candles.length) {
+        clearInterval(replayTimer);
+        replayTimer = null;
+        document.getElementById('replay-play-btn').textContent = '▶ Play';
+        return;
+      }
+      replayIdx++;
+      drawReplayChart();
+    }, 400);
+    document.getElementById('replay-play-btn').textContent = '⏸ Pause';
+  }
+}
+
+function resetReplay() {
+  if (replayTimer) { clearInterval(replayTimer); replayTimer = null; }
+  document.getElementById('replay-play-btn').textContent = '▶ Play';
+  replayIdx = 0;
+  replayDecisions = [];
+  document.getElementById('replay-decisions').innerHTML = '<div style="color:var(--cream3);font-style:italic;">Make decisions as candles reveal to practice real-time reads.</div>';
+  drawReplayChart();
+}
+
+function replayDecision(dir) {
+  if (!replayData || replayIdx === 0) return;
+  const price = replayData.candles[replayIdx - 1].c.toFixed(0);
+  const notes = document.getElementById('replay-notes').value.trim();
+  const colors = { long: 'var(--green)', flat: 'var(--cream3)', short: 'var(--red)' };
+  const labels = { long: '▲ LONG', flat: '— FLAT', short: '▼ SHORT' };
+  replayDecisions.push({ candle: replayIdx, dir, price, notes });
+
+  const el = document.getElementById('replay-decisions');
+  if (replayDecisions.length === 1) el.innerHTML = '';
+  el.innerHTML += `<div style="margin-bottom:8px;padding:8px 10px;background:var(--bg4);border-radius:6px;border-left:2px solid ${colors[dir]};">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-family:var(--mono);font-size:11px;color:${colors[dir]};">${labels[dir]}</span>
+      <span style="font-family:var(--mono);font-size:10px;color:var(--cream3);">Candle ${replayIdx} · ${price}</span>
+    </div>
+    ${notes ? `<div style="font-size:12px;color:var(--cream2);margin-top:4px;font-weight:300;">${notes}</div>` : ''}
+  </div>`;
+  el.scrollTop = el.scrollHeight;
+  document.getElementById('replay-notes').value = '';
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  ANALYTICS DASHBOARD
+// ═══════════════════════════════════════════════════════════════
+
+function initAnalyticsDashboard() {
+  const entries = loadJournalEntries();
+  const pnlEntries = entries.filter(e => e.pnl != null);
+
+  // Top stats
+  document.getElementById('an-total-trades').textContent = pnlEntries.length || entries.length;
+
+  if (pnlEntries.length) {
+    const wins = pnlEntries.filter(e => e.pnl > 0);
+    const losses = pnlEntries.filter(e => e.pnl <= 0);
+    document.getElementById('an-win-rate').textContent = Math.round(wins.length / pnlEntries.length * 100) + '%';
+    document.getElementById('an-avg-win').textContent = wins.length ? '+$' + (wins.reduce((s,e)=>s+e.pnl,0)/wins.length).toFixed(0) : '—';
+    document.getElementById('an-avg-loss').textContent = losses.length ? '-$' + Math.abs(losses.reduce((s,e)=>s+e.pnl,0)/losses.length).toFixed(0) : '—';
+  } else {
+    document.getElementById('an-win-rate').textContent = '—';
+    document.getElementById('an-avg-win').textContent = '—';
+    document.getElementById('an-avg-loss').textContent = '—';
+  }
+
+  // Emotion P&L chart
+  if (pnlEntries.length) {
+    const tagPnl = {};
+    pnlEntries.forEach(e => (e.tags||[]).forEach(t => { tagPnl[t] = (tagPnl[t]||0) + e.pnl; }));
+    const tags = Object.keys(tagPnl);
+    const vals = tags.map(t => tagPnl[t]);
+    drawEmotionPnlChart('an-emotion-pnl-chart', tags, vals);
+  }
+
+  // Rating vs P&L scatter
+  if (pnlEntries.length > 2) {
+    drawScatterChart('an-rating-pnl-chart', pnlEntries.map(e => e.rating), pnlEntries.map(e => e.pnl));
+  }
+
+  // Win rate by DOW
+  if (pnlEntries.length) {
+    const dowWins = [0,0,0,0,0,0,0];
+    const dowTotal = [0,0,0,0,0,0,0];
+    pnlEntries.forEach(e => {
+      const dow = new Date(e.date+'T12:00:00').getDay();
+      dowTotal[dow]++;
+      if (e.pnl > 0) dowWins[dow]++;
+    });
+    const dowWinRate = dowWins.map((w,i) => dowTotal[i] ? Math.round(w/dowTotal[i]*100) : 0);
+    drawBarChart('an-dow-winrate-chart', ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], dowWinRate, 'Win%', 100);
+  }
+}
+
+function drawEmotionPnlChart(canvasId, labels, data) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas || !labels.length) return;
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.parentElement.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = 200 * dpr;
+  canvas.style.width = rect.width + 'px';
+  canvas.style.height = '200px';
+  ctx.scale(dpr, dpr);
+  const W = rect.width, H = 200;
+  const pad = { t: 20, r: 20, b: 30, l: 60 };
+  const cW = W - pad.l - pad.r, cH = H - pad.t - pad.b;
+  ctx.clearRect(0, 0, W, H);
+
+  const mx = Math.max(Math.abs(Math.max(...data)), Math.abs(Math.min(...data))) || 1;
+  const barW = cW / labels.length * 0.5;
+  const gap = cW / labels.length;
+  const zeroY = pad.t + cH / 2;
+
+  // Zero line
+  ctx.strokeStyle = 'rgba(255,255,255,0.1)'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(pad.l, zeroY); ctx.lineTo(W - pad.r, zeroY); ctx.stroke();
+
+  labels.forEach((lbl, i) => {
+    const x = pad.l + i * gap + (gap - barW) / 2;
+    const h = (data[i] / mx) * (cH / 2);
+    const y = h >= 0 ? zeroY - h : zeroY;
+    const barH = Math.abs(h);
+    ctx.fillStyle = data[i] >= 0 ? '#52a882' : '#e05252';
+    ctx.fillRect(x, y, barW, barH || 1);
+
+    ctx.fillStyle = '#F0EAD6'; ctx.font = '10px JetBrains Mono'; ctx.textAlign = 'center';
+    ctx.fillText((data[i] >= 0 ? '+' : '') + '$' + data[i].toFixed(0), x + barW/2, h >= 0 ? y - 6 : y + barH + 12);
+    ctx.fillStyle = '#8a8475'; ctx.font = '10px JetBrains Mono';
+    ctx.fillText(lbl, x + barW/2, H - 8);
+  });
+}
+
+function drawScatterChart(canvasId, xData, yData) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.parentElement.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = 200 * dpr;
+  canvas.style.width = rect.width + 'px';
+  canvas.style.height = '200px';
+  ctx.scale(dpr, dpr);
+  const W = rect.width, H = 200;
+  const pad = { t: 20, r: 20, b: 30, l: 60 };
+  const cW = W - pad.l - pad.r, cH = H - pad.t - pad.b;
+  ctx.clearRect(0, 0, W, H);
+
+  const xMin = Math.min(...xData), xMax = Math.max(...xData);
+  const yMin = Math.min(...yData), yMax = Math.max(...yData);
+  const xRange = xMax - xMin || 1, yRange = yMax - yMin || 1;
+
+  // Zero line for y
+  if (yMin < 0 && yMax > 0) {
+    const zeroY = pad.t + cH * (1 - (0 - yMin) / yRange);
+    ctx.strokeStyle = 'rgba(255,255,255,0.08)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(pad.l, zeroY); ctx.lineTo(W - pad.r, zeroY); ctx.stroke();
+  }
+
+  // Points
+  xData.forEach((x, i) => {
+    const px = pad.l + ((x - xMin) / xRange) * cW;
+    const py = pad.t + cH * (1 - (yData[i] - yMin) / yRange);
+    ctx.beginPath(); ctx.arc(px, py, 5, 0, Math.PI * 2);
+    ctx.fillStyle = yData[i] >= 0 ? 'rgba(82,168,130,0.7)' : 'rgba(224,82,82,0.7)';
+    ctx.fill();
+    ctx.strokeStyle = yData[i] >= 0 ? '#52a882' : '#e05252';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  });
+
+  // Axis labels
+  ctx.fillStyle = '#8a8475'; ctx.font = '10px JetBrains Mono'; ctx.textAlign = 'center';
+  ctx.fillText('Rating →', W/2, H - 4);
+  ctx.save(); ctx.translate(12, H/2); ctx.rotate(-Math.PI/2); ctx.fillText('P&L →', 0, 0); ctx.restore();
+}
+
+async function runAnalyticsAI() {
+  const entries = loadJournalEntries();
+  const pnlEntries = entries.filter(e => e.pnl != null);
+  if (entries.length < 3) { alert('Need at least 3 journal entries for pattern analysis.'); return; }
+
+  const tagCounts = {};
+  entries.forEach(e => (e.tags||[]).forEach(t => { tagCounts[t] = (tagCounts[t]||0) + 1; }));
+  const topTags = Object.entries(tagCounts).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([t,c])=>t+' ('+c+'×)').join(', ');
+
+  let pnlSummary = 'No P&L data logged yet.';
+  if (pnlEntries.length) {
+    const wins = pnlEntries.filter(e=>e.pnl>0);
+    const losses = pnlEntries.filter(e=>e.pnl<=0);
+    const totalPnl = pnlEntries.reduce((s,e)=>s+e.pnl,0);
+    pnlSummary = `Total trades with P&L: ${pnlEntries.length}. Win rate: ${Math.round(wins.length/pnlEntries.length*100)}%. Total P&L: $${totalPnl.toFixed(0)}. Avg win: $${wins.length?(wins.reduce((s,e)=>s+e.pnl,0)/wins.length).toFixed(0):'N/A'}. Avg loss: $${losses.length?(losses.reduce((s,e)=>s+e.pnl,0)/losses.length).toFixed(0):'N/A'}.`;
+  }
+
+  const avgRating = (entries.reduce((s,e)=>s+(e.rating||0),0)/entries.length).toFixed(1);
+  const recentLearnings = entries.slice(-5).map(e=>e.learn).filter(Boolean).join(' | ');
+
+  const el = document.getElementById('analytics-ai-response');
+  await callClaude(
+    `Performance Analytics Deep Dive:\n\nTotal entries: ${entries.length}\nAverage session rating: ${avgRating}/10\nTop emotional patterns: ${topTags}\n${pnlSummary}\nRecent learnings: "${recentLearnings}"\n\nAs a trading psychology coach synthesizing Douglas, Steenbarger, Tharp, and Elder:\n1. What behavioral PATTERNS do you see in this data?\n2. Is there a correlation between emotional state and performance?\n3. What is this trader's biggest edge they may not see?\n4. What is their biggest blind spot?\n5. Give 3 specific, actionable recommendations prioritized by impact.`,
+    el
+  );
+}
+
 // INIT
 initDashboard();
 renderMasters();
