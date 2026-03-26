@@ -399,7 +399,7 @@
     <div class="nav-logo">MindEdge</div>
     <div class="nav-sub">Trading Psychology</div>
   </div>
-  <div class="nav-badge">One-time · Lifetime Access</div>
+  <div class="nav-badge">Pro Membership</div>
 </nav>
 
 <section class="hero">
@@ -433,51 +433,51 @@
       <div class="error-msg" id="guide-error"></div>
     </div>
 
-    <!-- BUNDLE — FEATURED -->
+    <!-- MONTHLY — FEATURED -->
     <div class="product-card featured">
-      <div class="product-badge">BEST VALUE</div>
-      <div class="saving-badge">Save $9.99</div>
-      <div class="product-name">Complete<br>Bundle</div>
-      <div class="product-price">$44.99</div>
-      <div class="product-price-label">One-time &middot; Lifetime access &middot; <span class="strikethrough">$54.98</span></div>
+      <div class="product-badge">MOST POPULAR</div>
+      <div class="product-name">MindEdge<br>Pro Monthly</div>
+      <div class="product-price">$14.99</div>
+      <div class="product-price-label">per month &middot; Cancel anytime</div>
       <ul class="product-features">
-        <li>Everything in the Guide</li>
-        <li>MindEdge platform &mdash; lifetime access</li>
         <li>6 Psychology Masters AI coaching</li>
-        <li>100+ scenario simulations</li>
+        <li>200+ flashcard drills &amp; chart practice</li>
         <li>SPX multi-timeframe trade analyzer</li>
         <li>9/21 EMA &middot; Fib &middot; BOS/ChoCh &middot; VRVP &middot; GEX</li>
-        <li>Personal trade journal &amp; calendar</li>
-        <li>Cognitive bias tracker</li>
+        <li>Trade journal with screenshots &amp; P&L</li>
+        <li>Pre-market checklist &amp; analytics</li>
+        <li>100+ scenario simulations</li>
+        <li>Progress analytics &amp; AI growth report</li>
       </ul>
-      <button class="btn-pay" onclick="startCheckout('bundle')" id="bundle-btn"
+      <button class="btn-pay" onclick="startCheckout('app_monthly')" id="monthly-btn"
         style="font-size:14px;">
-        Get Bundle &mdash; $44.99
+        Start Monthly &mdash; $14.99/mo
       </button>
-      <div class="error-msg" id="bundle-error"></div>
+      <div class="error-msg" id="monthly-error"></div>
     </div>
 
-    <!-- APP ONLY -->
+    <!-- ANNUAL -->
     <div class="product-card">
-      <div class="product-badge">PLATFORM</div>
-      <div class="product-name">MindEdge<br>Platform</div>
-      <div class="product-price">$34.99</div>
-      <div class="product-price-label">One-time &middot; Lifetime access</div>
+      <div class="product-badge">BEST VALUE</div>
+      <div class="saving-badge">Save 44%</div>
+      <div class="product-name">MindEdge<br>Pro Annual</div>
+      <div class="product-price">$99.99</div>
+      <div class="product-price-label">per year &middot; $8.33/mo &middot; <span class="strikethrough">$179.88</span></div>
       <ul class="product-features">
+        <li>Everything in Monthly — full platform</li>
         <li>6 Psychology Masters AI coaching</li>
-        <li>100+ scenario simulations</li>
+        <li>200+ flashcard drills &amp; chart practice</li>
         <li>SPX multi-timeframe trade analyzer</li>
-        <li>9/21 EMA &middot; Fib &middot; BOS/ChoCh &middot; VRVP</li>
-        <li>Personal trade journal &amp; calendar</li>
-        <li>Cognitive bias tracker &amp; dashboard</li>
-        <li>Progress analytics &amp; AI growth report</li>
-        <li class="muted">SPX Scalping Guide PDF</li>
+        <li>Trade journal with screenshots &amp; P&L</li>
+        <li>Pre-market checklist &amp; analytics</li>
+        <li>100+ scenario simulations</li>
+        <li>Lock in your rate for 12 months</li>
       </ul>
-      <button class="btn-pay" onclick="startCheckout('app')" id="app-btn"
+      <button class="btn-pay" onclick="startCheckout('app_annual')" id="annual-btn"
         style="background:transparent;color:var(--gold);border:1px solid rgba(201,168,76,0.4);font-size:13px;">
-        Get Platform &mdash; $34.99
+        Start Annual &mdash; $99.99/yr
       </button>
-      <div class="error-msg" id="app-error"></div>
+      <div class="error-msg" id="annual-error"></div>
     </div>
 
   </div>
@@ -523,7 +523,7 @@
     <div class="feature-card">
       <div class="feature-icon">◑</div>
       <div class="feature-name">Scenario Lab</div>
-      <div class="feature-desc">100+ documented trading scenarios. Choose your response. Get expert psychological analysis of your decision instantly.</div>
+      <div class="feature-desc">100+ trading scenarios plus chart practice with decision-point drills and pattern recognition. Get scored on your reads.</div>
     </div>
     <div class="feature-card">
       <div class="feature-icon">◐</div>
@@ -533,7 +533,7 @@
     <div class="feature-card">
       <div class="feature-icon">◻</div>
       <div class="feature-name">Trade Journal</div>
-      <div class="feature-desc">Calendar-based private journal. Track sessions, emotions, and lessons. AI reflects on each entry with Steenbarger-style coaching questions.</div>
+      <div class="feature-desc">Calendar-based journal with screenshot uploads, P&L tracking, mood trends, and performance analytics. AI reflects on each entry.</div>
     </div>
     <div class="feature-card">
       <div class="feature-icon">✦</div>
@@ -581,18 +581,26 @@
 <footer>
   <div style="font-family:var(--serif);font-size:20px;color:var(--gold);margin-bottom:8px;">MindEdge</div>
   AI-powered trading psychology · Built on the wisdom of the world's greatest traders<br>
-  One-time payment · Lifetime access · No subscription ever
+  Cancel anytime · No contracts · Instant access
 </footer>
 
 <script>
 async function startCheckout(product) {
-  const ids = { guide: 'guide-btn', bundle: 'bundle-btn', app: 'app-btn' };
-  const labels = { guide: 'Buy Guide — $19.99', bundle: 'Get Bundle — $44.99', app: 'Get Platform — $34.99' };
-  const errIds = { guide: 'guide-error', bundle: 'bundle-error', app: 'app-error' };
-  const btn = document.getElementById(ids[product]);
-  const errEl = document.getElementById(errIds[product]);
+  const btnMap = {
+    guide: 'guide-btn',
+    app_monthly: 'monthly-btn',
+    app_annual: 'annual-btn',
+  };
+  const errMap = {
+    guide: 'guide-error',
+    app_monthly: 'monthly-error',
+    app_annual: 'annual-error',
+  };
+  const btn = document.getElementById(btnMap[product]);
+  const errEl = document.getElementById(errMap[product]);
+  const originalText = btn.textContent;
   btn.disabled = true;
-  btn.textContent = 'Redirecting...';
+  btn.textContent = 'Redirecting to Stripe...';
   if (errEl) errEl.style.display = 'none';
   try {
     const res = await fetch('/api/create-checkout', {
@@ -605,7 +613,7 @@ async function startCheckout(product) {
     else throw new Error(data.error || 'No checkout URL');
   } catch (err) {
     btn.disabled = false;
-    btn.textContent = labels[product];
+    btn.textContent = originalText;
     if (errEl) { errEl.style.display = 'block'; errEl.textContent = 'Something went wrong: ' + err.message; }
   }
 }
@@ -637,8 +645,8 @@ async function redeemCode() {
 
 const params = new URLSearchParams(window.location.search);
 if (params.get('error')) {
-  document.getElementById('error-msg').style.display = 'block';
-  document.getElementById('error-msg').textContent = 'Payment could not be verified. Please try again.';
+  const errMsg = document.getElementById('error-msg');
+  if (errMsg) { errMsg.style.display = 'block'; errMsg.textContent = 'Payment could not be verified. Please try again.'; }
 }
 </script>
 </body>
