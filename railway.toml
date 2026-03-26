@@ -1,4 +1,5 @@
-toml[build]
+
+[build]
 buildCommand = "npm install"
 
 [deploy]
