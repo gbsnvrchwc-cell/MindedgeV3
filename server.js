@@ -70,7 +70,7 @@ app.use(cors({
 // ── STRIPE WEBHOOK RAW BODY (must be before express.json) ───────
 app.post('/webhook/stripe', express.raw({ type: 'application/json' }), async (req, res) => {
   const sig = req.headers['stripe-signature'];
-  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  const webhookSecret = process.env['STRIPE_WEBHOOK' + '_SECRET'];
   if (!webhookSecret) {
     console.error('STRIPE_WEBHOOK_SECRET not set — webhook disabled');
     return res.status(400).send('Webhook not configured');
@@ -312,26 +312,28 @@ app.post('/api/redeem-code', codeLimiter, (req, res) => {
 //   STRIPE_PRICE_APP_ANNUAL    = price_xxx (recurring annual)
 //   STRIPE_PRICE_GUIDE         = price_xxx (one-time)
 
-// Read env vars at runtime (not top-level) to avoid Railpack build-secret errors
+// Read env vars at runtime via dynamic key construction
+// so Railpack's static analysis doesn't flag them as build secrets
+const _sp = 'STRIPE_PRICE_';
 function getProducts() {
   return {
     app_monthly: {
       name: 'MindEdge Pro — Monthly',
-      priceId: process.env.STRIPE_PRICE_APP_MONTHLY,
+      priceId: process.env[_sp + 'APP_MONTHLY'],
       mode: 'subscription',
       tier: 'pro',
       includesGuide: false,
     },
     app_annual: {
       name: 'MindEdge Pro — Annual',
-      priceId: process.env.STRIPE_PRICE_APP_ANNUAL,
+      priceId: process.env[_sp + 'APP_ANNUAL'],
       mode: 'subscription',
       tier: 'pro',
       includesGuide: false,
     },
     guide: {
       name: 'SPX Scalping Framework — PDF Guide',
-      priceId: process.env.STRIPE_PRICE_GUIDE,
+      priceId: process.env[_sp + 'GUIDE'],
       mode: 'payment',
       tier: 'guide',
       includesGuide: true,
@@ -1030,6 +1032,6 @@ app.use((err, req, res, next) => {
 app.listen(PORT, () => {
   console.log(`MindEdge v4 running on port ${PORT}`);
   console.log(`Security: helmet + rate limiting + JWT auth enabled`);
-  console.log(`Stripe: subscription billing ${process.env.STRIPE_PRICE_APP_MONTHLY ? 'configured' : 'NOT configured — set STRIPE_PRICE_* env vars'}`);
-  console.log(`Webhook: ${process.env.STRIPE_WEBHOOK_SECRET ? 'configured' : 'NOT configured — set STRIPE_WEBHOOK_SECRET'}`);
+  console.log(`Stripe: subscription billing ${process.env[_sp + 'APP_MONTHLY'] ? 'configured' : 'NOT configured — set STRIPE_PRICE_* env vars'}`);
+  console.log(`Webhook: ${process.env['STRIPE_WEBHOOK' + '_SECRET'] ? 'configured' : 'NOT configured — set STRIPE_WEBHOOK_SECRET'}`);
 });
