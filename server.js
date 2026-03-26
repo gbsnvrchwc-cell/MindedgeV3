@@ -67,6 +67,54 @@ app.use(cors({
   credentials: true,
 }));
 
+// ── STRIPE WEBHOOK RAW BODY (must be before express.json) ───────
+app.post('/webhook/stripe', express.raw({ type: 'application/json' }), async (req, res) => {
+  const sig = req.headers['stripe-signature'];
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  if (!webhookSecret) {
+    console.error('STRIPE_WEBHOOK_SECRET not set — webhook disabled');
+    return res.status(400).send('Webhook not configured');
+  }
+
+  let event;
+  try {
+    event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
+  } catch (err) {
+    console.error('Webhook signature verification failed:', err.message);
+    return res.status(400).send('Signature verification failed');
+  }
+
+  try {
+    switch (event.type) {
+      case 'customer.subscription.updated':
+      case 'customer.subscription.deleted': {
+        const sub = event.data.object;
+        console.log(`Subscription ${sub.id} status: ${sub.status} (customer: ${sub.customer})`);
+        // Status is checked in real-time via Stripe API in requireAccess
+        // No local DB needed — Stripe is the source of truth
+        break;
+      }
+      case 'invoice.payment_failed': {
+        const invoice = event.data.object;
+        console.log(`Payment failed for customer ${invoice.customer}, subscription ${invoice.subscription}`);
+        break;
+      }
+      case 'invoice.paid': {
+        const invoice = event.data.object;
+        console.log(`Invoice paid: ${invoice.customer}, amount: $${(invoice.amount_paid / 100).toFixed(2)}`);
+        break;
+      }
+      default:
+        // Unhandled event type
+        break;
+    }
+  } catch (err) {
+    console.error('Webhook handler error:', err.message);
+  }
+
+  res.json({ received: true });
+});
+
 app.use(express.json({ limit: '50kb' }));
 app.use(cookieParser());
 
@@ -176,14 +224,61 @@ app.get('/health', (req, res) => {
 });
 
 // Check if current user is authenticated (for frontend)
-app.get('/api/auth-status', (req, res) => {
+app.get('/api/auth-status', async (req, res) => {
   const token = req.cookies.mindedge_access;
   if (!token) return res.json({ authenticated: false });
   try {
     const user = verifyToken(token);
-    res.json({ authenticated: true, tier: user.tier || 'pro', email: user.email });
+    const result = {
+      authenticated: true,
+      tier: user.tier || 'pro',
+      email: user.email,
+      subscription: null,
+    };
+
+    // If user has a subscription, verify it's still active with Stripe
+    if (user.stripe_subscription) {
+      try {
+        const sub = await stripe.subscriptions.retrieve(user.stripe_subscription);
+        result.subscription = {
+          status: sub.status,
+          current_period_end: sub.current_period_end,
+          cancel_at_period_end: sub.cancel_at_period_end,
+          plan: sub.items.data[0]?.price?.recurring?.interval || 'month',
+        };
+        // If subscription is cancelled or past due, deny access
+        if (['canceled', 'unpaid', 'incomplete_expired'].includes(sub.status)) {
+          res.clearCookie('mindedge_access');
+          return res.json({ authenticated: false, reason: 'subscription_' + sub.status });
+        }
+      } catch (stripeErr) {
+        console.error('Stripe sub check error:', stripeErr.message);
+        // If we can't reach Stripe, trust the JWT for now
+      }
+    }
+
+    res.json(result);
   } catch {
     res.json({ authenticated: false });
+  }
+});
+
+// ── SUBSCRIPTION MANAGEMENT ─────────────────────────────────────
+// Customer portal: lets users update payment, cancel, view invoices
+app.post('/api/billing-portal', requireAccessAPI, async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user.stripe_customer) {
+      return res.status(400).json({ error: 'No billing account found. Contact support.' });
+    }
+    const portalSession = await stripe.billingPortal.sessions.create({
+      customer: user.stripe_customer,
+      return_url: `${DOMAIN}/app`,
+    });
+    res.json({ url: portalSession.url });
+  } catch (err) {
+    console.error('Portal error:', err.message);
+    res.status(500).json({ error: 'Could not open billing portal' });
   }
 });
 
@@ -211,26 +306,32 @@ app.post('/api/redeem-code', codeLimiter, (req, res) => {
 });
 
 // ── STRIPE CHECKOUT ──────────────────────────────────────────────
+// Price IDs are created in your Stripe Dashboard under Products
+// Set these as environment variables in Railway:
+//   STRIPE_PRICE_APP_MONTHLY   = price_xxx (recurring monthly)
+//   STRIPE_PRICE_APP_ANNUAL    = price_xxx (recurring annual)
+//   STRIPE_PRICE_GUIDE         = price_xxx (one-time)
+
 const PRODUCTS = {
-  app: {
-    name: 'MindEdge Platform — Lifetime Access',
-    description: 'AI-powered trading psychology platform. One-time payment, lifetime access.',
-    amount: 3499,
+  app_monthly: {
+    name: 'MindEdge Pro — Monthly',
+    priceId: process.env.STRIPE_PRICE_APP_MONTHLY,
+    mode: 'subscription',
+    tier: 'pro',
+    includesGuide: false,
+  },
+  app_annual: {
+    name: 'MindEdge Pro — Annual',
+    priceId: process.env.STRIPE_PRICE_APP_ANNUAL,
+    mode: 'subscription',
     tier: 'pro',
     includesGuide: false,
   },
   guide: {
     name: 'SPX Scalping Framework — PDF Guide',
-    description: '8-page professional SPX scalping guide: 9/21 EMA, Fibonacci OTE, BOS/ChoCh, VRVP, GEX.',
-    amount: 1999,
+    priceId: process.env.STRIPE_PRICE_GUIDE,
+    mode: 'payment',
     tier: 'guide',
-    includesGuide: true,
-  },
-  bundle: {
-    name: 'MindEdge Complete Bundle — Platform + Guide',
-    description: 'MindEdge platform lifetime access + SPX Scalping Framework PDF. Best value.',
-    amount: 4499,
-    tier: 'pro',
     includesGuide: true,
   },
 };
@@ -239,27 +340,29 @@ app.post('/api/create-checkout', checkoutLimiter, async (req, res) => {
   if (!process.env.STRIPE_SECRET_KEY) {
     return res.status(500).json({ error: 'Payments not configured' });
   }
-  const productKey = ['app','guide','bundle'].includes(req.body.product) ? req.body.product : 'app';
+  const productKey = req.body.product;
   const product = PRODUCTS[productKey];
+  if (!product || !product.priceId) {
+    return res.status(400).json({ error: 'Invalid product selected' });
+  }
   try {
-    const session = await stripe.checkout.sessions.create({
+    const sessionParams = {
       payment_method_types: ['card'],
-      line_items: [{
-        price_data: {
-          currency: 'usd',
-          product_data: {
-            name: product.name,
-            description: product.description,
-          },
-          unit_amount: product.amount,
-        },
-        quantity: 1,
-      }],
-      mode: 'payment',
+      line_items: [{ price: product.priceId, quantity: 1 }],
+      mode: product.mode,
       success_url: `${DOMAIN}/payment-success?session_id={CHECKOUT_SESSION_ID}&product=${productKey}`,
       cancel_url: `${DOMAIN}/paywall`,
       allow_promotion_codes: true,
-    });
+    };
+
+    // For subscriptions, allow customers to manage billing later
+    if (product.mode === 'subscription') {
+      sessionParams.subscription_data = {
+        metadata: { tier: product.tier, product: productKey },
+      };
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionParams);
     res.json({ url: session.url });
   } catch (err) {
     console.error('Stripe error:', err.message);
@@ -274,13 +377,11 @@ app.get('/payment-success', async (req, res) => {
   if (!/^cs_[a-zA-Z0-9_]+$/.test(session_id)) return res.redirect('/paywall?error=invalid_session');
   try {
     const session = await stripe.checkout.sessions.retrieve(session_id);
-    if (session.payment_status !== 'paid') return res.redirect('/paywall?error=not_paid');
+    const productInfo = PRODUCTS[product] || PRODUCTS.app_monthly;
 
-    const productInfo = PRODUCTS[product] || PRODUCTS.app;
-
-    // Guide-only purchase: send PDF directly, no app access cookie
+    // Guide-only purchase (one-time): send PDF directly, no app access cookie
     if (product === 'guide') {
-      // Issue a short-lived download token stored as httpOnly cookie
+      if (session.payment_status !== 'paid') return res.redirect('/paywall?error=not_paid');
       const token = issueToken({
         access: false,
         tier: 'guide',
@@ -288,17 +389,40 @@ app.get('/payment-success', async (req, res) => {
         paid_at: Date.now(),
         stripe_session: session.id,
       });
-      // Set as httpOnly cookie instead of URL param (prevents token leakage in logs/referrer)
       res.cookie('mindedge_guide_token', token, {
         httpOnly: true,
         secure: true,
         sameSite: 'lax',
-        maxAge: 1000 * 60 * 60 * 24 * 365 * 10, // 10 years
+        maxAge: 1000 * 60 * 60 * 24 * 365 * 10,
       });
       return res.redirect('/download-guide');
     }
 
-    // App or bundle: set access cookie
+    // Subscription products: check subscription status
+    if (productInfo.mode === 'subscription') {
+      const subscriptionId = session.subscription;
+      if (!subscriptionId) return res.redirect('/paywall?error=no_subscription');
+      const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+      if (!['active', 'trialing'].includes(subscription.status)) {
+        return res.redirect('/paywall?error=subscription_inactive');
+      }
+
+      const token = issueToken({
+        access: true,
+        tier: productInfo.tier,
+        email: session.customer_details?.email || 'user',
+        stripe_customer: session.customer,
+        stripe_subscription: subscriptionId,
+        subscribed_at: Date.now(),
+        includesGuide: productInfo.includesGuide,
+      });
+
+      setAccessCookie(res, token);
+      return res.redirect('/app');
+    }
+
+    // Fallback: one-time payment (shouldn't happen with current products)
+    if (session.payment_status !== 'paid') return res.redirect('/paywall?error=not_paid');
     const token = issueToken({
       access: true,
       tier: productInfo.tier,
@@ -307,11 +431,7 @@ app.get('/payment-success', async (req, res) => {
       stripe_session: session.id,
       includesGuide: productInfo.includesGuide,
     });
-
     setAccessCookie(res, token);
-
-    // Bundle: redirect to app with guide download prompt
-    if (product === 'bundle') return res.redirect('/app?guide=1');
     res.redirect('/app');
   } catch (err) {
     console.error('Verification error:', err.message);
@@ -903,6 +1023,8 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`MindEdge v3 running on port ${PORT}`);
+  console.log(`MindEdge v4 running on port ${PORT}`);
   console.log(`Security: helmet + rate limiting + JWT auth enabled`);
+  console.log(`Stripe: subscription billing ${process.env.STRIPE_PRICE_APP_MONTHLY ? 'configured' : 'NOT configured — set STRIPE_PRICE_* env vars'}`);
+  console.log(`Webhook: ${process.env.STRIPE_WEBHOOK_SECRET ? 'configured' : 'NOT configured — set STRIPE_WEBHOOK_SECRET'}`);
 });
