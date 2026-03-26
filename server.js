@@ -312,35 +312,39 @@ app.post('/api/redeem-code', codeLimiter, (req, res) => {
 //   STRIPE_PRICE_APP_ANNUAL    = price_xxx (recurring annual)
 //   STRIPE_PRICE_GUIDE         = price_xxx (one-time)
 
-const PRODUCTS = {
-  app_monthly: {
-    name: 'MindEdge Pro — Monthly',
-    priceId: process.env.STRIPE_PRICE_APP_MONTHLY,
-    mode: 'subscription',
-    tier: 'pro',
-    includesGuide: false,
-  },
-  app_annual: {
-    name: 'MindEdge Pro — Annual',
-    priceId: process.env.STRIPE_PRICE_APP_ANNUAL,
-    mode: 'subscription',
-    tier: 'pro',
-    includesGuide: false,
-  },
-  guide: {
-    name: 'SPX Scalping Framework — PDF Guide',
-    priceId: process.env.STRIPE_PRICE_GUIDE,
-    mode: 'payment',
-    tier: 'guide',
-    includesGuide: true,
-  },
-};
+// Read env vars at runtime (not top-level) to avoid Railpack build-secret errors
+function getProducts() {
+  return {
+    app_monthly: {
+      name: 'MindEdge Pro — Monthly',
+      priceId: process.env.STRIPE_PRICE_APP_MONTHLY,
+      mode: 'subscription',
+      tier: 'pro',
+      includesGuide: false,
+    },
+    app_annual: {
+      name: 'MindEdge Pro — Annual',
+      priceId: process.env.STRIPE_PRICE_APP_ANNUAL,
+      mode: 'subscription',
+      tier: 'pro',
+      includesGuide: false,
+    },
+    guide: {
+      name: 'SPX Scalping Framework — PDF Guide',
+      priceId: process.env.STRIPE_PRICE_GUIDE,
+      mode: 'payment',
+      tier: 'guide',
+      includesGuide: true,
+    },
+  };
+}
 
 app.post('/api/create-checkout', checkoutLimiter, async (req, res) => {
   if (!process.env.STRIPE_SECRET_KEY) {
     return res.status(500).json({ error: 'Payments not configured' });
   }
   const productKey = req.body.product;
+  const PRODUCTS = getProducts();
   const product = PRODUCTS[productKey];
   if (!product || !product.priceId) {
     return res.status(400).json({ error: 'Invalid product selected' });
@@ -377,6 +381,7 @@ app.get('/payment-success', async (req, res) => {
   if (!/^cs_[a-zA-Z0-9_]+$/.test(session_id)) return res.redirect('/paywall?error=invalid_session');
   try {
     const session = await stripe.checkout.sessions.retrieve(session_id);
+    const PRODUCTS = getProducts();
     const productInfo = PRODUCTS[product] || PRODUCTS.app_monthly;
 
     // Guide-only purchase (one-time): send PDF directly, no app access cookie
