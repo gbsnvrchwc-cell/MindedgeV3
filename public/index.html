@@ -2616,6 +2616,218 @@ const SCENARIOS = [
     category: "Plan Adherence",
     body: `After 3 losing weeks with your momentum strategy, you're seriously considering switching to a mean-reversion approach that's been performing well lately. You'd be making the switch based entirely on recent performance — not on any fundamental analysis.\n\nThis would be the third strategy change in 18 months.`,
     options: ["Switch — recent performance is the best available signal.", "Stay with the current strategy — 3 weeks is statistically meaningless.", "Run both strategies in parallel (paper trade the new, live the old) for 60 days.", "Analyze whether recent losses are strategy failures or execution failures first."]
+  },
+
+  // ── PATIENCE & WAITING ──
+  {
+    title: "The Quiet Morning",
+    badge: "Patience", badgeClass: "badge-gold",
+    category: "Patience",
+    body: `It's 10:30am. The market has been open for an hour and your 5-layer framework hasn't produced a single valid setup. EMAs are flat on the 15-minute. No OTE pullback. No BOS. Nothing.\n\nYou've been staring at charts for 90 minutes. A colleague in your Discord just posted a winning trade. You feel the pressure to find something — anything — to trade.`,
+    options: ["Force a trade — there's always something if you look hard enough.", "Lower your standards and take a B-grade setup.", "Stay flat and keep watching — the setup will come or it won't.", "Close the charts and set an alert for when EMAs start trending."]
+  },
+  {
+    title: "The 2pm Temptation",
+    badge: "Patience", badgeClass: "badge-gold",
+    category: "Patience",
+    body: `Your trading plan says you only trade the first 2 hours and the last hour. It's 2:15pm — deep in the midday chop zone. A setup just appeared that looks decent on the 5-minute.\n\nYou know midday setups have a lower win rate from your journal data, but this one looks clean.`,
+    options: ["Take it — the setup is clean regardless of time.", "Wait until 3pm when your session window reopens.", "Paper trade it to see if your instinct was right.", "Take it at half size as a compromise."]
+  },
+  {
+    title: "Three Days Without a Trade",
+    badge: "Patience", badgeClass: "badge-gold",
+    category: "Patience",
+    body: `You haven't taken a single trade in three days. Not because you're scared — because your framework genuinely hasn't produced a valid setup. The market has been ranging and your EMAs are tangled.\n\nYour inner voice says: "Maybe your system is broken. Everyone else is trading."`,
+    options: ["Your system works — the market isn't always tradeable. Stay patient.", "Loosen your criteria slightly to find more setups.", "Switch to a different strategy that works in ranges.", "Take a small trade just to stay sharp and engaged."]
+  },
+  {
+    title: "The Almost-Setup",
+    badge: "Patience", badgeClass: "badge-gold",
+    category: "Patience",
+    body: `Four of your five layers are aligned. EMAs bullish, price in OTE zone, volume node at your level, GEX floor below. But there's no BOS on the 5-minute yet — price is still making lower highs.\n\nThe setup is 80% there. You know from experience that sometimes BOS comes 5 minutes later. But sometimes it never comes.`,
+    options: ["Enter now — 4 of 5 is close enough.", "Wait for BOS confirmation, even if it means missing the move.", "Enter half size now, add the rest on BOS.", "Set an alert and walk away — remove the temptation."]
+  },
+
+  // ── CONFIDENCE & SELF-DOUBT ──
+  {
+    title: "The First Trade After a Break",
+    badge: "Mindset", badgeClass: "badge-gold",
+    category: "Mental State",
+    body: `You took a week off after a bad stretch. You're refreshed mentally but now you're sitting at your desk staring at a clean A-grade setup. Everything aligns.\n\nBut your finger won't press the button. The memory of last week's losses is making you hesitate. The setup is getting away.`,
+    options: ["Force the entry — hesitation is the real enemy.", "Take it at reduced size to ease back in.", "Let this one go and wait for the next setup to build confidence by observing.", "Journal your feelings first, then decide if you're ready."]
+  },
+  {
+    title: "The Imposter Feeling",
+    badge: "Mindset", badgeClass: "badge-gold",
+    category: "Mental State",
+    body: `You've been profitable for 6 weeks straight. But instead of feeling confident, you feel like it's all luck. You keep waiting for the other shoe to drop. Your position sizing is actually getting smaller as your account grows.\n\nYou realize you're self-sabotaging — winning is making you more afraid, not less.`,
+    options: ["Size up — the results prove the system works.", "Keep current size — protect the profits.", "Review your journal to confirm the wins were process-driven, not luck.", "Talk to a trading mentor about the pattern you're noticing."]
+  },
+  {
+    title: "Comparing Yourself to Others",
+    badge: "Psychology", badgeClass: "badge-gold",
+    category: "Psychology",
+    body: `A trader in your community just posted a $15,000 day. You made $400 today on a clean, disciplined trade that followed your rules perfectly.\n\nYou feel like your $400 is meaningless. You start thinking about sizing up dramatically to match their results.`,
+    options: ["Size up — I need to be making real money.", "My $400 followed the process. Their $15K might not have. Stay the course.", "Ask them what their account size and risk percentage is before comparing.", "Use their result as motivation to study harder and improve."]
+  },
+  {
+    title: "The Winning Streak Anxiety",
+    badge: "Psychology", badgeClass: "badge-gold",
+    category: "Psychology",
+    body: `You've won 8 trades in a row. Statistically, you know a loss is coming — your win rate is 60%, so this streak is an anomaly. You're now afraid to take the next trade because you don't want to break the streak.\n\nA valid setup just appeared. Your framework says take it.`,
+    options: ["Skip it — protect the streak.", "Take it at reduced size.", "Take it at full size — each trade is independent of the last.", "Take a day off to enjoy the winning feeling."]
+  },
+
+  // ── PRE-MARKET & ROUTINE ──
+  {
+    title: "The Skipped Checklist",
+    badge: "Discipline", badgeClass: "badge-red",
+    category: "Plan Adherence",
+    body: `You woke up late. The market opens in 10 minutes. You haven't done your pre-market checklist — no GEX levels pulled, no key levels marked, no mental readiness check.\n\nYou can see price is moving and a setup might be forming in the first 15 minutes.`,
+    options: ["Trade anyway — you know your levels from memory.", "Do a quick 5-minute version of the checklist and start trading.", "Sit out the first 30 minutes and do the full checklist before trading.", "Skip the day entirely — trading without preparation is gambling."]
+  },
+  {
+    title: "The News Morning",
+    badge: "Market Conditions", badgeClass: "badge-red",
+    category: "Market Conditions",
+    body: `CPI data just came in hot — SPX gapped down 30 points at the open. Your pre-market analysis and levels are now irrelevant. The GEX levels have shifted. Your planned setups are gone.\n\nThe market is moving fast. You feel the urge to jump in and catch the move.`,
+    options: ["Trade the volatility — big moves mean big profits.", "Wait 30-60 minutes for the market to absorb the news, then reassess.", "Reduce size by 75% and trade the reaction, not the news.", "Sit out entirely — your analysis was invalidated and you're not prepared for this environment."]
+  },
+  {
+    title: "The Distracted Session",
+    badge: "Mental State", badgeClass: "badge-gold",
+    category: "Mental State",
+    body: `You're in the middle of a trading session but your mind keeps drifting. Your partner texted about a family issue. You checked your phone twice in the last 10 minutes. You're physically at your desk but mentally somewhere else.\n\nA setup just appeared on the 5-minute chart.`,
+    options: ["Take the trade — my system works regardless of my mental state.", "Close the charts and handle the personal situation first.", "Take the trade at reduced size since I'm not fully focused.", "Set alerts and step away — return only when I can give trading full attention."]
+  },
+
+  // ── JOURNALING & REVIEW ──
+  {
+    title: "The Unjournaled Week",
+    badge: "Discipline", badgeClass: "badge-red",
+    category: "Plan Adherence",
+    body: `You haven't journaled a single trade in 8 days. You've been trading every day — some wins, some losses — but you have no record of your reads, your emotions, or your decision-making process.\n\nYou know journaling is important, but it feels tedious after a full trading session.`,
+    options: ["I'll start journaling again tomorrow — today I'm tired.", "Spend 30 minutes tonight reconstructing this week's trades from memory.", "Journal the next trade before doing anything else — break the cycle now.", "Journaling isn't necessary — my results speak for themselves."]
+  },
+  {
+    title: "The Painful Review",
+    badge: "Growth", badgeClass: "badge-gold",
+    category: "Psychology",
+    body: `You're reviewing your journal and you notice a clear pattern: your biggest losses all happen on Mondays, and they all involve oversizing after a good Friday. The data is undeniable.\n\nBut accepting this means you need to change your Monday routine — possibly sitting out entirely until you've addressed the pattern.`,
+    options: ["Ignore the pattern — correlation isn't causation.", "Reduce Monday size to 25% until the pattern breaks.", "Take Mondays off completely for the next month.", "Add a specific Monday checklist item: check Friday's P&L and adjust size accordingly."]
+  },
+
+  // ── COMMUNITY & SOCIAL PRESSURE ──
+  {
+    title: "The Discord Call You Missed",
+    badge: "FOMO", badgeClass: "badge-red",
+    category: "FOMO",
+    body: `Your community was in a voice call during market hours. The coach called out a level and 8 members entered the trade. It ran for 15 points. You weren't on the call because you were doing your own analysis.\n\nYou feel frustrated and wonder if you should always be on the calls instead of trading independently.`,
+    options: ["Always be on the calls from now on — the group edge is real.", "Stick to your own analysis — dependency on calls isn't sustainable.", "Use the calls as one input alongside your own framework.", "Ask the coach to share levels in a text channel so you don't need to be live."]
+  },
+  {
+    title: "The Contrarian Position",
+    badge: "Herd Psychology", badgeClass: "badge-gold",
+    category: "Herd Psychology",
+    body: `Everyone in your trading community is bearish today. The Discord is full of short setups and bearish analysis. But your 5-layer framework is showing bullish alignment — EMAs up, OTE pullback holding, BOS confirmed.\n\nDo you trust your framework or the crowd?`,
+    options: ["Go with the crowd — they can't all be wrong.", "Trust my framework — it's what I trained for.", "Wait for more confirmation before going against the group.", "Skip the trade entirely — too much conflicting information."]
+  },
+  {
+    title: "The Toxic Comparison",
+    badge: "Psychology", badgeClass: "badge-gold",
+    category: "Psychology",
+    body: `A newer trader in your community has been posting bigger P&L numbers than you for three weeks straight. They're using higher leverage and sizing. You've been trading longer and feel like you should be ahead.\n\nYou're tempted to increase your leverage to match their numbers.`,
+    options: ["Increase leverage — I should be making more with my experience.", "Their results are unsustainable at that leverage. Stay disciplined.", "Ask them about their risk management privately before judging.", "Mute their posts and focus on your own process."]
+  },
+
+  // ── TRADE MANAGEMENT ──
+  {
+    title: "The Runner That Stalls",
+    badge: "Trade Management", badgeClass: "badge-gold",
+    category: "Trade Management",
+    body: `You're in a long that hit your first target at 1R. You took partial profits. The remaining position is at +1.8R but price has been consolidating at this level for 15 minutes. Your extended target is at 2.5R.\n\nThe consolidation could break either way. You're watching profit tick down on each small pullback.`,
+    options: ["Hold for the full 2.5R target — let the trade work.", "Take profits now — a bird in the hand.", "Trail the stop to breakeven and let it ride risk-free.", "Trail the stop to 1R — lock in profit but give it room."]
+  },
+  {
+    title: "The Gap Against You",
+    badge: "Risk Management", badgeClass: "badge-red",
+    category: "Risk Management",
+    body: `You held a swing position overnight. SPX gapped against you at the open — your stop was at -1R but the gap opened at -2.5R. Your stop didn't execute at your planned level.\n\nYou're now down 2.5R on a trade you planned to risk 1R on.`,
+    options: ["Hold and hope for a gap fill — it usually fills.", "Exit immediately — accept the 2.5R loss and move on.", "Average down at the gap level to improve the position.", "Double down — if the thesis was right pre-gap, it's even better at this price."]
+  },
+  {
+    title: "The Early Exit Regret",
+    badge: "Psychology", badgeClass: "badge-gold",
+    category: "Psychology",
+    body: `You exited a trade at +1R because price stalled. Thirty minutes later, it ripped 4R in the direction you were in. You left 3R on the table.\n\nThe next setup appears. You're tempted to hold it longer than your plan says to "make up" for the missed move.`,
+    options: ["Hold the next trade longer — I need to capture the full move.", "Trade the next setup exactly per plan — I can't control what happens after I exit.", "Adjust my trade management rules based on this experience.", "Skip the next trade — I'm emotionally compromised from the regret."]
+  },
+
+  // ── POSITION SIZING & RISK ──
+  {
+    title: "The Account Milestone",
+    badge: "Position Sizing", badgeClass: "badge-gold",
+    category: "Position Sizing",
+    body: `Your account just crossed $50,000 for the first time. At 1% risk, your position size should increase from $400 to $500 per trade. But psychologically, losing $500 feels different from losing $400.\n\nYou're considering keeping your old size to avoid the emotional impact of larger losses.`,
+    options: ["Keep the old size — the emotional comfort is more important.", "Scale up to the proper 1% — the math doesn't change with account size.", "Scale up gradually — 1.1%, 1.2%, etc. over the next month.", "Scale up for high-conviction setups only, keep old size for B-grade setups."]
+  },
+  {
+    title: "The 'Just This Once' Size Up",
+    badge: "Risk Management", badgeClass: "badge-red",
+    category: "Risk Management",
+    body: `You see what you consider a perfect A+ setup. All 5 layers aligned. You normally risk 1% per trade, but you're considering risking 3% on this one because the confluence is exceptional.\n\nYour rules say 1% always. No exceptions.`,
+    options: ["3% — this is the setup the rules were made for. Exceptions prove the rule.", "1% — rules exist for exactly this moment of temptation.", "1.5% — a small increase for A+ setups is reasonable.", "1% but hold it longer with a wider target to maximize the opportunity."]
+  },
+  {
+    title: "The Recovery Math",
+    badge: "Risk Management", badgeClass: "badge-red",
+    category: "Risk Management",
+    body: `You're down 15% on the month. You calculate that at your normal sizing, it will take 6 weeks of disciplined trading to recover. At 3x your normal size, you could recover in 2 weeks.\n\nThe temptation to size up is intense. The math makes it seem logical.`,
+    options: ["Triple the size — the math is clear and recovery matters.", "Stay at normal size — recovery takes however long it takes.", "Reduce size below normal — when you're down, you trade smaller, not larger.", "Take a week off, then return at normal size with a clear head."]
+  },
+
+  // ── EXECUTION & PROCESS ──
+  {
+    title: "The Chased Entry",
+    badge: "Execution", badgeClass: "badge-red",
+    category: "Execution",
+    body: `You identified a setup 5 minutes ago but hesitated. Now the entry has moved 6 points away from your planned level. The setup is still valid structurally, but your risk-reward has gone from 2.5:1 to 1.5:1.\n\nYou feel the urge to enter anyway because the thesis is right.`,
+    options: ["Enter now — the thesis is correct even if the entry isn't ideal.", "Skip it — the R:R is no longer acceptable. Wait for the next setup.", "Enter with smaller size to compensate for the worse R:R.", "Enter at current price but use a tighter stop to maintain the R:R."]
+  },
+  {
+    title: "The System Override",
+    badge: "Discipline", badgeClass: "badge-red",
+    category: "Plan Adherence",
+    body: `Your framework says SHORT. Everything is bearish — EMAs, structure, volume. But you have a strong gut feeling that today is a reversal day. You can't explain why — you just feel it in your bones.\n\nDo you trust your gut or your system?`,
+    options: ["Trust my gut — experience and intuition matter.", "Trust the system — feelings are not indicators.", "Sit out — when gut and system disagree, don't trade.", "Take a small short per the system and a small long per my gut — hedge it."]
+  },
+  {
+    title: "The Multi-Screen Overload",
+    badge: "Execution", badgeClass: "badge-gold",
+    category: "Execution",
+    body: `You're watching SPX on four timeframes, monitoring three other tickers, following a Discord chat, and checking Twitter for macro takes. A setup appears on SPX but you're unsure because you saw conflicting information on Twitter.\n\nYou feel paralyzed by information overload.`,
+    options: ["Trade the setup — my framework said yes, Twitter is noise.", "Close everything except SPX and your framework. Simplify.", "Wait for the noise to clear and the setup to become more obvious.", "Add one more confirmation source before deciding."]
+  },
+  {
+    title: "The End-of-Day Decision",
+    badge: "Trade Management", badgeClass: "badge-gold",
+    category: "Trade Management",
+    body: `It's 3:45pm. You're in a winning position at +1.2R. The close is in 15 minutes. You can either exit now and lock in the gain, or hold through the close and potentially capture the closing momentum push.\n\nHolding through the close also means holding overnight risk if you forget to set an exit.`,
+    options: ["Exit now — lock in the profit before the close.", "Hold for the closing push — the last 15 minutes often trend.", "Set a tight trailing stop and let the market decide.", "Exit half now, hold half through the close."]
+  },
+  {
+    title: "The Correlation Trap",
+    badge: "Risk Management", badgeClass: "badge-red",
+    category: "Risk Management",
+    body: `You have two open positions — one in SPX calls and one in QQQ calls. Both are long delta, both are tech-heavy, and they're correlated about 0.9. You're effectively running 2x your intended risk.\n\nBoth positions are slightly green. A tech selloff would hit both simultaneously.`,
+    options: ["Hold both — they're separate trades with separate theses.", "Close one — correlated positions are hidden risk.", "Hedge one with a put spread to reduce correlation risk.", "Keep both but reduce overall size across the portfolio."]
+  },
+  {
+    title: "The Monday After a Big Win",
+    badge: "Overconfidence", badgeClass: "badge-gold",
+    category: "Overconfidence",
+    body: `You had your best week ever — up 12R. It's Monday morning and you feel invincible. Every chart looks like a setup. You've already identified 4 trades you want to take before the market has even opened.\n\nYour pre-market checklist says to assess your mental state before trading. You feel amazing.`,
+    options: ["Trade all 4 — I'm in the zone and should capitalize.", "Trade normally — the past week has zero impact on today's probabilities.", "Reduce size today — euphoria is just as dangerous as fear.", "Do the pre-market checklist honestly, then decide how many to trade."]
   }
 ];
 
@@ -4892,17 +5104,17 @@ function buildCandles(startPrice, moves) {
 
 const scenarioTemplates = [
   {
-    title: "Morning Selloff into VWAP",
-    badge: "Reversal", category: "vwap_bounce",
-    context: "SPX sold off aggressively from the open, dropping through the first 30 minutes. Price is now approaching VWAP from below after a sharp bounce off the low of day.",
-    question: "Price has bounced off the LOD and is approaching VWAP. Three candles show higher lows. What's your move?",
+    title: "9 EMA Reclaim After Pullback",
+    badge: "5-Layer", category: "ema_reclaim",
+    context: "SPX sold off from the open, dropping below both the 9 and 21 EMA on the 15-minute. After 45 minutes, price found support at a prior high volume node and is now pushing back above the 9 EMA. The 21 EMA is still above.",
+    question: "Price just reclaimed the 9 EMA from below after a pullback. The 21 is still above. Higher lows are forming on the 5-minute. What's your move?",
     answer: "long",
-    explanation: "The sharp selloff found support and established a clear low of day. The series of higher lows approaching VWAP shows buyers stepping in. A VWAP reclaim with momentum is a textbook long entry for a mean reversion back toward the opening range.",
-    lesson: "Steenbarger: Morning selloffs that establish a clear low and then build higher lows toward VWAP are among the highest-probability mean reversion setups. The key is waiting for the higher lows — not catching the falling knife.",
-    levels: [{price: 0, label: 'VWAP', color: '#C9A84C'}, {price: -8, label: 'LOD Support', color: '#52a882'}],
+    explanation: "Price reclaiming the 9 EMA with higher lows forming on the 5-minute is a bullish structural shift. The 21 EMA above means the higher timeframe trend is still intact — this pullback was just a dip into the trend. The volume node support adds Layer 4 confluence.",
+    lesson: "Elder: The 9 EMA is your fast pulse. When price dips below it in an uptrend but quickly reclaims it with structure, that's a buying opportunity — not a trend change. The 21 EMA holding above is your safety net.",
+    levels: [{price: 0, label: '9 EMA', color: '#C9A84C'}, {price: 3, label: '21 EMA', color: '#6B8CFF'}, {price: -10, label: 'HVN Support', color: '#52a882'}],
     buildFn: (base) => {
-      const ctx = buildCandles(base, [[-1, 6, 8], [-1, 4, 4], [1, 3, 3], [1, 2, 3]]);
-      const out = buildCandles(ctx[ctx.length-1].c, [[1, 5, 5], [1, 3, 4], [1, 2, 3], [0, 2, 3]]);
+      const ctx = buildCandles(base, [[0.3,2,4],[0.5,3,5],[1,3,4],[-0.5,3,6],[-0.3,2,4],[0.3,2,3],[0.5,2,3],[1,3,3]]);
+      const out = buildCandles(ctx[ctx.length-1].c, [[1,3,4],[1,2,3],[0.5,2,4],[1,3,3],[0.5,2,3]]);
       return { context: ctx, outcome: out };
     }
   },
@@ -4970,17 +5182,17 @@ const scenarioTemplates = [
     }
   },
   {
-    title: "VWAP Rejection After Weak Rally",
-    badge: "Continuation", category: "vwap_rejection",
-    context: "SPX has been trending down all day. A weak bounce attempted to reclaim VWAP but stalled with three doji candles right at the VWAP level. Each push into VWAP was met with selling.",
-    question: "Price tried to reclaim VWAP three times and got rejected each time with doji candles. The trend is down. What do you do?",
+    title: "OTE Zone Rejection — Sellers Defending",
+    badge: "5-Layer", category: "ote_rejection",
+    context: "SPX has been trending down with EMAs bearish on the 15-minute. Price bounced and rallied into the Fibonacci OTE zone (61.8%-78.6%) on the 5-minute. Three small-body candles formed right at the 70.5% level — sellers are defending.",
+    question: "Price rallied into the OTE zone in a downtrend but is stalling at 70.5% with small bodies. EMAs are bearish. What do you do?",
     answer: "short",
-    explanation: "In a downtrend, VWAP acts as resistance. Three failed attempts to reclaim it confirms that sellers are in control. Each rejection is a short entry opportunity with a stop just above VWAP — clean risk/reward aligned with the dominant trend.",
-    lesson: "Steenbarger: Trading with the trend is always higher probability. VWAP rejections in a downtrend are the 'bread and butter' setup for institutional traders. The trend tells you direction; VWAP gives you the entry level.",
-    levels: [{price: 0, label: 'VWAP', color: '#C9A84C'}, {price: -15, label: 'LOD', color: '#e05252'}],
+    explanation: "In a downtrend, the OTE zone becomes resistance — not support. The small-body candles at 70.5% show the rally is running out of steam. This is a textbook short entry: trend bearish (Layer 1), price at OTE resistance (Layer 2), and the stalling shows a potential BOS forming to the downside (Layer 3).",
+    lesson: "Douglas: The OTE zone works in both directions. In a downtrend, it's where you look for short entries on a relief rally — the same zone that provides support in an uptrend becomes resistance when the trend flips.",
+    levels: [{price: 0, label: '70.5% Fib', color: '#C9A84C'}, {price: 3, label: '61.8% Fib', color: '#C9A84C'}, {price: -12, label: 'Prior Low', color: '#e05252'}],
     buildFn: (base) => {
-      const ctx = buildCandles(base + 8, [[-1, 4, 6], [-1, 3, 2], [0.5, 2, 4], [0, 1, 3], [-0.3, 1.5, 3]]);
-      const out = buildCandles(ctx[ctx.length-1].c, [[-1, 4, 4], [-1, 5, 3], [-1, 3, 4], [-0.5, 2, 2]]);
+      const ctx = buildCandles(base + 8, [[-0.5,3,5],[-1,4,6],[-1,3,4],[0.5,2,5],[0.3,2,4],[0,1.5,4],[0,1,3]]);
+      const out = buildCandles(ctx[ctx.length-1].c, [[-0.5,3,3],[-1,4,4],[-1,3,4],[-0.5,3,3],[0,2,2]]);
       return { context: ctx, outcome: out };
     }
   },
@@ -5032,7 +5244,7 @@ const scenarioTemplates = [
   {
     title: "Choppy Range — No Trade",
     badge: "Discipline", category: "chop",
-    context: "SPX has been oscillating in a 6-point range for 2 hours. Volume is declining. There are alternating red and green candles with no clear direction. VWAP is flat. No news catalysts on the horizon.",
+    context: "SPX has been oscillating in a 6-point range for 2 hours. Volume is declining. There are alternating red and green candles with no clear direction. EMAs are flat and tangled on the 15-minute. No news catalysts on the horizon.",
     question: "Two hours of directionless chop. Volume dying. No catalyst. Alternating candles. What do you do?",
     answer: "flat",
     explanation: "This is a no-trade zone. There's no edge in choppy, low-volume conditions. Every entry is a coin flip with the spread working against you. The disciplined move is to stay flat and wait for conditions to change.",
@@ -5270,6 +5482,175 @@ const scenarioTemplates = [
       return { context: ctx, outcome: out };
     }
   },
+  // ── 25 NEW 5-LAYER FRAMEWORK SCENARIOS ──
+  {title:"EMAs Curling — Trend Running Out of Steam",badge:"5-Layer",badgeClass:"badge-gold",category:"ema_analysis",
+    context:"The 15-minute 9 EMA has been above the 21 all day but it's now flattening and starting to curl downward. Price is still above both EMAs but the gap between them is narrowing. The uptrend is losing momentum.",
+    question:"9 EMA curling toward the 21 on the 15-minute. Still above but closing the gap. What's your bias?",answer:"flat",
+    explanation:"A curling 9 EMA signals the trend is exhausting. While technically still bullish (9 above 21), the fading momentum means long entries have lower probability and shorter runs. Wait for either a clean re-acceleration or a cross to short.",
+    lesson:"Steenbarger: The slope of the fast EMA tells you the market's energy level. Flat or curling = low energy. Only trade when the energy supports your direction.",
+    levels:[{price:0,label:'9 EMA',color:'#C9A84C'},{price:-2,label:'21 EMA',color:'#6B8CFF'}],
+    buildFn:(b)=>{const c=buildCandles(b-8,[[0.5,2,5],[1,3,5],[1,3,5],[0.5,2,5],[0.3,1.5,5],[0,1.5,5],[0,1,5],[-0.1,1,5]]);const o=buildCandles(c[c.length-1].c,[[0,1.5,5],[-0.3,2,5],[-0.5,2,5],[0.2,1.5,5]]);return{context:c,outcome:o}}},
+  {title:"EMA Squeeze — Compression Before Expansion",badge:"5-Layer",badgeClass:"badge-gold",category:"ema_analysis",
+    context:"The 9 and 21 EMAs have converged on the 15-minute and are nearly touching. Price is coiling in a tight range right at both EMAs. Volume has dried up. This compression usually precedes a significant directional move.",
+    question:"EMAs squeezed together, price coiling, volume dead. Something is about to happen. How do you prepare?",answer:"flat",
+    explanation:"An EMA squeeze is a setup for the NEXT move, not a trade itself. Wait for the break — whichever direction price explodes from the squeeze, that's your trend for the next hour. Don't predict the direction; react to it.",
+    lesson:"Van Tharp: Compression patterns are your early warning system. They don't tell you which way — they tell you WHEN. Set alerts on both sides and let the market show you.",
+    levels:[{price:0,label:'9/21 EMA Squeeze',color:'#C9A84C'}],
+    buildFn:(b)=>{const c=buildCandles(b,[[0.3,2,5],[0.5,2,4],[-0.3,2,4],[0.3,1.5,4],[-0.2,1.5,4],[0,1,5],[0,0.8,5]]);const o=buildCandles(c[c.length-1].c,[[1,4,3],[1,3,4],[1,2,4],[0.5,2,4]]);return{context:c,outcome:o}}},
+  {title:"9 EMA as Dynamic Support in Strong Trend",badge:"5-Layer",badgeClass:"badge-gold",category:"ema_analysis",
+    context:"SPX is in a strong 15-minute uptrend. Every pullback for the last 2 hours has bounced perfectly off the 9 EMA. Price just touched the 9 EMA again and printed a green hammer candle. The 21 EMA is well below.",
+    question:"Price touched the 9 EMA for the 5th time today and bounced with a hammer. Strong trend, consistent support. Enter long?",answer:"long",
+    explanation:"In a strong trend, the 9 EMA acts as dynamic support. Five touches that all held means institutions are consistently buying at this level. The hammer confirms the bounce. Stop goes just below the 9 EMA.",
+    lesson:"Elder: Strong trends ride the fast EMA like a railroad track. Each touch that holds strengthens the level. Enter on the bounce, not the break — the break means the trend character has changed.",
+    levels:[{price:0,label:'9 EMA (dynamic support)',color:'#C9A84C'},{price:-8,label:'21 EMA',color:'#6B8CFF'}],
+    buildFn:(b)=>{const c=buildCandles(b-10,[[1,3,5],[1,4,4],[-0.3,2,4],[1,3,3],[1,4,3],[-0.3,2,4],[1,3,3],[1,3,3],[-0.3,2,4],[0.3,2,2]]);const o=buildCandles(c[c.length-1].c,[[1,3,4],[1,4,3],[1,3,3],[0.5,2,4]]);return{context:c,outcome:o}}},
+  {title:"Shallow Pullback — Only 38.2% Retracement",badge:"5-Layer",badgeClass:"badge-gold",category:"fib_analysis",
+    context:"EMAs are bullish. Price pulled back from the swing high but only retraced to the 38.2% Fibonacci level — well above the OTE zone (61.8%-78.6%). A green candle just printed at 38.2%. The trend is strong but the entry is shallow.",
+    question:"Price bounced at the 38.2% Fib — above your OTE zone. Strong trend but not the ideal entry depth. What do you do?",answer:"long",
+    explanation:"In a very strong trend, price often doesn't pull back to the OTE zone — it bounces at 38.2% or 50% because buyers are too aggressive to wait for deeper levels. Taking the 38.2% entry with a tighter stop is valid in strong momentum. Waiting for 61.8% may mean missing the move entirely.",
+    lesson:"Livermore: Don't let perfect be the enemy of good. In strong trends, demanding the perfect OTE entry means watching the train leave without you. Adjust your expectations to the trend's strength.",
+    levels:[{price:0,label:'38.2% Fib',color:'#C9A84C'},{price:-8,label:'61.8% OTE',color:'#C9A84C'},{price:12,label:'Swing High',color:'#52a882'}],
+    buildFn:(b)=>{const c=buildCandles(b-5,[[0.5,2,5],[1,4,6],[1,3,5],[1,4,4],[-0.3,2,5],[-0.2,1.5,3],[0.3,2,2]]);const o=buildCandles(c[c.length-1].c,[[1,3,4],[1,4,4],[1,3,3],[0.5,2,4]]);return{context:c,outcome:o}}},
+  {title:"Deep Retracement — Price Hit 100% Fib",badge:"5-Layer",badgeClass:"badge-red",category:"fib_analysis",
+    context:"EMAs were bullish but price pulled back through the entire Fibonacci range — past OTE, past 78.6%, all the way to the 100% level (the prior swing low). The retracement has effectively erased the entire move up.",
+    question:"Price retraced 100% of the prior move. Your uptrend thesis is based on this swing being intact. What now?",answer:"flat",
+    explanation:"A 100% retracement means the swing structure is broken. The prior low that defined your Fibonacci is now being tested — and if it breaks, you have a lower low, which means the trend has reversed. Your bullish thesis is dead.",
+    lesson:"Douglas: When the market tells you that your thesis is wrong, accept it immediately. A 100% retracement is not a buying opportunity — it's the market erasing your premise.",
+    levels:[{price:0,label:'100% Fib (Prior Low)',color:'#e05252'},{price:15,label:'Swing High',color:'#C9A84C'}],
+    buildFn:(b)=>{const c=buildCandles(b-5,[[0.5,2,4],[1,3,5],[1,4,5],[1,3,4],[-0.5,3,5],[-0.8,3,5],[-1,4,5],[-0.5,3,3]]);const o=buildCandles(c[c.length-1].c,[[-0.5,3,4],[-1,4,4],[0.3,2,3],[-0.5,3,4]]);return{context:c,outcome:o}}},
+  {title:"BOS With Engulfing Candle",badge:"5-Layer",badgeClass:"badge-gold",category:"bos_analysis",
+    context:"After a pullback into the OTE zone, the 5-minute just printed a bullish engulfing candle that broke above the most recent swing high — a textbook Break of Structure. The engulfing candle has above-average volume.",
+    question:"Bullish engulfing candle just created a BOS on the 5-minute at the OTE zone with volume. Layers 1-3 are confirmed. Enter?",answer:"long",
+    explanation:"This is the trigger. EMA alignment confirmed the trend. The pullback landed in the OTE zone. And now a BOS with an engulfing candle on volume confirms buyers have retaken control. This is Layer 3 saying 'NOW.'",
+    lesson:"Elder: The BOS engulfing candle is your green light. Everything before it was scouting. This is execution. Enter with confidence, stop below the engulfing candle low.",
+    levels:[{price:0,label:'BOS Level',color:'#52a882'},{price:-6,label:'OTE Zone Low',color:'#C9A84C'}],
+    buildFn:(b)=>{const c=buildCandles(b-5,[[0.5,2,5],[1,3,5],[1,4,4],[-0.5,2,5],[-0.3,2,5],[0.3,2,3],[1,5,1]]);const o=buildCandles(c[c.length-1].c,[[1,3,4],[1,4,3],[1,3,4],[0.5,2,4]]);return{context:c,outcome:o}}},
+  {title:"ChoCh Without Follow-Through",badge:"5-Layer",badgeClass:"badge-gold",category:"bos_analysis",
+    context:"On the 5-minute, after a downtrend, you saw a Change of Character — the first lower high was broken. But since then, price has stalled. No follow-through. No higher low. The ChoCh happened 20 minutes ago and price is just drifting.",
+    question:"A ChoCh occurred but there's no follow-through — no higher low, no BOS. The shift stalled. What do you do?",answer:"flat",
+    explanation:"A ChoCh is an early warning, not a confirmed signal. Without follow-through (a higher low and then a BOS), the ChoCh could be a false start. Wait for the structure to actually shift — don't trade the hope of a shift.",
+    lesson:"Steenbarger: ChoCh gets you ready. BOS gets you in. Trading on ChoCh alone is like entering before the confirmation — you're betting on what might happen instead of what is happening.",
+    levels:[{price:0,label:'ChoCh Level',color:'#C9A84C'}],
+    buildFn:(b)=>{const c=buildCandles(b+5,[[0,2,4],[-0.5,3,5],[-1,3,5],[-0.5,2,4],[0.3,2,3],[0.5,2,2],[0,1.5,5],[0,1,4]]);const o=buildCandles(c[c.length-1].c,[[-0.3,2,4],[-0.5,3,4],[-0.3,2,3],[0.3,2,3]]);return{context:c,outcome:o}}},
+  {title:"POC Magnet — Price Drifting Toward POC",badge:"5-Layer",badgeClass:"badge-gold",category:"volume_analysis",
+    context:"SPX opened away from yesterday's POC and has been drifting toward it all morning. The POC is 8 points above current price. Price action is slow and grinding upward with small candles. No clear trend — just a gravity pull.",
+    question:"Price is slowly drifting toward yesterday's POC from below. No trend structure, just a gradual pull. Do you trade this?",answer:"flat",
+    explanation:"The POC magnet effect is real — price tends to gravitate toward high volume areas. But trading the drift itself is low edge. The trade comes AFTER price reaches the POC: does it accept and continue, or reject and reverse? That's where the decision point is.",
+    lesson:"Van Tharp: Not every price movement is a trade. The POC drift is information, not an opportunity. Wait for the reaction at the level, then trade the reaction.",
+    levels:[{price:8,label:'POC',color:'#C9A84C'},{price:0,label:'Current Price',color:'#52a882'}],
+    buildFn:(b)=>{const c=buildCandles(b-4,[[0,2,4],[0.2,1.5,5],[0.2,1.5,5],[0.1,1,5],[0.2,1.5,5],[0.1,1,5],[0.2,1,5]]);const o=buildCandles(c[c.length-1].c,[[0.3,2,4],[0.5,2,3],[-0.3,2,4],[-0.5,3,4]]);return{context:c,outcome:o}}},
+  {title:"Break Above Value Area High",badge:"5-Layer",badgeClass:"badge-gold",category:"volume_analysis",
+    context:"SPX just broke above the Value Area High on increasing volume. The 15-minute EMAs are bullish. Price spent the entire morning inside the value area and now it's pushing into premium territory above VAH.",
+    question:"Price broke above VAH with volume. EMAs bullish. Moving from fair value to premium. Continue long?",answer:"long",
+    explanation:"Breaking above VAH with volume means the market is accepting higher prices. Combined with bullish EMAs, this is a momentum continuation. The VAH now becomes support — if price pulls back to it, that's your next entry.",
+    lesson:"Elder: When price moves from the value area into premium territory with conviction, institutions are committing capital to higher levels. Follow the money.",
+    levels:[{price:0,label:'VAH (now support)',color:'#52a882'},{price:-8,label:'POC',color:'#C9A84C'}],
+    buildFn:(b)=>{const c=buildCandles(b-3,[[0,2,4],[0.3,2,5],[0.5,2,5],[0.3,1.5,5],[0.5,2,4],[0.8,3,3],[1,3,3]]);const o=buildCandles(c[c.length-1].c,[[1,3,4],[0.5,2,4],[1,3,3],[1,2,4]]);return{context:c,outcome:o}}},
+  {title:"Rejection at Value Area High — Trapped Longs",badge:"5-Layer",badgeClass:"badge-gold",category:"volume_analysis",
+    context:"SPX poked above the Value Area High but immediately reversed back inside the value area. The poke above had low volume — no commitment. Now there are traders trapped long above VAH who will need to exit.",
+    question:"Price poked above VAH on low volume and reversed back inside. Trapped longs above. What's the play?",answer:"short",
+    explanation:"A failed breakout above VAH with low volume is a classic rejection. The traders who bought the breakout are now trapped — their stops below VAH will fuel the move down. Short with a stop above the failed poke high.",
+    lesson:"Douglas: Failed breakouts are among the highest-probability trades because they have built-in fuel — the trapped traders whose stops will accelerate the move in your direction.",
+    levels:[{price:3,label:'VAH',color:'#e05252'},{price:0,label:'Back in VA',color:'#C9A84C'}],
+    buildFn:(b)=>{const c=buildCandles(b-3,[[0.3,2,5],[0.5,2,5],[0.5,2,4],[0.3,1.5,4],[1,4,2],[0,2,2],[-0.5,3,3],[-0.3,2,3]]);const o=buildCandles(c[c.length-1].c,[[-0.5,3,4],[-1,4,4],[-0.5,3,3],[0.3,2,3]]);return{context:c,outcome:o}}},
+  {title:"Approaching Put Wall — Gamma Support",badge:"5-Layer",badgeClass:"badge-gold",category:"gex_analysis",
+    context:"SPX has been selling off but is now approaching a major put wall identified in today's GEX data. This level has acted as support for the past 3 days. Price is 2 points above the put wall level.",
+    question:"Price is approaching a put wall that held as support three times this week. EMAs are mixed. Do you buy the level?",answer:"long",
+    explanation:"Put walls create a floor where market makers' hedging activity tends to slow or reverse selloffs. Three successful holds at this level is strong evidence. Enter long at the put wall with a tight stop just below.",
+    lesson:"Van Tharp: Gamma levels are the invisible hand of the market. When market makers hedge, they create support and resistance that doesn't show up on a regular chart. Use GEX data to see what others can't.",
+    levels:[{price:0,label:'Put Wall / Support',color:'#52a882'},{price:10,label:'HVL',color:'#C9A84C'}],
+    buildFn:(b)=>{const c=buildCandles(b+10,[[0.3,2,4],[0.5,2,4],[-0.3,2,4],[-0.5,3,5],[-0.5,3,5],[-0.3,2,5],[0,1.5,4],[0.2,1,3]]);const o=buildCandles(c[c.length-1].c,[[0.5,2,4],[1,3,4],[0.5,2,4],[1,3,3]]);return{context:c,outcome:o}}},
+  {title:"Gamma Flip at HVL — Regime Change",badge:"5-Layer",badgeClass:"badge-red",category:"gex_analysis",
+    context:"SPX was trading above the HVL all morning in positive gamma territory. In the last 30 minutes, price has broken below the HVL. In negative gamma, market makers' hedging amplifies moves instead of dampening them. The EMAs just crossed bearish.",
+    question:"Price broke below the HVL into negative gamma territory. EMAs crossed bearish. The gamma regime has flipped. What do you do?",answer:"short",
+    explanation:"Below the HVL, the gamma landscape flips — drops accelerate instead of being absorbed. Combined with a bearish EMA cross, this is a regime change. Any longs should be exited. If you trade, it's short only with the understanding that moves can be faster and larger than normal.",
+    lesson:"Douglas: Gamma regime changes are like the weather shifting. In positive gamma, the market self-corrects. In negative gamma, it self-reinforces. Adjust your position sizing and expectations accordingly.",
+    levels:[{price:3,label:'HVL',color:'#C9A84C'},{price:0,label:'-Gamma Zone',color:'#e05252'}],
+    buildFn:(b)=>{const c=buildCandles(b+5,[[0.3,2,5],[0.5,2,5],[0.3,1.5,4],[0,2,4],[-0.3,2,4],[-0.5,3,4],[-1,4,4],[-1,3,3]]);const o=buildCandles(c[c.length-1].c,[[-1,5,4],[-1,4,4],[-0.5,3,4],[0.3,2,3]]);return{context:c,outcome:o}}},
+  {title:"Call Wall Target — Take Profit?",badge:"5-Layer",badgeClass:"badge-gold",category:"gex_analysis",
+    context:"You've been long SPX all morning. Your position is up +2.3R. Price is now 1 point below the major call wall from today's GEX data. This level has been the daily ceiling for 4 consecutive days.",
+    question:"You're up 2.3R and price is at the call wall ceiling that held all week. Keep holding or take profit?",answer:"flat",
+    explanation:"Call walls act as ceilings because market maker hedging creates selling pressure at the strike. Four days of holding means this level is well-defended. Take the 2.3R profit — fighting the call wall for an extra 0.5R is poor risk management when the ceiling has proven itself.",
+    lesson:"Livermore: Know when to leave the table. A call wall that held four days in a row is the market's way of telling you where the move ends. Take the money and wait for the next opportunity.",
+    levels:[{price:1,label:'Call Wall (ceiling)',color:'#e05252'},{price:0,label:'Current Price',color:'#52a882'}],
+    buildFn:(b)=>{const c=buildCandles(b-15,[[0.5,2,5],[1,3,5],[1,4,5],[1,3,4],[0.5,2,5],[0.3,1.5,5],[0.5,2,4],[0.3,1,4]]);const o=buildCandles(c[c.length-1].c,[[0.1,1.5,4],[0,1.5,4],[-0.3,2,4],[-0.5,3,4]]);return{context:c,outcome:o}}},
+  {title:"BOS Confirmed + Volume Node + GEX Floor",badge:"5-Layer",badgeClass:"badge-gold",category:"confluence",
+    context:"Maximum confluence setup: EMAs bullish on 15-minute. Price bounced from the OTE zone at 70.5%. A BOS just confirmed on the 5-minute with a higher low. The bounce is right at a VRVP high volume node. And GEX shows a positive gamma floor 4 points below your entry.",
+    question:"All 5 layers confirmed. This is the highest-probability setup you've seen this week. Full size?",answer:"long",
+    explanation:"When all five layers agree, you take the trade at full size with defined risk. Stop below the OTE swing low (which aligns with the gamma floor below). Target the next resistance or gamma wall above. This is what the framework is designed for.",
+    lesson:"Elder: Maximum confluence = maximum confidence = full position size. This is why you built the framework — so that when all five independent systems agree, you act without hesitation.",
+    levels:[{price:0,label:'70.5% / HVN / BOS',color:'#C9A84C'},{price:-4,label:'GEX Floor / Stop',color:'#52a882'},{price:12,label:'Target',color:'#52a882'}],
+    buildFn:(b)=>{const c=buildCandles(b-5,[[0.5,2,5],[1,3,5],[1,4,5],[-0.5,2,5],[-0.3,2,5],[0.3,2,3],[0.5,2,3],[1,3,2]]);const o=buildCandles(c[c.length-1].c,[[1,3,4],[1,4,4],[1,3,3],[1,2,4],[0.5,2,4]]);return{context:c,outcome:o}}},
+  {title:"EMA Bearish + OTE Short Setup",badge:"5-Layer",badgeClass:"badge-gold",category:"short_setup",
+    context:"15-minute EMAs are bearish — 9 below 21, both sloping down. Price rallied to the 61.8% Fibonacci retracement level and stalled. The 5-minute is printing a bearish engulfing candle right at this level. Volume is expanding on the rejection.",
+    question:"Bearish EMAs, rally to 61.8%, bearish engulfing with volume. This is a short OTE setup. Enter?",answer:"short",
+    explanation:"The 5-layer framework works for shorts too. Layer 1: EMAs bearish. Layer 2: Price at OTE zone from the bearish side (61.8% resistance). Layer 3: Bearish engulfing = beginning of BOS downward. The framework is symmetric — flip every layer for shorts.",
+    lesson:"Steenbarger: Most traders only think about the framework for longs. The mirror setup for shorts is equally valid. In a downtrend, the OTE zone becomes the entry for shorts, not longs.",
+    levels:[{price:0,label:'61.8% Fib (resistance)',color:'#C9A84C'},{price:-3,label:'9 EMA',color:'#C9A84C'},{price:5,label:'78.6% Fib',color:'#C9A84C'}],
+    buildFn:(b)=>{const c=buildCandles(b+10,[[0,2,4],[-0.5,3,5],[-1,4,5],[-1,3,4],[0.5,2,5],[0.3,2,5],[0,1.5,4],[-0.5,3,1]]);const o=buildCandles(c[c.length-1].c,[[-0.5,3,4],[-1,4,4],[-1,3,4],[-0.5,2,4]]);return{context:c,outcome:o}}},
+  {title:"Structure Break — Lower Low After Higher Low",badge:"5-Layer",badgeClass:"badge-red",category:"bos_analysis",
+    context:"You were tracking a bullish structure on the 5-minute — higher highs and higher lows. But the last pullback went deeper. The prior higher low just broke — price made a lower low for the first time in the uptrend.",
+    question:"The bullish structure just broke — first lower low after a series of higher lows. You had a long bias. What now?",answer:"flat",
+    explanation:"A lower low breaks the higher-high/higher-low sequence that defined the uptrend. This is a Change of Character (ChoCh) to the downside. Your bullish thesis needs to be shelved until new bullish structure forms. Don't fight the structural shift.",
+    lesson:"Douglas: Structure tells you the truth about who's in control. When the pattern of higher lows breaks, the buyers who were defending those levels have failed. Respect the message.",
+    levels:[{price:0,label:'Broken Higher Low',color:'#e05252'},{price:5,label:'Last Higher High',color:'#C9A84C'}],
+    buildFn:(b)=>{const c=buildCandles(b-5,[[0.5,2,4],[1,3,4],[1,4,4],[-0.5,2,4],[0.5,3,3],[1,3,3],[-0.5,3,4],[-0.8,3,4],[-0.5,2,3]]);const o=buildCandles(c[c.length-1].c,[[-0.5,3,4],[0.3,2,3],[-0.5,3,4],[-1,4,4]]);return{context:c,outcome:o}}},
+  {title:"Volume Divergence — Price Up, Volume Down",badge:"5-Layer",badgeClass:"badge-gold",category:"volume_analysis",
+    context:"SPX has made three consecutive higher highs on the 15-minute. But volume is declining on each new high. The move is losing conviction. Your VRVP shows you're entering a low volume area above.",
+    question:"Higher highs but declining volume on each push. You're above the high-volume area. Warning signs?",answer:"flat",
+    explanation:"Volume divergence — price rising on declining volume — is one of the strongest warnings in technical analysis. The market is making new highs but fewer participants are committing capital. Combined with entering a low-volume zone, this rally is on borrowed time.",
+    lesson:"Elder: Volume confirms the move. When price goes up but volume goes down, it's like a car accelerating while the engine is losing power. The move is real until it isn't — and the volume is telling you the engine is dying.",
+    levels:[{price:0,label:'Current High',color:'#C9A84C'},{price:-10,label:'Volume Node Below',color:'#52a882'}],
+    buildFn:(b)=>{const c=buildCandles(b-10,[[0.5,2,5],[1,3,5],[1,4,4],[0.5,2,4],[1,3,3],[0.5,2,4],[0.3,1.5,4],[0.5,2,3],[0.3,1,4]]);const o=buildCandles(c[c.length-1].c,[[0.2,1.5,3],[-0.3,2,4],[-0.5,3,4],[-1,4,4]]);return{context:c,outcome:o}}},
+  {title:"First 15 Minutes — Opening Chaos",badge:"Discipline",badgeClass:"badge-red",category:"session_timing",
+    context:"The market just opened. The first 5 candles on the 5-minute are wildly mixed — a huge green, a huge red, a doji, another green, another red. Volume is spiking but there's no structure. Your EMAs haven't had time to establish direction.",
+    question:"It's 9:40am, 10 minutes into the session. The opening is chaotic with no structure. A setup is forming. What do you do?",answer:"flat",
+    explanation:"The first 15-20 minutes of the session are the highest-volatility, lowest-probability environment. Institutions are executing overnight orders, algorithms are establishing positions, and the EMAs haven't settled. Wait for the opening noise to clear before applying your framework.",
+    lesson:"Steenbarger: The opening rotation is noise disguised as opportunity. Let the market establish its tone before committing capital. The best setups of the day rarely appear in the first 15 minutes.",
+    levels:[{price:3,label:'Opening High',color:'#e05252'},{price:-3,label:'Opening Low',color:'#52a882'}],
+    buildFn:(b)=>{const c=buildCandles(b,[[1,6,1],[-1,5,1],[0,3,1],[1,4,1],[-1,5,1],[0.5,3,2],[0,2,3],[0.3,2,3],[0.5,2,4]]);const o=buildCandles(c[c.length-1].c,[[0.5,2,4],[1,3,4],[1,3,3],[0.5,2,4]]);return{context:c,outcome:o}}},
+  {title:"Power Hour Setup — 3pm Momentum",badge:"5-Layer",badgeClass:"badge-gold",category:"session_timing",
+    context:"It's 3:05pm. The last hour of trading is about to begin. SPX has been trending up all day. The 15-minute EMAs are strongly bullish. Price just pulled back to the 9 EMA and bounced. Volume is picking up as institutional rebalancing begins.",
+    question:"Power hour starting. Strong uptrend all day. Price bounced off 9 EMA. Volume building. Do you enter for the close?",answer:"long",
+    explanation:"The last hour often sees trend continuation as institutional rebalancing flows push prices. A strong trend into the close with a bounce off the 9 EMA and increasing volume is a high-probability continuation setup.",
+    lesson:"Livermore: The last hour tells the truth about the day's conviction. Strong closes on volume confirm the trend. Weak closes on volume warn of tomorrow's reversal.",
+    levels:[{price:0,label:'9 EMA',color:'#C9A84C'},{price:8,label:'Day High Target',color:'#52a882'}],
+    buildFn:(b)=>{const c=buildCandles(b-8,[[0.5,2,5],[1,3,5],[1,3,4],[0.5,2,4],[1,3,4],[0.5,2,3],[-0.3,2,4],[0.3,2,3]]);const o=buildCandles(c[c.length-1].c,[[0.5,2,3],[1,3,4],[1,4,3],[1,3,3],[0.5,2,3]]);return{context:c,outcome:o}}},
+  {title:"Fibonacci Extension Target Hit",badge:"5-Layer",badgeClass:"badge-gold",category:"fib_analysis",
+    context:"Your long trade has been running perfectly. Price just hit the 1.618 Fibonacci extension level — your extended target. The candle at the extension shows a long upper wick. You're at +2.8R on the trade.",
+    question:"Price hit the 1.618 Fibonacci extension with an upper wick rejection. You're at +2.8R. What do you do?",answer:"flat",
+    explanation:"Fibonacci extension levels are natural profit-taking zones. The 1.618 extension is where many institutional algorithms are set to take profits. The upper wick at this level confirms sellers appeared. At +2.8R, take the profit.",
+    lesson:"Van Tharp: Your R-multiple is your report card. A 2.8R trade with a clean exit at a Fibonacci extension is an A-grade result. Don't turn an A into a C by holding through the rejection.",
+    levels:[{price:0,label:'1.618 Fib Extension',color:'#C9A84C'},{price:-15,label:'Entry',color:'#52a882'}],
+    buildFn:(b)=>{const c=buildCandles(b-15,[[0.5,2,4],[1,3,5],[1,4,5],[1,3,4],[0.5,2,4],[1,3,4],[1,4,3],[0.5,2,4],[0.3,1.5,3]]);const o=buildCandles(c[c.length-1].c,[[0,1.5,3],[-0.3,2,4],[-0.5,3,4],[0.3,2,3]]);return{context:c,outcome:o}}},
+  {title:"Triple Confluence Zone — HVN + OTE + GEX",badge:"5-Layer",badgeClass:"badge-gold",category:"confluence",
+    context:"Three of your framework layers converge at the same price: a high volume node (VRVP), the 70.5% Fibonacci level (OTE), and a positive gamma floor (GEX). Price is 3 points above this triple confluence zone and pulling back toward it.",
+    question:"Three layers converge at one price — HVN, 70.5% Fib, and gamma floor. Price is pulling back toward this zone. Set up for a long?",answer:"long",
+    explanation:"Triple confluence at a single price is the strongest possible support. Three independent systems all identifying the same level as significant means institutional interest, mathematical structure, and options flow all agree. Enter on the reaction at this level.",
+    lesson:"Elder: When three independent indicators point to the same price, that's not a coincidence — that's the market's fingerprint. These levels don't come often. When they do, trade them with conviction.",
+    levels:[{price:0,label:'HVN + 70.5% + GEX Floor',color:'#C9A84C'},{price:10,label:'Swing High Target',color:'#52a882'}],
+    buildFn:(b)=>{const c=buildCandles(b+3,[[0.5,2,5],[1,3,5],[1,4,4],[0.5,2,4],[-0.3,2,5],[-0.3,2,5],[-0.2,1.5,4],[0.2,1,3]]);const o=buildCandles(c[c.length-1].c,[[0.5,2,3],[1,3,4],[1,4,4],[1,3,3],[0.5,2,4]]);return{context:c,outcome:o}}},
+  {title:"2 of 5 Layers — Strong Disagree",badge:"5-Layer",badgeClass:"badge-red",category:"confluence",
+    context:"EMAs are bullish (Layer 1). But the pullback didn't reach the OTE zone — only 38.2% (Layer 2 partial). No BOS on the 5-minute (Layer 3 missing). You're in a low volume gap (Layer 4 against). GEX is neutral near HVL (Layer 5 neutral). Only 1 of 5 layers is clearly confirmed.",
+    question:"Only EMA alignment is clear. Fib is partial. No BOS. Volume gap. GEX neutral. Do you trade?",answer:"flat",
+    explanation:"One confirmed layer out of five is not a trade. The framework exists to keep you out of low-probability setups, not to find reasons to enter. When the framework says no, the answer is no — regardless of how bullish the EMAs look alone.",
+    lesson:"Steenbarger: Discipline means following the framework even when your gut wants to trade. One layer is never enough. The framework protects you from yourself.",
+    levels:[{price:0,label:'38.2% Fib',color:'#C9A84C'},{price:-5,label:'Volume Gap',color:'#e05252'}],
+    buildFn:(b)=>{const c=buildCandles(b-3,[[0.5,2,5],[1,3,5],[1,4,4],[0.5,2,4],[-0.2,2,4],[0,1.5,4],[0.2,1.5,5],[0,1,4]]);const o=buildCandles(c[c.length-1].c,[[0,1.5,4],[-0.3,2,4],[-0.5,3,4],[0.3,2,3]]);return{context:c,outcome:o}}},
+  {title:"Stop Loss Hit — Clean Process",badge:"Discipline",badgeClass:"badge-gold",category:"execution",
+    context:"You took a textbook long setup. All 5 layers were aligned. Your stop was placed below the OTE swing low. The market dropped and hit your stop for a -1R loss. The process was perfect — the outcome wasn't.",
+    question:"Your stop was hit on a clean setup. -1R loss. Perfect process, wrong outcome. How do you respond?",answer:"long",
+    explanation:"You journal the trade, note that the process was correct, and take the next valid setup when it appears. A single loss on a clean process is not information about your system — it's variance. The next trade is independent of this one.",
+    lesson:"Douglas: 'You don't need to know what is going to happen next in order to make money.' Every setup has a probability of working. A loss on a good setup doesn't mean the setup was wrong — it means this one didn't work. Move on.",
+    levels:[{price:0,label:'New Setup Level',color:'#52a882'},{price:-5,label:'Prior Stop (hit)',color:'#e05252'}],
+    buildFn:(b)=>{const c=buildCandles(b,[[0.5,2,5],[1,3,5],[1,4,4],[-0.5,3,4],[-1,4,5],[-0.5,2,3],[0.3,2,3],[0.5,2,3],[0.3,2,4],[1,3,2]]);const o=buildCandles(c[c.length-1].c,[[1,3,4],[1,4,4],[1,3,3],[0.5,2,4]]);return{context:c,outcome:o}}},
+  {title:"Multiple Timeframe Conflict",badge:"5-Layer",badgeClass:"badge-red",category:"ema_analysis",
+    context:"The 15-minute EMAs are bullish — 9 above 21, both sloping up. But the daily chart shows price right at major resistance with a bearish engulfing candle from yesterday. The higher timeframe disagrees with your trading timeframe.",
+    question:"15-minute says long. Daily says resistance with a bearish candle. Two timeframes disagree. What do you do?",answer:"flat",
+    explanation:"When the daily chart is at major resistance with bearish signals, long setups on the 15-minute have a lower win rate and shorter targets. The daily is a higher authority than the 15-minute. Wait for the daily-level resistance to resolve before committing to 15-minute longs.",
+    lesson:"Elder: The Triple Screen system exists because no single timeframe tells the whole story. When the higher timeframe disagrees, either reduce size or wait. Never fight the bigger picture.",
+    levels:[{price:0,label:'Daily Resistance',color:'#e05252'},{price:-5,label:'15-min Pullback Zone',color:'#C9A84C'}],
+    buildFn:(b)=>{const c=buildCandles(b-3,[[0.5,2,5],[1,3,5],[1,3,4],[0.5,2,4],[0.3,1.5,5],[0.5,2,4],[0.3,1.5,4],[0,1.5,4]]);const o=buildCandles(c[c.length-1].c,[[0,1.5,4],[-0.3,2,4],[-0.5,3,4],[-1,4,4]]);return{context:c,outcome:o}}},
 ];
 
 let currentScenarioIdx = 0;
@@ -5325,7 +5706,8 @@ function drawScenarioChart(candles, levels, base, showOutcome) {
   const minP = Math.min(...allL) - 2;
   const range = maxP - minP || 1;
   const pad = { t: 24, r: 24, b: 24, l: 64 };
-  const cW = (W - pad.l - pad.r) / candles.length;
+  const cW = Math.min((W - pad.l - pad.r) / candles.length, 14);
+  const chartOffset = pad.l + ((W - pad.l - pad.r) - cW * candles.length) / 2;
 
   // Grid
   ctx.strokeStyle = 'rgba(255,255,255,0.04)'; ctx.lineWidth = 1;
@@ -5358,7 +5740,7 @@ function drawScenarioChart(candles, levels, base, showOutcome) {
   // Decision point line (if showing context only)
   const contextLen = currentScenarioData ? currentScenarioData.context.length : candles.length;
   if (showOutcome && contextLen < candles.length) {
-    const dpX = pad.l + contextLen * cW;
+    const dpX = chartOffset + contextLen * cW;
     ctx.strokeStyle = 'rgba(201,168,76,0.3)'; ctx.lineWidth = 2; ctx.setLineDash([4, 4]);
     ctx.beginPath(); ctx.moveTo(dpX, pad.t); ctx.lineTo(dpX, H - pad.b); ctx.stroke();
     ctx.setLineDash([]);
@@ -5368,8 +5750,8 @@ function drawScenarioChart(candles, levels, base, showOutcome) {
 
   // Candles
   candles.forEach((c, i) => {
-    const x = pad.l + i * cW + cW * 0.15;
-    const w = cW * 0.7;
+    const x = chartOffset + i * cW + cW * 0.15;
+    const w = cW * 0.65;
     const bullish = c.c >= c.o;
     const isOutcome = i >= contextLen;
     const color = bullish ? '#52a882' : '#e05252';
