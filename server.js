@@ -154,8 +154,8 @@ const chartLimiter = rateLimit({
 app.use(generalLimiter);
 
 // ── AUTH HELPERS ─────────────────────────────────────────────────
-function issueToken(payload) {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: '3650d' });
+function issueToken(payload, expiresIn = '7d') {
+  return jwt.sign(payload, JWT_SECRET, { expiresIn });
 }
 
 function verifyToken(token) {
@@ -175,7 +175,17 @@ function requireAccess(req, res, next) {
   const token = req.cookies.mindedge_access;
   if (!token) return res.redirect('/paywall');
   try {
-    req.user = verifyToken(token);
+    const user = verifyToken(token);
+    // Re-validate access codes — if code was removed, deny access
+    if (user.code && !user.stripe_subscription) {
+      const validCodes = (process.env.ACCESS_CODES || '').split(',').map(c => c.trim().toUpperCase());
+      const isAdmin = user.code === (ADMIN_CODE || '').toUpperCase();
+      if (!isAdmin && !validCodes.includes(user.code)) {
+        res.clearCookie('mindedge_access');
+        return res.redirect('/paywall');
+      }
+    }
+    req.user = user;
     next();
   } catch {
     res.clearCookie('mindedge_access');
@@ -187,7 +197,17 @@ function requireAccessAPI(req, res, next) {
   const token = req.cookies.mindedge_access;
   if (!token) return res.status(401).json({ error: 'Unauthorized' });
   try {
-    req.user = verifyToken(token);
+    const user = verifyToken(token);
+    // Re-validate access codes
+    if (user.code && !user.stripe_subscription) {
+      const validCodes = (process.env.ACCESS_CODES || '').split(',').map(c => c.trim().toUpperCase());
+      const isAdmin = user.code === (ADMIN_CODE || '').toUpperCase();
+      if (!isAdmin && !validCodes.includes(user.code)) {
+        res.clearCookie('mindedge_access');
+        return res.status(401).json({ error: 'Access revoked' });
+      }
+    }
+    req.user = user;
     next();
   } catch {
     res.status(401).json({ error: 'Session expired' });
@@ -229,6 +249,17 @@ app.get('/api/auth-status', async (req, res) => {
   if (!token) return res.json({ authenticated: false });
   try {
     const user = verifyToken(token);
+
+    // Re-validate access codes
+    if (user.code && !user.stripe_subscription) {
+      const validCodes = (process.env.ACCESS_CODES || '').split(',').map(c => c.trim().toUpperCase());
+      const isAdmin = user.code === (ADMIN_CODE || '').toUpperCase();
+      if (!isAdmin && !validCodes.includes(user.code)) {
+        res.clearCookie('mindedge_access');
+        return res.json({ authenticated: false, reason: 'code_revoked' });
+      }
+    }
+
     const result = {
       authenticated: true,
       tier: user.tier || 'pro',
@@ -260,6 +291,44 @@ app.get('/api/auth-status', async (req, res) => {
     res.json(result);
   } catch {
     res.json({ authenticated: false });
+  }
+});
+
+// Verify access on page load — frontend calls this to enforce revocation
+app.get('/api/verify', async (req, res) => {
+  const token = req.cookies.mindedge_access;
+  if (!token) return res.json({ valid: false, reason: 'no_token' });
+  try {
+    const user = verifyToken(token);
+
+    // Re-validate access codes
+    if (user.code && !user.stripe_subscription) {
+      const validCodes = (process.env.ACCESS_CODES || '').split(',').map(c => c.trim().toUpperCase());
+      const isAdmin = user.code === (ADMIN_CODE || '').toUpperCase();
+      if (!isAdmin && !validCodes.includes(user.code)) {
+        res.clearCookie('mindedge_access');
+        return res.json({ valid: false, reason: 'code_revoked' });
+      }
+    }
+
+    // Re-validate Stripe subscriptions
+    if (user.stripe_subscription) {
+      try {
+        const sub = await stripe.subscriptions.retrieve(user.stripe_subscription);
+        if (['canceled', 'unpaid', 'incomplete_expired'].includes(sub.status)) {
+          res.clearCookie('mindedge_access');
+          return res.json({ valid: false, reason: 'subscription_' + sub.status });
+        }
+      } catch (err) {
+        console.error('Stripe verify error:', err.message);
+        // If Stripe is unreachable, trust JWT for now
+      }
+    }
+
+    res.json({ valid: true, tier: user.tier });
+  } catch {
+    res.clearCookie('mindedge_access');
+    res.json({ valid: false, reason: 'token_expired' });
   }
 });
 
@@ -422,7 +491,7 @@ app.get('/payment-success', async (req, res) => {
         stripe_subscription: subscriptionId,
         subscribed_at: Date.now(),
         includesGuide: productInfo.includesGuide,
-      });
+      }, '365d');
 
       setAccessCookie(res, token);
       return res.redirect('/app');
