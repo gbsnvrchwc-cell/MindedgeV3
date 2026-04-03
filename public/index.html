@@ -5103,6 +5103,156 @@ const scenarioTemplates = [
       return { context: ctx, outcome: out };
     }
   },
+  {
+    title: "EMA Alignment — 9 Crossing Above 21",
+    badge: "5-Layer", category: "ema_cross",
+    context: "On the 15-minute chart, the 9 EMA just crossed above the 21 EMA. Both are starting to slope upward. Price is trading above both EMAs. You're looking for a long entry.",
+    question: "The 9 EMA just crossed the 21 on the 15-minute. Price is above both. Layer 1 is checked. Do you enter now or wait?",
+    answer: "flat",
+    explanation: "Layer 1 (EMA alignment) is confirmed, but you need the other layers before entering. Wait for a pullback into the OTE zone on the 5-minute, then look for a BOS to time your entry. Entering just because the EMAs crossed is chasing — you need confluence, not a single indicator.",
+    lesson: "Van Tharp: Position sizing and entry timing are separate decisions. Confirming the trend is step one. Finding the entry with defined risk is step two. Skipping steps is how you turn a good thesis into a bad trade.",
+    levels: [{price: 0, label: '9 EMA', color: '#C9A84C'}, {price: -3, label: '21 EMA', color: '#6B8CFF'}],
+    buildFn: (base) => {
+      const ctx = buildCandles(base - 5, [[-0.3, 3, 4], [0, 2, 3], [0.3, 2, 3], [0.5, 3, 3], [1, 3, 3]]);
+      const out = buildCandles(ctx[ctx.length-1].c, [[1, 2, 2], [-0.3, 2, 3], [-0.5, 2, 3], [0.5, 2, 2], [1, 3, 3], [1, 2, 3]]);
+      return { context: ctx, outcome: out };
+    }
+  },
+  {
+    title: "OTE Zone Pullback — 70.5% Reaction",
+    badge: "5-Layer", category: "ote_entry",
+    context: "15-minute EMAs are bullish. On the 5-minute, price pulled back from a swing high into the Fibonacci OTE zone. There's a clear reaction candle at the 70.5% level — a long lower wick rejection. The 5-minute is now printing a higher low.",
+    question: "EMAs aligned, price reacted at the 70.5% Fibonacci level with a wick rejection, and a higher low is forming. What do you do?",
+    answer: "long",
+    explanation: "Layers 1-3 are confirmed: EMAs bullish, price in OTE zone with a reaction, and a higher low forming (BOS building). This is exactly the setup the 5-layer framework is designed to catch. Enter with a stop below the OTE zone swing low.",
+    lesson: "Elder: The best entries come from confluence — multiple independent indicators agreeing. When the trend, the retracement level, and the structural shift all point the same way, the probability is stacked in your favor.",
+    levels: [{price: 0, label: '70.5% Fib', color: '#C9A84C'}, {price: -4, label: '78.6% Fib', color: '#C9A84C'}, {price: 8, label: 'Swing High', color: '#52a882'}],
+    buildFn: (base) => {
+      const ctx = buildCandles(base - 8, [[1, 4, 5], [1, 3, 3], [-0.5, 3, 4], [-0.3, 2, 3], [0.3, 2, 2]]);
+      const out = buildCandles(ctx[ctx.length-1].c, [[1, 3, 3], [1, 4, 3], [1, 3, 2], [1, 2, 3], [0.5, 2, 3]]);
+      return { context: ctx, outcome: out };
+    }
+  },
+  {
+    title: "OTE Zone Failed — Price Through 78.6%",
+    badge: "5-Layer", category: "ote_failed",
+    context: "15-minute EMAs are bullish. Price pulled back into the OTE zone, but instead of bouncing, it sliced through the 78.6% level on the 5-minute and closed below it. The pullback has become something else.",
+    question: "Price was in the OTE zone but just closed below 78.6% on the 5-minute. Your thesis was long. What now?",
+    answer: "flat",
+    explanation: "The OTE zone has failed. When price closes below 78.6%, the Fibonacci structure is broken. Your pullback thesis is dead. Don't lower your stop to give it room — the structure told you the answer. Wait for a new setup.",
+    lesson: "Douglas: The ability to accept that a setup has failed and walk away is what separates professional traders from amateurs. The market doesn't care about your analysis. It cares about what's actually happening on the chart right now.",
+    levels: [{price: 0, label: '78.6% Fib', color: '#e05252'}, {price: 5, label: '61.8% Fib', color: '#C9A84C'}],
+    buildFn: (base) => {
+      const ctx = buildCandles(base + 5, [[1, 3, 4], [1, 2, 3], [-0.5, 3, 3], [-0.8, 3, 3], [-1, 4, 3]]);
+      const out = buildCandles(ctx[ctx.length-1].c, [[-0.5, 3, 3], [-0.3, 2, 3], [0.3, 2, 2], [0.5, 3, 3], [1, 3, 3]]);
+      return { context: ctx, outcome: out };
+    }
+  },
+  {
+    title: "False BOS on the 1-Minute",
+    badge: "5-Layer", category: "false_bos",
+    context: "EMAs are bullish on the 15-minute. Price pulled back into the OTE zone. On the 1-minute, you see what looks like a higher low and a break above a recent swing high. But on the 5-minute, the structure is still making lower highs.",
+    question: "The 1-minute shows a BOS, but the 5-minute is still bearish. Your finger is on the buy button. What do you do?",
+    answer: "flat",
+    explanation: "A 1-minute BOS inside a 5-minute downtrend is noise, not signal. The timeframe hierarchy matters: 15-minute sets direction, 5-minute confirms structure, 1-minute times the entry. You never take a 1-minute signal that contradicts the 5-minute.",
+    lesson: "Steenbarger: The smaller timeframe serves the larger one, not the other way around. When you see what you want to see on the 1-minute, that's confirmation bias in real time. Discipline means waiting for the 5-minute to confirm.",
+    levels: [{price: 0, label: '5-Min Lower High', color: '#e05252'}, {price: -6, label: 'OTE Zone', color: '#C9A84C'}],
+    buildFn: (base) => {
+      const ctx = buildCandles(base + 5, [[1, 3, 3], [-0.5, 3, 3], [-0.3, 2, 3], [0.3, 2, 2], [-0.3, 2, 3], [0.2, 1.5, 2]]);
+      const out = buildCandles(ctx[ctx.length-1].c, [[-0.5, 3, 3], [-1, 4, 3], [-0.5, 3, 3], [0.3, 2, 2], [-0.5, 3, 3]]);
+      return { context: ctx, outcome: out };
+    }
+  },
+  {
+    title: "Volume Node Support — Bounce at POC",
+    badge: "5-Layer", category: "volume_support",
+    context: "The VRVP shows a high volume node (POC) right at the level where price just pulled back to. This level aligns with your Fibonacci 70.5% OTE zone. The 5-minute is showing a hammer candle with expanding volume.",
+    question: "Price pulled back to a high volume node that aligns with the OTE zone. A hammer candle just printed with volume. What's your decision?",
+    answer: "long",
+    explanation: "This is maximum confluence: Layer 1 (EMAs bullish), Layer 2 (in OTE zone), Layer 4 (volume node support at POC), and a hammer candle suggesting Layer 3 (BOS forming). When three or more layers converge at the same price, that's a high-probability entry.",
+    lesson: "Van Tharp: The highest expectancy trades come from multiple independent reasons to take the same position. Each layer of confirmation is independent — and when they all agree, the probability tilts dramatically in your favor.",
+    levels: [{price: 0, label: 'POC / HVN', color: '#C9A84C'}, {price: 0, label: '70.5% Fib', color: '#C9A84C'}, {price: 8, label: 'Prior High', color: '#52a882'}],
+    buildFn: (base) => {
+      const ctx = buildCandles(base + 8, [[1, 3, 5], [1, 2, 3], [-0.5, 2, 4], [-0.3, 2, 3], [0.3, 2, 2]]);
+      const out = buildCandles(ctx[ctx.length-1].c, [[1, 3, 3], [1, 4, 3], [1, 3, 2], [1, 2, 3]]);
+      return { context: ctx, outcome: out };
+    }
+  },
+  {
+    title: "Low Volume Gap — No Support Below",
+    badge: "5-Layer", category: "volume_gap",
+    context: "Price is pulling back from a swing high and approaching a level that looks like it might be support on a horizontal chart. But your VRVP shows this area is a low volume gap — very little trading happened here. There's no volume node to provide support.",
+    question: "The chart level looks like support, but the volume profile shows a gap — no one traded here. Price is entering this zone. What do you expect?",
+    answer: "short",
+    explanation: "Low volume gaps are danger zones. They act like air pockets — price can slice through quickly because there's no historical support from prior trading. The volume profile is telling you this level won't hold even though the chart makes it look like support.",
+    lesson: "Elder: The volume profile shows you where institutions have committed capital. A low volume gap means institutions haven't defended this level before. Price moves through gaps fast because there's nothing to slow it down.",
+    levels: [{price: 0, label: 'Apparent Support', color: '#C9A84C'}, {price: -10, label: 'Next Volume Node', color: '#52a882'}],
+    buildFn: (base) => {
+      const ctx = buildCandles(base + 10, [[1, 3, 4], [-0.3, 2, 3], [-0.5, 3, 3], [-0.3, 2, 3], [0.2, 1.5, 2]]);
+      const out = buildCandles(ctx[ctx.length-1].c, [[-1, 4, 3], [-1, 5, 3], [-1, 3, 3], [-0.5, 2, 3]]);
+      return { context: ctx, outcome: out };
+    }
+  },
+  {
+    title: "GEX Gamma Wall Approach",
+    badge: "5-Layer", category: "gex_wall",
+    context: "You're in a long position and SPX has been rallying. Price is now 3 points below a major positive gamma wall. Your position is up 1.5R. GEX data shows this wall has been the ceiling all week.",
+    question: "Price is approaching the gamma wall from below. You're up 1.5R. The wall has held all week. What do you do?",
+    answer: "flat",
+    explanation: "Gamma walls act as magnets AND ceilings. Price often gravitates toward them, then stalls. With the wall holding all week and your position already up 1.5R, taking profit here respects the GEX context. Holding through the wall is gambling on a breakout.",
+    lesson: "Livermore: A profit is never wrong. When the market tells you where it wants to stop — through a gamma wall, through resistance, through any clear level — listen. Take the money and wait for the next setup.",
+    levels: [{price: 3, label: 'Gamma Wall', color: '#C9A84C'}, {price: 0, label: 'Current Price', color: '#52a882'}],
+    buildFn: (base) => {
+      const ctx = buildCandles(base - 8, [[1, 3, 4], [1, 4, 3], [1, 3, 3], [1, 2, 3], [0.5, 2, 3]]);
+      const out = buildCandles(ctx[ctx.length-1].c, [[0.3, 2, 2], [-0.3, 2, 3], [0.2, 1.5, 2], [-0.2, 1.5, 3], [-0.5, 2, 3]]);
+      return { context: ctx, outcome: out };
+    }
+  },
+  {
+    title: "Below HVL — Negative Gamma Territory",
+    badge: "5-Layer", category: "negative_gamma",
+    context: "SPX just broke below the Hedge Wall Level (HVL). Below the HVL, market makers' hedging amplifies moves instead of dampening them. Volume is spiking on the breakdown. The 15-minute EMAs just crossed bearish.",
+    question: "Price broke below the HVL. EMAs crossed bearish. Volume is surging. You had a long bias this morning. What's your move?",
+    answer: "short",
+    explanation: "Everything has flipped. The EMA cross tells you the trend changed. The HVL break means negative gamma will accelerate the drop. Fighting this setup with a long is fighting physics. If you must trade, the short is the only valid direction. Otherwise, go flat and wait for stability.",
+    lesson: "Douglas: Rigid beliefs about market direction cause the most damage. The market doesn't care about your morning bias. When the landscape changes, you change with it. Adapting to new information isn't weakness — it's survival.",
+    levels: [{price: 3, label: 'HVL', color: '#C9A84C'}, {price: 0, label: '-GEX Zone', color: '#e05252'}],
+    buildFn: (base) => {
+      const ctx = buildCandles(base + 5, [[0.5, 2, 3], [0, 2, 3], [-0.5, 3, 3], [-1, 4, 3], [-1, 5, 3]]);
+      const out = buildCandles(ctx[ctx.length-1].c, [[-1, 5, 3], [-1, 4, 3], [-0.5, 3, 3], [0.3, 2, 2], [-0.5, 3, 3]]);
+      return { context: ctx, outcome: out };
+    }
+  },
+  {
+    title: "Full 5-Layer Confluence Long",
+    badge: "5-Layer", category: "full_confluence",
+    context: "All five layers agree. 15-min EMAs bullish and sloping. Price pulled into OTE zone at 70.5% with a reaction. 5-min BOS confirmed with a higher low. VRVP shows a high volume node right at your entry. GEX positive gamma floor below and a gamma wall target 12 points above.",
+    question: "Every layer of your framework confirms this long. EMAs, Fibonacci, structure, volume, and GEX all agree. What do you do?",
+    answer: "long",
+    explanation: "This is the trade you've been waiting for. Five independent systems all confirming the same thesis. Enter with full position size, stop below the OTE zone swing low, and target the gamma wall. This is not a guess — it's a trade plan backed by maximum confluence.",
+    lesson: "Elder: When all your indicators align, that's not the time for hesitation — that's the time for decisive action with proper position sizing. You've done the work. You've waited for this setup. Now execute without second-guessing.",
+    levels: [{price: 0, label: '70.5% / POC', color: '#C9A84C'}, {price: -4, label: 'GEX Floor', color: '#52a882'}, {price: 12, label: 'Gamma Wall', color: '#52a882'}],
+    buildFn: (base) => {
+      const ctx = buildCandles(base - 5, [[1, 3, 5], [1, 3, 3], [-0.3, 2, 4], [-0.3, 2, 3], [0.3, 2, 2]]);
+      const out = buildCandles(ctx[ctx.length-1].c, [[1, 3, 3], [1, 4, 3], [1, 3, 3], [1, 2, 3], [0.5, 2, 3]]);
+      return { context: ctx, outcome: out };
+    }
+  },
+  {
+    title: "3 of 5 Layers — Incomplete Confluence",
+    badge: "5-Layer", category: "partial_confluence",
+    context: "EMAs are bullish (Layer 1). Price is in the OTE zone (Layer 2). But there's no BOS on the 5-minute yet — still making lower highs. The VRVP shows you're in a low-volume zone, not at a node. GEX is neutral — near the HVL.",
+    question: "Two layers say go, three say wait or disagree. The setup looks close but isn't complete. What do you do?",
+    answer: "flat",
+    explanation: "3 of 5 layers with two critical gaps (no BOS, no volume support) is a NO TRADE. The missing layers are specifically the ones that protect you — structure and volume. Without BOS, your entry timing is a guess. Without volume support, there's no floor under you.",
+    lesson: "Steenbarger: The best trade you make today might be the one you don't take. Three of five layers isn't 60% confluence — it's zero confluence, because the missing layers are the ones that define your risk. Wait for the setup that respects all five.",
+    levels: [{price: 0, label: 'OTE Zone', color: '#C9A84C'}, {price: -5, label: 'Volume Gap', color: '#e05252'}],
+    buildFn: (base) => {
+      const ctx = buildCandles(base + 3, [[1, 2, 4], [0.5, 2, 3], [-0.3, 2, 3], [-0.5, 3, 3], [0.2, 2, 2]]);
+      const out = buildCandles(ctx[ctx.length-1].c, [[-0.3, 2, 3], [-0.5, 3, 3], [-1, 4, 3], [0.3, 2, 2], [-0.3, 2, 3]]);
+      return { context: ctx, outcome: out };
+    }
+  },
 ];
 
 let currentScenarioIdx = 0;
@@ -5284,14 +5434,13 @@ const patternDrills = [
   { name: 'Head & Shoulders', fn: (b) => buildCandles(b, [[1,3,3],[-1,2,2],[1,4,4],[1,3,2],[-1,4,3],[-1,2,2],[1,2,3],[0,2,1],[-1,3,3]]), desc: 'Left shoulder, higher head, lower right shoulder — a reversal pattern.' },
   { name: 'Ascending Triangle', fn: (b) => buildCandles(b-6, [[1,3,3],[0,2,2],[-0.3,2,2],[1,3,2],[0,1.5,2],[-0.2,1.5,2],[0.5,2,2],[0,1,2]]), desc: 'Flat resistance with rising support — higher lows pressing into the same top.' },
   { name: 'Descending Triangle', fn: (b) => buildCandles(b+6, [[-1,3,3],[0,2,2],[0.3,2,2],[-1,3,2],[0,1.5,2],[0.2,1.5,2],[-0.5,2,2],[0,1,2]]), desc: 'Flat support with falling resistance — lower highs pressing into the same bottom.' },
-  { name: 'VWAP Rejection', fn: (b) => buildCandles(b+8, [[-1,4,6],[-1,3,2],[0.5,2,4],[0,1,3],[-0.3,1.5,3]]), desc: 'Price attempted to reclaim VWAP in a downtrend but was rejected with dojis.' },
-  { name: 'Opening Range Breakout', fn: (b) => buildCandles(b-3, [[1,3,3],[-0.5,2,2],[0,1.5,5],[0.3,1,4],[1,4,1]]), desc: 'Tight opening range followed by consolidation at the top and a strong breakout candle.' },
   { name: 'Bearish Engulfing', fn: (b) => buildCandles(b-5, [[1,3,4],[1,2,3],[1,3,2],[0.3,1.5,2],[-1,6,1]]), desc: 'After an uptrend, a large red candle completely engulfs the prior green candle body.' },
   { name: 'Bullish Engulfing', fn: (b) => buildCandles(b+5, [[-1,3,4],[-1,2,3],[-1,3,2],[-0.3,1.5,2],[1,6,1]]), desc: 'After a downtrend, a large green candle completely engulfs the prior red candle body.' },
-  { name: 'Choppy Range', fn: (b) => buildCandles(b, [[0,2,4],[0,1.5,4],[0,1,4],[0,1.5,3],[0,1,3]]), desc: 'Directionless sideways movement with alternating candles and no trend structure.' },
-  { name: 'Gap & Go', fn: (b) => buildCandles(b-8, [[1,6,1],[1,4,3],[0.5,3,3],[1,3,3],[1,2,3],[0.5,2,3]]), desc: 'Price gaps up and immediately continues higher with follow-through buying — no fill.' },
-  { name: 'Exhaustion Gap', fn: (b) => buildCandles(b, [[1,8,3],[-1,3,5],[-0.5,2,3],[0.3,2,2],[-0.5,2,2]]), desc: 'Price gaps up into resistance but immediately starts selling off — the gap begins to fill.' },
   { name: 'Higher Low Pullback', fn: (b) => buildCandles(b-4, [[1,3,4],[1,4,3],[-0.5,3,4],[-0.5,2,3],[1,4,1]]), desc: 'In an uptrend, price pulls back but holds above the prior swing low — trend intact.' },
+  { name: 'Falling Wedge', fn: (b) => buildCandles(b+8, [[-1,3,3],[0.3,2,2],[-1,3,2],[0.3,1.5,2],[-0.8,2,2],[0.3,1,2],[-0.5,1.5,2],[1,4,2]]), desc: 'Converging downward trendlines with lower highs and lower lows — usually breaks upward.' },
+  { name: 'Rising Wedge', fn: (b) => buildCandles(b-8, [[1,3,3],[-0.3,2,2],[1,3,2],[-0.3,1.5,2],[0.8,2,2],[-0.3,1,2],[0.5,1.5,2],[-1,4,2]]), desc: 'Converging upward trendlines with higher highs and higher lows — usually breaks downward.' },
+  { name: 'Morning Star', fn: (b) => buildCandles(b+5, [[-1,3,4],[-1,2,3],[-1,4,1],[0,1,1],[1,5,1],[1,3,3]]), desc: 'Three-candle reversal: big red, small indecision body, then big green candle.' },
+  { name: 'Hammer', fn: (b) => buildCandles(b+6, [[-1,3,4],[-1,2,3],[-1,3,2],[0.2,1,1],[1,3,3],[1,2,3]]), desc: 'Small body at the top with a long lower shadow — buyers rejected the selloff.' },
 ];
 
 let patScore = 0;
