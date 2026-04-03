@@ -730,6 +730,9 @@
     <button class="nav-item" onclick="showPage('analytics', this)">
       <span class="nav-icon">◧</span> Analytics
     </button>
+    <button class="nav-item" onclick="showPage('intelligence', this)">
+      <span class="nav-icon">◈</span> Chart Intelligence
+    </button>
     <button class="nav-item" onclick="showPage('settings', this)">
       <span class="nav-icon">&#9900;</span> Settings
     </button>
@@ -1871,6 +1874,40 @@ The AI will assess your active biases and update the chart in real time.
     </div>
   </div>
 
+
+  <!-- CHART INTELLIGENCE PAGE -->
+  <div id="page-intelligence" class="page">
+    <div class="page-header">
+      <div class="page-eyebrow">Pattern Recognition</div>
+      <h1 class="page-title">Chart <em>Intelligence</em></h1>
+      <p class="page-subtitle">46 patterns for SPX & SPY — learn when to take the trade and when to walk away</p>
+    </div>
+
+    <!-- Tabs -->
+    <div id="ci-tabs" style="display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:20px;">
+      <button class="ci-tab active" onclick="ciShowTab('patterns',this)">Pattern Library</button>
+      <button class="ci-tab" onclick="ciShowTab('framework',this)">5-Layer Reader</button>
+      <button class="ci-tab" onclick="ciShowTab('quiz',this)">Pattern Quiz</button>
+    </div>
+
+    <div id="ci-content"></div>
+  </div>
+
+  <style>
+    .ci-tab{padding:8px 14px;background:none;border:none;border-bottom:2px solid transparent;color:var(--cream3);font-size:13px;cursor:pointer;font-family:var(--sans);margin-bottom:-1px}
+    .ci-tab.active{border-bottom-color:var(--gold);color:var(--gold)}
+    .ci-filter{padding:5px 12px;border-radius:16px;font-size:11px;border:1px solid var(--border);background:transparent;color:var(--cream3);cursor:pointer;font-family:var(--sans)}
+    .ci-filter.active{border-color:var(--gold-border);background:var(--gold-dim);color:var(--gold)}
+    .ci-card{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:16px;cursor:pointer;transition:border-color 0.2s}
+    .ci-card:hover{border-color:var(--gold-border)}
+    .ci-btn{padding:7px 16px;border-radius:5px;font-size:11px;cursor:pointer;font-family:var(--sans);border:1px solid var(--border);background:transparent;color:var(--cream)}
+    .ci-btn-gold{background:var(--gold);color:#0f0e0b;border:none;font-weight:500}
+    .ci-btn:disabled{opacity:0.4;cursor:default}
+    .ci-opt{padding:12px;border-radius:8px;cursor:pointer;transition:all 0.2s}
+    .ci-opt:hover{filter:brightness(1.2)}
+    .quiz-choice{padding:14px;border-radius:8px;cursor:pointer;background:var(--bg3);border:1px solid var(--border);text-align:center;transition:all 0.2s}
+  </style>
+
     <div id="page-settings" class="page">
     <div class="page-header">
       <div class="page-eyebrow">Account</div>
@@ -2610,6 +2647,7 @@ const QUOTES = [
 // ═══════════════════════════════════════════════════════════════
 
 function showPage(id, btn) {
+  if(id==='intelligence' && typeof CI !== 'undefined') setTimeout(()=>CI.init(),50);
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('page-' + id).classList.add('active');
@@ -5626,6 +5664,1357 @@ renderBiases();
 loadNewScenario();
 initJournal();
 renderAnalysisHistory();
+
+
+// ═══════════════════════════════════════════════════════════════
+// CHART INTELLIGENCE MODULE - 46 Patterns
+// ═══════════════════════════════════════════════════════════════
+const CI=(function(){
+const G="#52a882",R="#e05252",Y="#C9A84C",C="#F0EAD6",D="#8a8475";
+function dL(x,p,c,w){x.beginPath();x.strokeStyle=c;x.lineWidth=w;x.lineJoin="round";p.forEach(([a,b],i)=>i?x.lineTo(a,b):x.moveTo(a,b));x.stroke()}
+function dD(x,a,b,c,d,col,w){x.beginPath();x.strokeStyle=col;x.lineWidth=w;x.setLineDash([5,4]);x.moveTo(a,b);x.lineTo(c,d);x.stroke();x.setLineDash([])}
+function dT(x,t,a,b,c,s=10){x.fillStyle=c;x.font=s+"px monospace";x.textAlign="center";x.fillText(t,a,b)}
+function dA(x,p,c){x.beginPath();p.forEach(([a,b],i)=>i?x.lineTo(a,b):x.moveTo(a,b));x.closePath();x.fillStyle=c;x.fill()}
+function dC(x,px,o,c,h,l,w=7){const bull=c<o;const col=bull?G:R;x.strokeStyle=col;x.lineWidth=1;x.beginPath();x.moveTo(px,h);x.lineTo(px,l);x.stroke();x.fillStyle=col;x.fillRect(px-w/2,Math.min(o,c),w,Math.max(Math.abs(c-o),1))}
+function dVol(x,bars,W,H){bars.forEach(([px,vol,bull])=>{const h=vol*0.4;x.fillStyle=bull?"rgba(82,168,130,0.4)":"rgba(224,82,82,0.3)";x.fillRect(px-6,H-h-2,12,h)})}
+function drawCanvas(canvas,fn,w,h){const dpr=window.devicePixelRatio||1;canvas.width=w*dpr;canvas.height=h*dpr;canvas.style.width=w+"px";canvas.style.height=h+"px";const x=canvas.getContext("2d");x.scale(dpr,dpr);x.clearRect(0,0,w,h);x.strokeStyle="rgba(255,255,255,0.03)";x.lineWidth=1;for(let i=1;i<5;i++){const y=h*i/5;x.beginPath();x.moveTo(0,y);x.lineTo(w,y);x.stroke()};fn(x,w,h)}
+
+const P=[{id:"bull_flag",name:"Bull Flag",type:"Bullish Continuation",color:G,
+    desc:"Strong impulse up followed by orderly downward drift in a parallel channel.",
+    trade:"Enter on breakout above flag channel with volume spike. Stop below flag low. Target = pole height projected up.",
+    volume:"Volume contracts during flag, spikes on breakout. No spike = fakeout.",
+    tell:"Pullback should be orderly (parallel or slight descent). Flag should retrace no more than 50% of the pole.",
+    steps:["Identify a sharp impulse move up (the pole) on strong volume","Watch for an orderly pullback forming a slight downward channel (the flag)","Confirm volume is declining during the flag — sellers aren't committed","Wait for a breakout candle above the upper flag boundary","Enter on the breakout with volume surge. Stop below flag low. Target = pole height."],
+    drawGood:(x,W,H)=>{
+      dL(ctx,[[15,H-20],[40,H*0.6],[65,H*0.45],[90,H*0.2]],G,2.5);
+      dL(ctx,[[90,H*0.2],[120,H*0.28],[150,H*0.25],[180,H*0.32],[210,H*0.29]],Y,2);
+      dL(ctx,[[90,H*0.28],[120,H*0.36],[150,H*0.33],[180,H*0.40],[210,H*0.37]],Y+"88",1.5);
+      dL(ctx,[[210,H*0.29],[240,H*0.18],[280,H*0.08]],G,2.5);
+      dVol(ctx,[[30,30,1],[55,35,1],[80,45,1],[110,15,0],[140,12,0],[170,10,0],[200,8,0],[235,40,1],[265,45,1]],W,H);
+      dT(ctx,"✓ Volume spike on breakout",W/2,H-22,G,10);
+      dT(ctx,"Low vol",150,H*0.48,D,8);dT(ctx,"Spike!",250,H*0.15,G,8);
+    },
+    drawBad:(x,W,H)=>{
+      dL(ctx,[[15,H-20],[40,H*0.6],[65,H*0.45],[90,H*0.2]],G,2.5);
+      dL(ctx,[[90,H*0.2],[120,H*0.28],[150,H*0.25],[180,H*0.32],[210,H*0.29]],Y,2);
+      dL(ctx,[[210,H*0.29],[230,H*0.26],[250,H*0.30],[270,H*0.35],[290,H*0.45]],R,2);
+      dVol(ctx,[[30,30,1],[55,35,1],[80,45,1],[110,15,0],[140,12,0],[170,10,0],[225,8,0],[250,7,0],[275,6,0]],W,H);
+      dT(ctx,"✗ No volume on break — fakeout",W/2,H-22,R,10);
+      dT(ctx,"No volume",250,H*0.22,R,8);
+    }},
+  {id:"bull_pennant",name:"Bull Pennant",type:"Bullish Continuation",color:G,
+    desc:"Like a flag but consolidation forms a small converging triangle. Resolves faster.",
+    trade:"Enter on break above pennant upper line. Stop below pennant low. Target = pole height.",
+    volume:"Volume dries up in pennant, expands on break. Critical confirmation.",
+    tell:"Pennant should be small relative to the pole. Too wide = symmetrical triangle.",
+    steps:["Sharp impulse up creates the flagpole","Consolidation forms converging trendlines (getting tighter)","Volume contracts to minimal levels","Break above upper pennant line","Volume spike confirms — enter with stop below pennant low"],
+    drawGood:(x,W,H)=>{
+      dL(ctx,[[15,H-20],[45,H*0.55],[75,H*0.2]],G,2.5);
+      dL(ctx,[[75,H*0.2],[105,H*0.28],[135,H*0.24],[165,H*0.26],[190,H*0.25]],Y,2);
+      dL(ctx,[[75,H*0.22],[105,H*0.19],[135,H*0.22],[165,H*0.24],[190,H*0.25]],Y+"88",1.5);
+      dL(ctx,[[190,H*0.25],[220,H*0.15],[260,H*0.06]],G,2.5);
+      dVol(ctx,[[30,35,1],[60,40,1],[95,10,0],[125,8,0],[155,6,0],[215,38,1],[245,42,1]],W,H);
+      dT(ctx,"✓ Tight pennant, volume spike",W/2,H-22,G,10);
+    },
+    drawBad:(x,W,H)=>{
+      dL(ctx,[[15,H-20],[45,H*0.55],[75,H*0.2]],G,2.5);
+      // Too wide — it's a triangle not a pennant
+      dL(ctx,[[75,H*0.2],[110,H*0.42],[145,H*0.28],[180,H*0.45],[215,H*0.35],[250,H*0.48]],C+"88",1.5);
+      dVol(ctx,[[30,35,1],[60,40,1],[100,20,1],[135,18,0],[170,22,1],[205,15,0],[240,12,0]],W,H);
+      dT(ctx,"✗ Too wide — not a pennant",W/2,H-22,R,10);
+      dT(ctx,"Sloppy",160,H*0.55,R,8);
+    }},
+  {id:"asc_tri",name:"Ascending Triangle",type:"Bullish Continuation",color:G,
+    desc:"Flat resistance with rising higher lows. Buyers getting aggressive until sellers break.",
+    trade:"Enter on close above resistance with volume. Stop below last higher low. Target = triangle height up.",
+    volume:"Volume declines during formation. Must spike on breakout — no spike = trap.",
+    tell:"Need 3+ resistance touches and 2+ rising lows. Each higher low must be clearly visible.",
+    steps:["Identify a flat resistance level with 3+ clean touches","Confirm each pullback makes a higher low — buyers stepping up earlier","Volume should decline as the triangle forms (energy coiling)","Watch for a strong breakout candle through resistance","Volume MUST spike on breakout — this confirms real buying"],
+    drawGood:(x,W,H)=>{
+      const r=H*0.22;dD(ctx,10,r,W-10,r,R+"88",1.5);
+      // Cleaner triangle shape — rising lows, flat resistance
+      dL(ctx,[[15,H*0.75],[50,H*0.55],[80,r+4],[110,H*0.60],[145,r+3],[175,H*0.48],[210,r+2],[240,H*0.38],[270,r-5]],C,2);
+      dL(ctx,[[270,r-5],[300,H*0.10]],G,2.5);
+      // Rising support line
+      dD(ctx,15,H*0.75,240,H*0.38,G+"44",1);
+      dVol(ctx,[[30,28,1],[65,20,0],[95,16,1],[125,14,0],[160,12,1],[195,10,0],[255,10,0],[285,42,1]],W,H);
+      dT(ctx,"✓ Rising lows + volume breakout",W/2,H-22,G,10);
+    },
+    drawBad:(x,W,H)=>{
+      const r=H*0.22;dD(ctx,10,r,W-10,r,R+"88",1.5);
+      // Same triangle shape
+      dL(ctx,[[15,H*0.75],[50,H*0.55],[80,r+4],[110,H*0.60],[145,r+3],[175,H*0.48],[210,r+2]],C,2);
+      // Weak poke above, then sharp rejection
+      dL(ctx,[[210,r+2],[235,r-6],[255,r+8],[280,H*0.38],[310,H*0.52]],R,2);
+      dD(ctx,15,H*0.75,210,H*0.48,G+"33",1);
+      dVol(ctx,[[30,28,1],[65,20,0],[95,16,1],[125,14,0],[160,12,1],[195,10,0],[230,7,1],[265,6,0],[300,22,0]],W,H);
+      dT(ctx,"No volume",235,r-14,R,8);
+      dT(ctx,"✗ Weak breakout, no volume — bull trap",W/2,H-22,R,10);
+    }},
+  {id:"cup_handle",name:"Cup & Handle",type:"Bullish Continuation",color:G,
+    desc:"Rounded bottom (cup) with a small pullback (handle). Longer timeframe, powerful breakout.",
+    trade:"Enter on break above handle high. Stop below handle low. Target = cup depth projected up.",
+    volume:"U-shaped: high at rims, low at bottom. Spike on breakout.",
+    tell:"Handle should retrace no more than ⅓ of cup depth. Deep handles weaken the pattern.",
+    steps:["Price declines and forms a rounded bottom (gradual, not V-shaped)","Right side rallies back toward the left rim level","A small, orderly pullback forms the handle","Breakout above the rim/handle high","Volume confirms on the breakout"],
+    drawGood:(x,W,H)=>{
+      x.beginPath();x.strokeStyle=C;x.lineWidth=2;x.moveTo(15,H*0.25);x.quadraticCurveTo(70,H*0.82,180,H*0.25);x.stroke();
+      dL(ctx,[[180,H*0.25],[200,H*0.33],[220,H*0.28],[235,H*0.25]],Y,2);
+      dL(ctx,[[235,H*0.25],[260,H*0.15],[290,H*0.08]],G,2.5);
+      dD(ctx,10,H*0.25,245,H*0.25,Y+"55",1);
+      dVol(ctx,[[25,28,0],[55,12,0],[85,8,0],[115,10,1],[145,18,1],[175,25,1],[205,12,0],[240,35,1],[270,40,1]],W,H);
+      dT(ctx,"✓ Shallow handle + volume breakout",W/2,H-22,G,10);
+    },
+    drawBad:(x,W,H)=>{
+      x.beginPath();x.strokeStyle=C;x.lineWidth=2;x.moveTo(15,H*0.25);x.quadraticCurveTo(70,H*0.82,180,H*0.25);x.stroke();
+      // Handle too deep
+      dL(ctx,[[180,H*0.25],[200,H*0.50],[220,H*0.55],[240,H*0.48],[260,H*0.42]],R+"cc",2);
+      dD(ctx,10,H*0.25,270,H*0.25,Y+"55",1);
+      dT(ctx,"Handle retraces >50%",220,H*0.62,R,8);
+      dT(ctx,"✗ Handle too deep — weakens pattern",W/2,H-22,R,10);
+    }},
+  {id:"dbl_bottom",name:"Double Bottom (W)",type:"Bullish Reversal",color:G,
+    desc:"Two tests of the same support level that hold. Classic reversal with high reliability.",
+    trade:"Enter on break above the peak between bottoms. Stop below double bottom. Target = height up.",
+    volume:"Second bottom often shows bullish divergence — same price, more buying interest.",
+    tell:"Bottoms within 1-2% of each other. Bullish engulfing on second test adds confidence.",
+    steps:["Price drops to support level, bounces","Creates a peak between the two tests","Pulls back to test the same support again","Second test holds — strong rejection candle","Break above the middle peak confirms"],
+    drawGood:(x,W,H)=>{
+      const s=H*0.75;dD(ctx,10,s,W-10,s,G+"55",1.5);
+      dL(ctx,[[15,H*0.2],[45,H*0.45],[80,s-3],[120,H*0.42],[170,s-5],[210,H*0.42],[260,H*0.2],[300,H*0.10]],C,2);
+      dD(ctx,10,H*0.42,W-10,H*0.42,Y+"55",1);
+      dVol(ctx,[[35,15,0],[65,20,0],[100,30,1],[140,12,1],[190,35,1],[230,25,1],[275,38,1]],W,H);
+      dT(ctx,"Higher vol",190,H*0.88,G,8);
+      dT(ctx,"✓ Second test holds with volume",W/2,H-22,G,10);
+    },
+    drawBad:(x,W,H)=>{
+      const s=H*0.72;dD(ctx,10,s,W-10,s,G+"55",1.5);
+      // Clear W shape forming — first bottom holds, bounce, second test reaches support then breaks
+      dL(ctx,[[15,H*0.2],[40,H*0.40],[65,H*0.55],[85,s-3]],C,2);
+      dL(ctx,[[85,s-3],[110,H*0.55],[135,H*0.42]],C,2);
+      dL(ctx,[[135,H*0.42],[160,H*0.55],[185,s-2],[200,s+2]],C,2);
+      // Breaks through support
+      dL(ctx,[[200,s+2],[225,H*0.80],[255,H*0.88],[285,H*0.92]],R,2.5);
+      dVol(ctx,[[30,15,0],[55,18,0],[78,25,1],[105,15,1],[130,12,0],[165,20,0],[195,30,0],[230,38,0],[265,40,0]],W,H);
+      dT(ctx,"Broke support",225,s-8,R,8);
+      dT(ctx,"✗ Second test breaks — not a double bottom",W/2,H-22,R,10);
+    }},
+  {id:"head_shoulders",name:"Head & Shoulders",type:"Bearish Reversal",color:R,
+    desc:"Three peaks — middle highest. Textbook trend reversal. Right shoulder lower = key tell.",
+    trade:"Enter on neckline break. Stop above right shoulder. Target = head height below neckline.",
+    volume:"Decreasing volume on each successive peak. Spike on neckline break.",
+    tell:"Right shoulder must be lower than left. Volume declining peak-to-peak is critical confirmation.",
+    steps:["Uptrend creates the left shoulder","Higher peak forms the head — the highest point","Right shoulder forms but can't reach the head level","Draw the neckline connecting the troughs","Break below neckline triggers the pattern"],
+    drawGood:(x,W,H)=>{
+      const n=H*0.58;dD(ctx,35,n,240,n,Y+"88",1.5);
+      dL(ctx,[[10,H-15],[35,n],[60,H*0.35],[90,n],[130,H*0.15],[170,n],[200,H*0.32],[240,n],[270,H*0.72],[310,H-15]],C,2);
+      dVol(ctx,[[50,35,1],[80,12,0],[120,28,1],[160,10,0],[190,18,1],[230,8,0],[260,30,0],[295,35,0]],W,H);
+      dT(ctx,"Vol ↓",130,H*0.08,D,8);dT(ctx,"Vol ↓↓",200,H*0.26,D,8);
+      dT(ctx,"✓ Lower RS, declining volume",W/2,H-22,G,10);
+    },
+    drawBad:(x,W,H)=>{
+      const n=H*0.58;dD(ctx,35,n,240,n,Y+"55",1.5);
+      dL(ctx,[[10,H-15],[35,n],[60,H*0.35],[90,n],[130,H*0.15],[170,n],[200,H*0.30],[240,n]],C,2);
+      // RS is HIGHER than LS — not valid
+      dL(ctx,[[240,n],[260,H*0.45],[280,H*0.40],[300,H*0.35]],C+"88",1.5);
+      dT(ctx,"RS higher than LS!",260,H*0.32,R,8);
+      dT(ctx,"✗ Right shoulder too high — invalid",W/2,H-22,R,10);
+    }},
+  {id:"dbl_top",name:"Double Top (M)",type:"Bearish Reversal",color:R,
+    desc:"Two failed tests of resistance. Classic topping pattern with high reliability.",
+    trade:"Enter on break below valley between tops. Stop above double top. Target = height projected down.",
+    volume:"Second top on lower volume — conviction fading. Key confirmation.",
+    tell:"Tops within 1-2% of each other. Lower volume on second top is textbook.",
+    steps:["Price rallies to resistance, gets rejected","Pulls back to create a valley (support)","Rallies again to test the same resistance","Second test fails — sellers defend","Break below valley support confirms the reversal"],
+    drawGood:(x,W,H)=>{
+      const r=H*0.2;dD(ctx,10,r,W-10,r,R+"55",1.5);
+      dL(ctx,[[10,H-15],[45,H*0.48],[85,r+4],[135,H*0.46],[190,r+3],[240,H*0.48],[290,H*0.70],[330,H-15]],C,2);
+      dD(ctx,10,H*0.46,W-10,H*0.46,Y+"55",1);
+      dVol(ctx,[[35,15,1],[70,25,1],[115,12,0],[160,18,1],[220,8,0],[265,28,0],[310,32,0]],W,H);
+      dT(ctx,"High vol",85,r-8,D,8);dT(ctx,"Low vol",190,r-8,R,8);
+      dT(ctx,"✓ Lower volume on 2nd top",W/2,H-22,G,10);
+    },
+    drawBad:(x,W,H)=>{
+      const r=H*0.2;dD(ctx,10,r,W-10,r,R+"55",1.5);
+      // Looks like a double top but second top has HIGHER volume — bulls getting stronger, not weaker
+      dL(ctx,[[10,H-15],[45,H*0.48],[85,r+4],[135,H*0.46],[190,r+2],[240,H*0.48],[280,H*0.44],[320,H*0.40]],C,2);
+      dD(ctx,10,H*0.46,W-10,H*0.46,Y+"55",1);
+      dVol(ctx,[[35,15,1],[70,20,1],[115,12,0],[160,25,1],[210,35,1],[250,15,0],[295,12,1]],W,H);
+      dT(ctx,"Low vol",85,r-8,D,8);dT(ctx,"Higher vol!",190,r-8,R,8);
+      dT(ctx,"✗ Volume increasing on 2nd top — buyers strong",W/2,H-22,R,10);
+    }},
+  {id:"fall_wedge",name:"Falling Wedge",type:"Bullish Reversal",color:G,
+    desc:"Converging downward trendlines. Looks bearish but typically breaks upward.",
+    trade:"Enter on break above upper trendline with volume. Stop below last swing low. Target = wedge base.",
+    volume:"Contracts during formation, expands on breakout.",
+    tell:"Lower trendline steeper than upper — sellers exhausting faster. Volume must confirm the break.",
+    steps:["Both highs and lows are falling","But lows are falling faster — lines converging downward","Volume dries up as pattern forms","Price breaks above the upper trendline","Volume confirms the breakout is real, not a headfake"],
+    drawGood:(x,W,H)=>{
+      dL(ctx,[[15,H*0.18],[65,H*0.40],[115,H*0.35],[170,H*0.58],[220,H*0.52],[265,H*0.68]],C,2);
+      dD(ctx,15,H*0.18,265,H*0.52,G+"55",1.5);dD(ctx,65,H*0.40,265,H*0.70,G+"55",1.5);
+      dL(ctx,[[265,H*0.52],[295,H*0.35],[325,H*0.20]],G,2.5);
+      dVol(ctx,[[30,22,0],[80,15,0],[130,12,0],[185,8,0],[235,6,0],[290,35,1],[320,38,1]],W,H);
+      dT(ctx,"✓ Break above upper line with volume",W/2,H-22,G,10);
+    },
+    drawBad:(x,W,H)=>{
+      dL(ctx,[[15,H*0.18],[65,H*0.40],[115,H*0.35],[170,H*0.58],[220,H*0.52],[265,H*0.68]],C,2);
+      dD(ctx,15,H*0.18,265,H*0.52,D+"55",1.5);dD(ctx,65,H*0.40,265,H*0.70,D+"55",1.5);
+      // Breaks DOWN instead
+      dL(ctx,[[265,H*0.68],[290,H*0.78],[320,H*0.88]],R,2.5);
+      dVol(ctx,[[30,22,0],[80,15,0],[130,12,0],[185,8,0],[235,6,0],[285,28,0],[315,32,0]],W,H);
+      dT(ctx,"✗ Broke down instead — wedge failed",W/2,H-22,R,10);
+    }},
+  {id:"rise_wedge",name:"Rising Wedge",type:"Bearish Reversal",color:R,
+    desc:"Converging upward trendlines. Looks bullish but usually breaks down.",
+    trade:"Enter short on break below lower trendline. Stop above last high. Target = wedge base.",
+    volume:"Volume declines as wedge forms — momentum fading despite higher prices.",
+    tell:"Upper trendline steeper than lower. Declining volume is critical — without it the pattern is unreliable.",
+    steps:["Both highs and lows are rising — looks bullish","But highs are rising faster — lines converging upward","Volume is declining — a major red flag","Price breaks below the lower trendline","Breakdown accelerates as trapped longs exit"],
+    drawGood:(x,W,H)=>{
+      dL(ctx,[[15,H*0.82],[65,H*0.55],[115,H*0.60],[170,H*0.32],[220,H*0.38],[265,H*0.20]],C,2);
+      dD(ctx,65,H*0.55,265,H*0.18,R+"55",1.5);dD(ctx,15,H*0.82,265,H*0.38,R+"55",1.5);
+      dL(ctx,[[265,H*0.38],[295,H*0.55],[325,H*0.72]],R,2.5);
+      dVol(ctx,[[30,30,1],[80,22,1],[130,18,1],[185,12,1],[235,8,1],[290,30,0],[320,35,0]],W,H);
+      dT(ctx,"Vol ↓↓↓",185,H*0.12,R,8);
+      dT(ctx,"✓ Declining volume + breakdown",W/2,H-22,G,10);
+    },
+    drawBad:(x,W,H)=>{
+      dL(ctx,[[15,H*0.82],[65,H*0.55],[115,H*0.60],[170,H*0.32],[220,H*0.38],[265,H*0.20]],C,2);
+      dD(ctx,65,H*0.55,265,H*0.18,D+"55",1.5);dD(ctx,15,H*0.82,265,H*0.38,D+"55",1.5);
+      // Breaks UP — volume expanding, not a wedge reversal
+      dL(ctx,[[265,H*0.20],[290,H*0.12],[325,H*0.05]],G,2.5);
+      dVol(ctx,[[30,30,1],[80,28,1],[130,32,1],[185,35,1],[235,38,1],[290,42,1],[320,45,1]],W,H);
+      dT(ctx,"Vol rising!",185,H*0.82,G,8);
+      dT(ctx,"✗ Volume expanding — not a reversal",W/2,H-22,R,10);
+    }},
+  {id:"desc_tri",name:"Descending Triangle",type:"Bearish Continuation",color:R,
+    desc:"Flat support with falling highs. Sellers pressing down until buyers capitulate.",
+    trade:"Enter on break below support with volume. Stop above last lower high. Target = height down.",
+    volume:"Declines during formation, spikes on breakdown.",
+    tell:"Mirror of ascending triangle. Each rally fails lower — sellers control the pace.",
+    steps:["Flat support holds multiple tests","Each rally creates a lower high — sellers more aggressive","Volume declines as pattern forms","Breakdown through support with volume spike","Trapped longs' stops fuel the drop"],
+    drawGood:(x,W,H)=>{
+      const s=H*0.72;dD(ctx,10,s,W-10,s,G+"55",1.5);
+      dL(ctx,[[20,H*0.15],[55,s-3],[95,H*0.28],[140,s-2],[185,H*0.40],[230,s-3],[265,H*0.50],[300,s+5]],C,2);
+      dL(ctx,[[300,s+5],[325,H*0.85],[345,H-10]],R,2.5);
+      dD(ctx,20,H*0.15,265,H*0.50,R+"55",1);
+      dVol(ctx,[[35,25,0],[75,18,1],[115,15,0],[155,12,1],[200,10,0],[245,8,1],[290,8,0],[325,35,0],[345,38,0]],W,H);
+      dT(ctx,"✓ Lower highs + breakdown with vol",W/2,H-22,G,10);
+    },
+    drawBad:(x,W,H)=>{
+      const s=H*0.72;dD(ctx,10,s,W-10,s,G+"55",1.5);
+      dL(ctx,[[20,H*0.15],[55,s-3],[95,H*0.28],[140,s-2],[185,H*0.35]],C,2);
+      // Highs stop falling — pattern breaking
+      dL(ctx,[[185,H*0.35],[230,s-3],[265,H*0.32],[300,s-5],[325,H*0.25]],C,2);
+      dT(ctx,"Highs stopped falling",265,H*0.28,Y,8);
+      dT(ctx,"✗ Structure breaking — highs flattening",W/2,H-22,R,10);
+    }},
+  {id:"bear_flag",name:"Bear Flag",type:"Bearish Continuation",color:R,
+    desc:"Sharp drop followed by slight upward drift. Continuation of the downtrend.",
+    trade:"Enter on break below flag with volume. Stop above flag high. Target = pole height down.",
+    volume:"Light during flag rally. Spikes on breakdown.",
+    tell:"Mirror of bull flag. Upward drift should be orderly, low volume — short covering, not real buying.",
+    steps:["Sharp impulse down creates the pole on heavy volume","Orderly upward drift forms a slight ascending channel (the flag)","Volume is light — no real buyers, just shorts covering","Breakdown below the lower flag boundary","Volume spikes on breakdown — sellers back in control"],
+    drawGood:(x,W,H)=>{
+      dL(ctx,[[15,H*0.12],[40,H*0.25],[65,H*0.40],[95,H*0.78]],R,2.5);
+      dL(ctx,[[95,H*0.78],[125,H*0.70],[155,H*0.73],[185,H*0.66],[210,H*0.68]],Y,2);
+      dL(ctx,[[95,H*0.70],[125,H*0.62],[155,H*0.65],[185,H*0.58],[210,H*0.60]],Y+"88",1.5);
+      dL(ctx,[[210,H*0.68],[240,H*0.80],[280,H*0.92]],R,2.5);
+      dVol(ctx,[[28,35,0],[55,38,0],[80,42,0],[115,10,1],[145,8,1],[175,6,1],[235,35,0],[265,40,0]],W,H);
+      dT(ctx,"✓ Low vol flag + breakdown spike",W/2,H-22,G,10);
+    },
+    drawBad:(x,W,H)=>{
+      dL(ctx,[[15,H*0.12],[40,H*0.25],[65,H*0.40],[95,H*0.78]],R,2.5);
+      // Flag drifts up gently but retraces past 50% — channel is wider than good version
+      dL(ctx,[[95,H*0.78],[130,H*0.72],[165,H*0.68],[200,H*0.62],[235,H*0.56],[265,H*0.50]],Y,2);
+      dL(ctx,[[95,H*0.72],[130,H*0.66],[165,H*0.60],[200,H*0.54],[235,H*0.48],[265,H*0.42]],Y+"88",1.5);
+      dD(ctx,10,H*0.45,W-10,H*0.45,R+"55",1);
+      dT(ctx,"50% retrace",W-55,H*0.43,R,8);
+      dVol(ctx,[[28,35,0],[55,38,0],[80,42,0],[120,15,1],[155,20,1],[190,26,1],[225,30,1],[255,34,1]],W,H);
+      dT(ctx,"Vol rising",200,H*0.82,R,8);
+      dT(ctx,"✗ Flag too deep + rising volume",W/2,H-22,R,10);
+    }},
+  {id:"inv_hs",name:"Inverse H&S",type:"Bullish Reversal",color:G,
+    desc:"Three troughs, middle lowest. Mirror of H&S — powerful bottom reversal.",
+    trade:"Enter on neckline break. Stop below right shoulder. Target = head depth above neckline.",
+    volume:"Increases on right shoulder rally, spikes on neckline break.",
+    tell:"Rising neckline is more bullish. Volume should increase from head to right shoulder.",
+    steps:["Downtrend creates the left shoulder trough","Deeper trough forms the head (lowest point)","Right shoulder forms higher than the head","Connect the peaks to draw the neckline","Break above neckline confirms the reversal"],
+    drawGood:(x,W,H)=>{
+      const n=H*0.35;dD(ctx,35,n,240,n,Y+"88",1.5);
+      dL(ctx,[[10,H*0.12],[35,n],[60,H*0.55],[90,n],[130,H*0.80],[170,n],[200,H*0.58],[240,n],[275,H*0.18],[310,H*0.08]],C,2);
+      dVol(ctx,[[25,10,0],[50,18,0],[75,12,1],[110,15,0],[145,8,1],[185,22,1],[220,18,1],[260,35,1],[295,40,1]],W,H);
+      dT(ctx,"Vol ↑↑↑",260,H*0.88,G,8);
+      dT(ctx,"✓ RS higher, volume expanding",W/2,H-22,G,10);
+    },
+    drawBad:(x,W,H)=>{
+      const n=H*0.35;dD(ctx,35,n,200,n,Y+"55",1.5);
+      dL(ctx,[[10,H*0.12],[35,n],[60,H*0.55],[90,n],[130,H*0.80],[170,n]],C,2);
+      // Right shoulder goes as deep as the head
+      dL(ctx,[[170,n],[200,H*0.78],[235,H*0.85],[270,H*0.90]],R,2);
+      dT(ctx,"RS as deep as head",230,H*0.75,R,8);
+      dT(ctx,"✗ Right shoulder too deep — not valid",W/2,H-22,R,10);
+    }},
+  {id:"sym_tri",name:"Symmetrical Triangle",type:"Neutral",color:Y,
+    desc:"Converging highs and lows. Can break either way — direction depends on prior trend.",
+    trade:"Wait for the break. Don't predict direction — react. Trade the confirmed breakout side.",
+    volume:"Must contract during formation. Breakout direction needs volume confirmation.",
+    tell:"Usually breaks in direction of prior trend. Against-trend breaks need extra volume proof.",
+    steps:["Lower highs AND higher lows — range tightening","Price oscillates in a narrowing channel","Volume contracts significantly — energy storing","One side breaks with conviction and volume","Direction of break = direction of your trade"],
+    drawGood:(x,W,H)=>{
+      dL(ctx,[[15,H*0.15],[50,H*0.72],[95,H*0.22],[140,H*0.65],[185,H*0.30],[230,H*0.55],[265,H*0.38]],C,2);
+      dD(ctx,15,H*0.15,275,H*0.36,Y+"55",1.5);dD(ctx,50,H*0.72,275,H*0.40,Y+"55",1.5);
+      // Breaks up with volume
+      dL(ctx,[[265,H*0.36],[290,H*0.22],[320,H*0.10]],G,2.5);
+      dVol(ctx,[[30,25,1],[70,18,0],[115,14,1],[155,10,0],[200,8,1],[245,6,0],[285,35,1],[315,38,1]],W,H);
+      dT(ctx,"✓ Break with volume = valid",W/2,H-22,G,10);
+    },
+    drawBad:(x,W,H)=>{
+      dL(ctx,[[15,H*0.15],[50,H*0.72],[95,H*0.22],[140,H*0.65],[185,H*0.30],[230,H*0.55],[265,H*0.38]],C,2);
+      dD(ctx,15,H*0.15,275,H*0.36,Y+"55",1.5);dD(ctx,50,H*0.72,275,H*0.40,Y+"55",1.5);
+      // Pokes above then fails — headfake
+      dL(ctx,[[265,H*0.36],[280,H*0.30],[290,H*0.35],[305,H*0.45],[325,H*0.58]],R,2);
+      dVol(ctx,[[30,25,1],[70,18,0],[115,14,1],[155,10,0],[200,8,1],[245,6,0],[275,7,1],[300,5,0],[320,22,0]],W,H);
+      dT(ctx,"No volume!",280,H*0.25,R,8);
+      dT(ctx,"✗ Fakeout — no volume on break",W/2,H-22,R,10);
+    }},
+  {id:"rectangle",name:"Rectangle / Range",type:"Neutral",color:Y,
+    desc:"Price bouncing between flat support and resistance. Longer range = bigger eventual break.",
+    trade:"Range trade the edges OR wait for breakout. Breakout needs significant volume.",
+    volume:"Spikes at boundary tests. Breakout volume must be clearly above average.",
+    tell:"Don't anticipate direction — trade the break when it comes. Time stored = energy for the move.",
+    steps:["Identify flat support and flat resistance","Price bounces between them — multiple touches on each","Volume picks up at each boundary test","Eventually one side breaks with conviction","Breakout direction becomes the dominant move"],
+    drawGood:(x,W,H)=>{
+      const t=H*0.25,b=H*0.68;dD(ctx,10,t,W-10,t,R+"55",1.5);dD(ctx,10,b,W-10,b,G+"55",1.5);
+      dL(ctx,[[15,b-2],[45,t+3],[80,b-3],[115,t+4],[150,b-2],[185,t+3],[220,b-3],[250,t-5]],C,2);
+      dL(ctx,[[250,t-5],[275,H*0.12],[305,H*0.05]],G,2.5);
+      dVol(ctx,[[30,20,1],[60,22,0],[95,18,1],[130,20,0],[165,18,1],[200,22,0],[240,15,1],[270,38,1],[300,42,1]],W,H);
+      dT(ctx,"✓ Clean break above range + volume",W/2,H-22,G,10);
+    },
+    drawBad:(x,W,H)=>{
+      const t=H*0.25,b=H*0.68;dD(ctx,10,t,W-10,t,R+"55",1.5);dD(ctx,10,b,W-10,b,G+"55",1.5);
+      dL(ctx,[[15,b-2],[45,t+3],[80,b-3],[115,t+4],[150,b-2],[185,t+8],[220,b-3],[250,t+6]],C,2);
+      // Pokes above then fails back in
+      dL(ctx,[[250,t+6],[265,t-5],[280,t+2],[295,t+10],[315,(t+b)/2]],R+"cc",2);
+      dVol(ctx,[[30,20,1],[60,22,0],[95,18,1],[130,20,0],[165,18,1],[200,22,0],[240,15,1],[260,6,1],[285,5,0],[310,15,0]],W,H);
+      dT(ctx,"Weak poke",265,t-12,R,8);
+      dT(ctx,"✗ Broke out on no volume — back in range",W/2,H-22,R,10);
+    }},
+  // ═══ NEW PATTERNS ═══
+  {id:"triple_top",name:"Triple Top",type:"Bearish Reversal",color:R,
+    desc:"Three failed tests of resistance. Even stronger reversal signal than double top — buyers exhausted after three attempts.",
+    trade:"Enter on break below the support connecting the valleys. Stop above the triple top. Target = pattern height down.",
+    volume:"Volume should decline on each successive peak. Third peak on lowest volume = complete exhaustion.",
+    tell:"Three peaks within 1-2% of each other. Each peak on declining volume is the strongest confirmation.",
+    steps:["Price rallies to resistance, gets rejected","Pulls back to support, then rallies again","Second test of resistance fails again","Third and final test — weakest attempt, lowest volume","Break below support confirms the triple top"],
+    drawGood:(x,W,H)=>{
+      const r=H*0.18,s=H*0.52;
+      dD(ctx,5,r,W-5,r,R+"55",1.5);dD(ctx,5,s,W-5,s,Y+"44",1);
+      dL(ctx,[[10,H*0.75],[35,s],[55,r+3],[75,s],[100,r+4],[120,s],[145,r+5],[165,s],[190,H*0.62],[230,H*0.78],[275,H*0.88]],C,2);
+      dVol(ctx,[[25,8,1],[48,28,1],[68,10,0],[92,22,1],[112,8,0],[138,16,1],[158,8,0],[205,28,0],[250,35,0]],W,H);
+      dT(ctx,"Vol ↓",55,r-8,D,8);dT(ctx,"Vol ↓↓",100,r-8,D,8);dT(ctx,"Vol ↓↓↓",145,r-8,R,8);
+      dT(ctx,"✓ Three tests, declining volume",W/2,H-22,G,10);
+    },
+    drawBad:(x,W,H)=>{
+      const r=H*0.18,s=H*0.52;
+      dD(ctx,5,r,W-5,r,R+"55",1.5);dD(ctx,5,s,W-5,s,Y+"44",1);
+      dL(ctx,[[10,H*0.75],[35,s],[55,r+3],[75,s],[100,r+4],[120,s],[145,r+2]],C,2);
+      // Third test breaks through — it was accumulation, not exhaustion
+      dL(ctx,[[145,r+2],[170,r-12],[200,H*0.08]],G,2.5);
+      dVol(ctx,[[25,8,1],[48,25,1],[68,10,0],[92,28,1],[112,10,0],[138,32,1],[165,40,1],[195,42,1]],W,H);
+      dT(ctx,"Vol increasing!",145,r-8,G,8);
+      dT(ctx,"✗ Volume rising — breakout not reversal",W/2,H-22,R,10);
+    }},
+  {id:"triple_bottom",name:"Triple Bottom",type:"Bullish Reversal",color:G,
+    desc:"Three tests of support that hold. Stronger than double bottom — sellers can't break through after three tries.",
+    trade:"Enter on break above resistance connecting the peaks. Stop below triple bottom. Target = pattern height up.",
+    volume:"Volume should increase on each successive bounce. Third bounce on highest volume = accumulation.",
+    tell:"Three bottoms within 1-2% of each other. Increasing volume on each bounce shows growing buyer conviction.",
+    steps:["Price drops to support, bounces","Rally creates a peak, then drops back to test support","Second test holds — another bounce","Third test — support proven solid","Break above resistance connecting the peaks"],
+    drawGood:(x,W,H)=>{
+      const s=H*0.78,r=H*0.42;
+      dD(ctx,5,s,W-5,s,G+"55",1.5);dD(ctx,5,r,W-5,r,Y+"44",1);
+      dL(ctx,[[10,H*0.18],[35,r],[55,s-3],[75,r],[100,s-4],[120,r],[145,s-3],[165,r],[190,H*0.32],[230,H*0.18],[275,H*0.08]],C,2);
+      dVol(ctx,[[25,8,0],[48,18,1],[68,10,0],[92,24,1],[112,8,0],[138,32,1],[158,10,1],[205,35,1],[250,40,1]],W,H);
+      dT(ctx,"Vol ↑↑↑",145,H*0.90,G,8);
+      dT(ctx,"✓ Three tests hold, volume rising",W/2,H-22,G,10);
+    },
+    drawBad:(x,W,H)=>{
+      const s=H*0.78,r=H*0.42;
+      dD(ctx,5,s,W-5,s,G+"55",1.5);dD(ctx,5,r,W-5,r,Y+"44",1);
+      dL(ctx,[[10,H*0.18],[35,r],[55,s-3],[75,r],[100,s-2],[120,r],[145,s-1]],C,2);
+      // Third test breaks support
+      dL(ctx,[[145,s-1],[165,s+5],[195,H*0.88],[230,H*0.92]],R,2.5);
+      dVol(ctx,[[25,8,0],[48,18,1],[68,10,0],[92,20,1],[112,8,0],[138,15,0],[165,30,0],[200,38,0]],W,H);
+      dT(ctx,"Broke support",175,s-10,R,8);
+      dT(ctx,"✗ Third test fails — support broken",W/2,H-22,R,10);
+    }},
+  {id:"round_bottom",name:"Rounding Bottom",type:"Bullish Reversal",color:G,
+    desc:"Gradual U-shaped bottom showing slow shift from selling to buying. Longer timeframe, very reliable.",
+    trade:"Enter on break above the neckline (left rim level) with volume. Stop below the curve low. Target = depth projected up.",
+    volume:"U-shaped volume: high at start, dries up at bottom, increases on right side as buyers return.",
+    tell:"Must be gradual — a V-bottom is not a rounding bottom. The slow curve shows genuine sentiment shift.",
+    steps:["Price declines gradually — not a sharp drop","Selling slows, price flattens at the bottom","Gradual curve upward — buying slowly increases","Price approaches the left rim level (neckline)","Break above neckline with volume confirms"],
+    drawGood:(x,W,H)=>{
+      x.beginPath();x.strokeStyle=C;x.lineWidth=2;x.moveTo(10,H*0.20);
+      x.bezierCurveTo(60,H*0.20,80,H*0.82,160,H*0.82);
+      x.bezierCurveTo(240,H*0.82,260,H*0.20,310,H*0.20);
+      x.stroke();
+      dL(ctx,[[310,H*0.20],[340,H*0.12],[365,H*0.06]],G,2.5);
+      dD(ctx,5,H*0.20,320,H*0.20,Y+"55",1);
+      dT(ctx,"Neckline",W-50,H*0.18,Y,8);
+      dVol(ctx,[[20,30,0],[50,22,0],[80,12,0],[110,6,0],[140,4,0],[170,6,1],[200,10,1],[230,18,1],[260,25,1],[295,30,1],[330,38,1],[360,42,1]],W,H);
+      dT(ctx,"✓ Gradual curve + volume U-shape",W/2,H-22,G,10);
+    },
+    drawBad:(x,W,H)=>{
+      // V-bottom not rounding — too sharp
+      dL(ctx,[[10,H*0.15],[40,H*0.25],[70,H*0.38],[100,H*0.52],[130,H*0.68]],R,2);
+      dL(ctx,[[130,H*0.68],[160,H*0.48],[190,H*0.30],[220,H*0.17],[250,H*0.13]],G,2);
+      dD(ctx,5,H*0.15,260,H*0.15,Y+"55",1);
+      dT(ctx,"Sharp V — not gradual",130,H*0.55,R,9);
+      dVol(ctx,[[25,20,0],[55,24,0],[85,28,0],[115,32,0],[145,30,1],[175,28,1],[205,24,1],[235,20,1]],W,H);
+      dT(ctx,"✗ V-bottom not rounding — less reliable",W/2,H-22,R,10);
+    }},
+  {id:"round_top",name:"Rounding Top",type:"Bearish Reversal",color:R,
+    desc:"Gradual inverted U-shape showing slow shift from buying to selling. Distribution pattern.",
+    trade:"Enter on break below neckline (rim level). Stop above the curve high. Target = height projected down.",
+    volume:"Inverted U volume: high at start, fades at top, increases on right side as sellers take over.",
+    tell:"The gradual nature is key — not a spike top. Shows institutional distribution over time.",
+    steps:["Price rises gradually — steady buying","Momentum slows at the top, price flattens","Gradual curve downward — selling slowly increases","Price approaches the neckline (left rim level)","Break below neckline confirms distribution complete"],
+    drawGood:(x,W,H)=>{
+      x.beginPath();x.strokeStyle=C;x.lineWidth=2;x.moveTo(10,H*0.78);
+      x.bezierCurveTo(60,H*0.78,80,H*0.15,160,H*0.15);
+      x.bezierCurveTo(240,H*0.15,260,H*0.78,310,H*0.78);
+      x.stroke();
+      dL(ctx,[[310,H*0.78],[340,H*0.85],[365,H*0.92]],R,2.5);
+      dD(ctx,5,H*0.78,320,H*0.78,Y+"55",1);
+      dT(ctx,"Neckline",W-50,H*0.76,Y,8);
+      dVol(ctx,[[20,30,1],[50,25,1],[80,18,1],[110,10,1],[140,6,0],[170,8,0],[200,12,0],[230,20,0],[260,28,0],[295,32,0],[330,38,0],[360,40,0]],W,H);
+      dT(ctx,"✓ Gradual distribution + neckline break",W/2,H-22,G,10);
+    },
+    drawBad:(x,W,H)=>{
+      // Looks like rounding top but volume expanding at top — still bullish
+      x.beginPath();x.strokeStyle=C;x.lineWidth=2;x.moveTo(10,H*0.78);
+      x.bezierCurveTo(60,H*0.78,80,H*0.15,160,H*0.15);
+      x.bezierCurveTo(200,H*0.15,220,H*0.30,250,H*0.35);
+      x.stroke();
+      dL(ctx,[[250,H*0.35],[275,H*0.25],[305,H*0.15],[340,H*0.08]],G,2.5);
+      dVol(ctx,[[20,25,1],[50,28,1],[80,30,1],[110,32,1],[140,35,1],[175,30,1],[210,20,0],[245,25,1],[280,32,1],[320,38,1]],W,H);
+      dT(ctx,"Vol stays high",160,H*0.06,G,8);
+      dT(ctx,"✗ Volume not fading — still bullish",W/2,H-22,R,10);
+    }},
+  {id:"megaphone",name:"Broadening Formation",type:"Neutral",color:Y,
+    desc:"Expanding highs and lows — volatility increasing. Often appears at market tops. Very tricky to trade.",
+    trade:"Fade the extremes (sell highs, buy lows) OR wait for a decisive break with volume. High risk pattern.",
+    volume:"Volume typically increases as the pattern develops — growing disagreement between bulls and bears.",
+    tell:"Higher highs AND lower lows — the opposite of a triangle. Shows indecision and emotional trading.",
+    steps:["Price makes a high, then a low below the prior low","Next rally makes a higher high than the first","Next drop makes a lower low","Pattern expands — each swing is wider","Eventually resolves with a decisive break on volume"],
+    drawGood:(x,W,H)=>{
+      dL(ctx,[[15,H*0.45],[55,H*0.28],[95,H*0.55],[140,H*0.20],[185,H*0.62],[230,H*0.15],[270,H*0.68]],C,2);
+      // Expanding trendlines
+      dD(ctx,55,H*0.28,270,H*0.10,Y+"55",1.5);
+      dD(ctx,95,H*0.55,270,H*0.72,Y+"55",1.5);
+      dVol(ctx,[[30,12,1],[65,18,0],[105,22,1],[145,28,0],[190,30,1],[235,35,0],[265,38,1]],W,H);
+      dT(ctx,"Expanding",165,H*0.78,Y,9);
+      dT(ctx,"✓ Higher highs + lower lows — megaphone",W/2,H-22,G,10);
+    },
+    drawBad:(x,W,H)=>{
+      dL(ctx,[[15,H*0.45],[55,H*0.28],[95,H*0.55],[140,H*0.22],[185,H*0.58]],C,2);
+      // Highs stop expanding — becoming a channel instead
+      dL(ctx,[[185,H*0.58],[230,H*0.25],[270,H*0.55],[305,H*0.28]],C+"88",1.5);
+      dD(ctx,55,H*0.28,305,H*0.25,D+"55",1.5);
+      dD(ctx,95,H*0.55,305,H*0.55,D+"55",1.5);
+      dT(ctx,"Not expanding",250,H*0.65,R,8);
+      dT(ctx,"✗ Swings equalizing — it's a channel",W/2,H-22,R,10);
+    }},
+  {id:"asc_channel",name:"Ascending Channel",type:"Bullish Continuation",color:G,
+    desc:"Price trending up within parallel support and resistance lines. Buy at support, sell at resistance.",
+    trade:"Buy bounces off the lower channel line. Stop below the channel. Target = upper channel line. Or trade the breakout above.",
+    volume:"Volume should increase on bounces off support and decrease on pullbacks to support.",
+    tell:"The channel must have at least 2 touches on each line. A break below the lower line signals trend change.",
+    steps:["Identify two or more higher lows — draw lower trendline","Identify two or more higher highs — draw upper trendline","Lines should be roughly parallel","Buy at the lower line, take profit at the upper line","A break below the channel signals the uptrend is over"],
+    drawGood:(x,W,H)=>{
+      // Parallel ascending channel
+      dL(ctx,[[10,H*0.82],[60,H*0.52],[105,H*0.68],[155,H*0.38],[200,H*0.55],[250,H*0.25],[295,H*0.42],[340,H*0.12]],C,2);
+      dD(ctx,10,H*0.82,295,H*0.42,G+"55",1.5);
+      dD(ctx,60,H*0.52,340,H*0.12,G+"55",1.5);
+      dVol(ctx,[[25,20,1],[65,15,0],[95,22,1],[140,12,0],[180,24,1],[230,10,0],[270,26,1],[330,12,1]],W,H);
+      dT(ctx,"Support",155,H*0.72,G,8);dT(ctx,"Resistance",200,H*0.30,G,8);
+      dT(ctx,"✓ Clean parallel channel — trade the bounces",W/2,H-22,G,10);
+    },
+    drawBad:(x,W,H)=>{
+      dL(ctx,[[10,H*0.82],[60,H*0.52],[105,H*0.68],[155,H*0.38],[200,H*0.55],[250,H*0.28]],C,2);
+      dD(ctx,10,H*0.82,250,H*0.45,G+"44",1.5);
+      dD(ctx,60,H*0.52,250,H*0.15,G+"44",1.5);
+      // Breaks below channel support
+      dL(ctx,[[250,H*0.28],[265,H*0.48],[285,H*0.55],[310,H*0.62],[340,H*0.72]],R,2.5);
+      dVol(ctx,[[25,20,1],[65,15,0],[95,22,1],[140,12,0],[180,18,1],[245,10,0],[275,28,0],[310,35,0]],W,H);
+      dT(ctx,"Channel break",285,H*0.48,R,8);
+      dT(ctx,"✗ Broke below channel — trend over",W/2,H-22,R,10);
+    }},
+  {id:"desc_channel",name:"Descending Channel",type:"Bearish Continuation",color:R,
+    desc:"Price trending down within parallel support and resistance lines. Short at resistance, cover at support.",
+    trade:"Short bounces off upper channel line. Stop above channel. Target = lower line. Or trade the breakout above.",
+    volume:"Volume increases on drops and decreases on relief rallies.",
+    tell:"Parallel lines with at least 2 touches each. A break above the upper line signals potential reversal.",
+    steps:["Identify two or more lower highs — draw upper trendline","Identify two or more lower lows — draw lower trendline","Lines should be roughly parallel","Short at the upper line, cover at the lower line","A break above the channel signals the downtrend may be over"],
+    drawGood:(x,W,H)=>{
+      dL(ctx,[[10,H*0.15],[60,H*0.45],[105,H*0.28],[155,H*0.58],[200,H*0.42],[250,H*0.72],[295,H*0.55],[340,H*0.85]],C,2);
+      dD(ctx,10,H*0.15,295,H*0.55,R+"55",1.5);
+      dD(ctx,60,H*0.45,340,H*0.85,R+"55",1.5);
+      dVol(ctx,[[25,15,0],[65,22,0],[95,10,1],[140,25,0],[185,12,1],[235,28,0],[280,10,1],[330,30,0]],W,H);
+      dT(ctx,"Resistance",105,H*0.22,R,8);dT(ctx,"Support",200,H*0.68,R,8);
+      dT(ctx,"✓ Clean downward channel — short the rallies",W/2,H-22,G,10);
+    },
+    drawBad:(x,W,H)=>{
+      dL(ctx,[[10,H*0.15],[60,H*0.45],[105,H*0.28],[155,H*0.58],[200,H*0.42],[250,H*0.68]],C,2);
+      dD(ctx,10,H*0.15,250,H*0.52,R+"44",1.5);
+      dD(ctx,60,H*0.45,250,H*0.75,R+"44",1.5);
+      // Breaks above channel resistance
+      dL(ctx,[[250,H*0.68],[265,H*0.50],[285,H*0.38],[310,H*0.28],[340,H*0.18]],G,2.5);
+      dVol(ctx,[[25,15,0],[65,22,0],[95,10,1],[140,25,0],[185,12,1],[245,15,1],[275,32,1],[310,38,1]],W,H);
+      dT(ctx,"Channel break!",280,H*0.32,G,8);
+      dT(ctx,"✗ Broke above channel — reversal",W/2,H-22,R,10);
+    }},
+  // ═══ ADVANCED PATTERNS ═══
+  {id:"diamond_top",name:"Diamond Top",type:"Bearish Reversal",color:R,
+    desc:"Broadening formation that contracts into a triangle — looks like a diamond. Rare but powerful reversal at tops.",
+    trade:"Enter on break below the lower-right trendline. Stop above the diamond high. Target = diamond height projected down.",
+    volume:"Volume is high during the broadening phase, contracts during the narrowing phase, spikes on breakdown.",
+    tell:"The left half broadens (like a megaphone), the right half narrows (like a triangle). Must see both halves.",
+    steps:["Price expands — higher highs and lower lows (broadening)","Expansion stops, price starts contracting","Right side narrows — lower highs and higher lows","Diamond shape forms with widest point in the middle","Break below the lower-right trendline triggers the pattern"],
+    drawGood:(x,W,H)=>{
+      dL(ctx,[[15,H*0.45],[55,H*0.30],[85,H*0.55],[120,H*0.18],[160,H*0.62],[200,H*0.22],[235,H*0.55],[265,H*0.32],[290,H*0.48],[310,H*0.40]],C,2);
+      // Diamond outline
+      dD(ctx,15,H*0.45,120,H*0.18,Y+"44",1);dD(ctx,120,H*0.18,310,H*0.40,Y+"44",1);
+      dD(ctx,15,H*0.45,160,H*0.62,Y+"44",1);dD(ctx,160,H*0.62,310,H*0.40,Y+"44",1);
+      dL(ctx,[[310,H*0.40],[335,H*0.55],[360,H*0.70]],R,2.5);
+      dVol(ctx,[[30,18,1],[65,25,0],[95,28,1],[130,30,0],[170,22,1],[210,15,0],[245,12,1],[275,10,0],[325,32,0],[355,38,0]],W,H);
+      dT(ctx,"✓ Diamond shape + breakdown",W/2,H-22,G,10);
+    },
+    drawBad:(x,W,H)=>{
+      dL(ctx,[[15,H*0.45],[55,H*0.30],[85,H*0.55],[120,H*0.18],[160,H*0.62],[200,H*0.22],[235,H*0.55],[265,H*0.32],[290,H*0.45]],C,2);
+      dD(ctx,15,H*0.45,120,H*0.18,Y+"33",1);dD(ctx,120,H*0.18,290,H*0.45,Y+"33",1);
+      dD(ctx,15,H*0.45,160,H*0.62,Y+"33",1);dD(ctx,160,H*0.62,290,H*0.45,Y+"33",1);
+      // Breaks UP instead
+      dL(ctx,[[290,H*0.45],[310,H*0.30],[335,H*0.18],[360,H*0.08]],G,2.5);
+      dVol(ctx,[[30,18,1],[65,25,0],[95,28,1],[130,30,0],[170,22,1],[210,15,0],[245,12,1],[275,10,0],[310,35,1],[345,40,1]],W,H);
+      dT(ctx,"Broke up!",325,H*0.14,G,8);
+      dT(ctx,"✗ Broke upward — not a reversal",W/2,H-22,R,10);
+    }},
+  {id:"diamond_bottom",name:"Diamond Bottom",type:"Bullish Reversal",color:G,
+    desc:"Diamond formation at the bottom of a downtrend. Mirror of diamond top — signals accumulation complete.",
+    trade:"Enter on break above upper-right trendline. Stop below diamond low. Target = diamond height projected up.",
+    volume:"Volume high during broadening, contracts during narrowing, spikes on breakout.",
+    tell:"Less common than diamond top. The upside break should come with strong volume confirmation.",
+    steps:["At the bottom of a downtrend, price starts expanding","Lower lows and higher highs form the broadening left half","Right half contracts — higher lows and lower highs","Diamond forms with widest point in the middle","Break above upper-right trendline confirms reversal"],
+    drawGood:(x,W,H)=>{
+      dL(ctx,[[15,H*0.50],[55,H*0.65],[85,H*0.42],[120,H*0.78],[160,H*0.35],[200,H*0.72],[235,H*0.42],[265,H*0.62],[290,H*0.48],[310,H*0.55]],C,2);
+      dD(ctx,15,H*0.50,120,H*0.78,Y+"44",1);dD(ctx,120,H*0.78,310,H*0.55,Y+"44",1);
+      dD(ctx,15,H*0.50,160,H*0.35,Y+"44",1);dD(ctx,160,H*0.35,310,H*0.55,Y+"44",1);
+      dL(ctx,[[310,H*0.55],[335,H*0.40],[360,H*0.25]],G,2.5);
+      dVol(ctx,[[30,18,0],[65,25,1],[95,28,0],[130,30,1],[170,22,0],[210,15,1],[245,12,0],[275,10,1],[325,32,1],[355,38,1]],W,H);
+      dT(ctx,"✓ Diamond bottom + breakout",W/2,H-22,G,10);
+    },
+    drawBad:(x,W,H)=>{
+      dL(ctx,[[15,H*0.50],[55,H*0.65],[85,H*0.42],[120,H*0.78],[160,H*0.35],[200,H*0.72],[235,H*0.42],[265,H*0.62],[290,H*0.50]],C,2);
+      dD(ctx,15,H*0.50,120,H*0.78,Y+"33",1);dD(ctx,160,H*0.35,290,H*0.50,Y+"33",1);
+      dL(ctx,[[290,H*0.50],[310,H*0.65],[335,H*0.78],[360,H*0.88]],R,2.5);
+      dVol(ctx,[[30,18,0],[65,25,1],[95,28,0],[130,30,1],[170,22,0],[245,12,0],[275,10,0],[310,28,0],[345,35,0]],W,H);
+      dT(ctx,"Broke down",320,H*0.72,R,8);
+      dT(ctx,"✗ Broke downward — continuation not reversal",W/2,H-22,R,10);
+    }},
+  {id:"island_top",name:"Island Reversal Top",type:"Bearish Reversal",color:R,
+    desc:"Gap up, brief consolidation, then gap down — leaving an 'island' of price action isolated by gaps.",
+    trade:"Enter short on the gap down. Stop above the island high. Target = pre-gap-up support level.",
+    volume:"Gap up may be on moderate volume. Gap down should be on heavy volume — panic selling.",
+    tell:"Both gaps must be clean — no price overlap. The island is 'stranded' above the gaps.",
+    steps:["Price gaps up sharply — often on news or euphoria","Brief consolidation at the top (1-5 bars)","Price gaps back down — leaving the island stranded","Both gaps create a clear isolation zone","Traders trapped on the island become sellers"],
+    drawGood:(x,W,H)=>{
+      dL(ctx,[[10,H*0.65],[40,H*0.58],[70,H*0.52],[100,H*0.48]],C,2);
+      // Gap up
+      x.fillStyle="rgba(201,168,76,0.08)";x.fillRect(105,H*0.25,10,H*0.20);
+      dL(ctx,[[115,H*0.25],[140,H*0.22],[165,H*0.20],[190,H*0.23],[215,H*0.25]],C,2);
+      // Gap down
+      x.fillStyle="rgba(201,168,76,0.08)";x.fillRect(220,H*0.25,10,H*0.22);
+      dL(ctx,[[230,H*0.48],[260,H*0.55],[290,H*0.65],[320,H*0.75]],R,2.5);
+      dT(ctx,"Gap ↑",108,H*0.40,Y,8);dT(ctx,"Gap ↓",223,H*0.42,Y,8);
+      dT(ctx,"Island",165,H*0.15,D,8);
+      dT(ctx,"✓ Island isolated by two gaps",W/2,H-22,G,10);
+    },
+    drawBad:(x,W,H)=>{
+      dL(ctx,[[10,H*0.65],[40,H*0.58],[70,H*0.52],[100,H*0.48]],C,2);
+      x.fillStyle="rgba(201,168,76,0.06)";x.fillRect(105,H*0.28,10,H*0.18);
+      dL(ctx,[[115,H*0.28],[140,H*0.25],[165,H*0.22],[190,H*0.26]],C,2);
+      // No clean gap down — price drifts back, filling the gap
+      dL(ctx,[[190,H*0.26],[210,H*0.32],[230,H*0.38],[250,H*0.42],[270,H*0.48],[300,H*0.52]],R+"bb",1.5);
+      dT(ctx,"Gap filled",230,H*0.46,R,8);
+      dT(ctx,"✗ No clean gap down — gap filled",W/2,H-22,R,10);
+    }},
+  {id:"island_bottom",name:"Island Reversal Bottom",type:"Bullish Reversal",color:G,
+    desc:"Gap down, brief consolidation, then gap up — the bullish mirror of an island top.",
+    trade:"Enter long on the gap up. Stop below island low. Target = pre-gap-down resistance.",
+    volume:"Gap down on panic. Gap up on heavy volume = buyers stepping in decisively.",
+    tell:"Clean gaps on both sides are essential. The island shows capitulation followed by reversal.",
+    steps:["Price gaps down sharply — often on fear or panic","Brief consolidation at the bottom (1-5 bars)","Price gaps back up — leaving the bottom island stranded","Both gaps isolate the bottom","Sellers trapped — gap up shows buyers took control"],
+    drawGood:(x,W,H)=>{
+      dL(ctx,[[10,H*0.30],[40,H*0.38],[70,H*0.45],[100,H*0.50]],C,2);
+      x.fillStyle="rgba(201,168,76,0.08)";x.fillRect(105,H*0.52,10,H*0.20);
+      dL(ctx,[[115,H*0.72],[140,H*0.75],[165,H*0.78],[190,H*0.74],[215,H*0.72]],C,2);
+      x.fillStyle="rgba(201,168,76,0.08)";x.fillRect(220,H*0.50,10,H*0.22);
+      dL(ctx,[[230,H*0.50],[260,H*0.42],[290,H*0.32],[320,H*0.22]],G,2.5);
+      dT(ctx,"Gap ↓",108,H*0.58,Y,8);dT(ctx,"Gap ↑",223,H*0.56,Y,8);
+      dT(ctx,"Island",165,H*0.84,D,8);
+      dT(ctx,"✓ Clean island with gap reversal",W/2,H-22,G,10);
+    },
+    drawBad:(x,W,H)=>{
+      dL(ctx,[[10,H*0.30],[40,H*0.38],[70,H*0.45],[100,H*0.50]],C,2);
+      x.fillStyle="rgba(201,168,76,0.06)";x.fillRect(105,H*0.52,10,H*0.18);
+      dL(ctx,[[115,H*0.70],[140,H*0.74],[165,H*0.76],[190,H*0.72]],C,2);
+      dL(ctx,[[190,H*0.72],[210,H*0.65],[230,H*0.58],[250,H*0.52],[280,H*0.50]],C+"88",1.5);
+      dL(ctx,[[280,H*0.50],[305,H*0.58],[330,H*0.68]],R,2);
+      dT(ctx,"Gap filled",240,H*0.48,R,8);
+      dT(ctx,"✗ Gap filled — no clean reversal",W/2,H-22,R,10);
+    }},
+  {id:"bump_run",name:"Bump and Run",type:"Bearish Reversal",color:R,
+    desc:"Trend accelerates steeply (the bump), then reverses sharply back through the original trendline (the run).",
+    trade:"Enter short when price breaks back below the original trendline. Stop above the bump high. Target = trendline projected.",
+    volume:"Volume spikes during the bump (euphoria), then dries up, then increases on the breakdown.",
+    tell:"The bump should be at least 2x steeper than the original trend. If not steep enough, it's just a trend.",
+    steps:["Established uptrend with a moderate trendline","Trend suddenly accelerates — much steeper angle (the bump)","Price becomes parabolic — unsustainable","Reversal begins — price rolls over","Break below the original trendline confirms the run down"],
+    drawGood:(x,W,H)=>{
+      // Original moderate trendline
+      dD(ctx,10,H*0.72,200,H*0.38,Y+"55",1.5);
+      dL(ctx,[[10,H*0.72],[40,H*0.65],[70,H*0.58],[100,H*0.52],[130,H*0.46]],C,2);
+      // Bump — steep acceleration
+      dL(ctx,[[130,H*0.46],[150,H*0.32],[170,H*0.18],[185,H*0.10]],G,2);
+      // Rollover
+      dL(ctx,[[185,H*0.10],[200,H*0.15],[215,H*0.25],[230,H*0.35]],C+"bb",1.5);
+      // Run — break below original trendline
+      dL(ctx,[[230,H*0.35],[255,H*0.45],[280,H*0.58],[310,H*0.72],[340,H*0.85]],R,2.5);
+      dT(ctx,"Bump",170,H*0.06,D,8);dT(ctx,"Run ↓",300,H*0.65,R,8);
+      dT(ctx,"✓ Parabolic bump then trendline break",W/2,H-22,G,10);
+    },
+    drawBad:(x,W,H)=>{
+      dD(ctx,10,H*0.72,200,H*0.38,Y+"44",1.5);
+      dL(ctx,[[10,H*0.72],[40,H*0.65],[70,H*0.58],[100,H*0.52],[130,H*0.46]],C,2);
+      // Steeper but not parabolic — just a normal acceleration
+      dL(ctx,[[130,H*0.46],[160,H*0.35],[190,H*0.28],[220,H*0.22],[250,H*0.18],[280,H*0.15]],C,2);
+      dT(ctx,"Not steep enough",200,H*0.12,R,8);
+      dVol(ctx,[[25,15,1],[55,18,1],[85,20,1],[120,22,1],[155,24,1],[190,26,1],[225,28,1],[260,30,1]],W,H);
+      dT(ctx,"✗ Just a steepening trend — not parabolic",W/2,H-22,R,10);
+    }},
+  // ═══ CANDLESTICK PATTERNS ═══
+  {id:"engulf_bull",name:"Bullish Engulfing",type:"Bullish Reversal",color:G,
+    desc:"Large green candle completely engulfs the prior red candle. Shows buyers overwhelmed sellers in one bar.",
+    trade:"Enter at the close of the engulfing candle or next bar open. Stop below the engulfing candle low.",
+    volume:"The engulfing candle should have significantly higher volume than the prior candle.",
+    tell:"Must occur after a downtrend. The green body must fully contain the red body. Wicks don't have to be engulfed.",
+    steps:["Price is in a downtrend or at support","A red candle forms — continuation expected","Next candle opens below the red close","Buyers step in — price rallies hard","Green candle closes above the red open — full engulfing"],
+    drawGood:(x,W,H)=>{
+      // Downtrend context
+      dC(ctx,40,H*0.25,H*0.32,H*0.22,H*0.35,10);
+      dC(ctx,65,H*0.32,H*0.40,H*0.28,H*0.43,10);
+      dC(ctx,90,H*0.40,H*0.48,H*0.36,H*0.52,10);
+      // Small red candle
+      dC(ctx,125,H*0.48,H*0.55,H*0.45,H*0.58,12);
+      // Large green engulfing
+      dC(ctx,160,H*0.58,H*0.42,H*0.40,H*0.60,16);
+      // Follow through
+      dC(ctx,195,H*0.42,H*0.35,H*0.33,H*0.44,10);
+      dC(ctx,220,H*0.35,H*0.28,H*0.26,H*0.37,10);
+      dVol(ctx,[[40,12,0],[65,15,0],[90,18,0],[125,14,0],[160,38,1],[195,25,1],[220,20,1]],W,H);
+      dT(ctx,"Full wrap",160,H*0.35,G,9);
+      dT(ctx,"✓ Large body wraps prior + high volume",W/2,H-22,G,10);
+    },
+    drawBad:(x,W,H)=>{
+      dC(ctx,40,H*0.25,H*0.32,H*0.22,H*0.35,10);
+      dC(ctx,65,H*0.32,H*0.40,H*0.28,H*0.43,10);
+      dC(ctx,90,H*0.40,H*0.48,H*0.36,H*0.52,10);
+      dC(ctx,125,H*0.48,H*0.55,H*0.45,H*0.58,12);
+      // Green candle but doesn't fully engulf — closes below red open
+      dC(ctx,160,H*0.57,H*0.50,H*0.48,H*0.60,14);
+      dC(ctx,195,H*0.52,H*0.56,H*0.50,H*0.58,10);
+      dVol(ctx,[[40,12,0],[65,15,0],[90,18,0],[125,14,0],[160,16,1],[195,12,0]],W,H);
+      dT(ctx,"Partial",160,H*0.44,R,9);
+      dT(ctx,"✗ Doesn't fully wrap prior body — weak",W/2,H-22,R,10);
+    }},
+  {id:"engulf_bear",name:"Bearish Engulfing",type:"Bearish Reversal",color:R,
+    desc:"Large red candle completely engulfs the prior green candle. Sellers overwhelmed buyers in one bar.",
+    trade:"Enter short at the close of the engulfing candle. Stop above the engulfing candle high.",
+    volume:"Engulfing candle must have higher volume than the prior candle. Low volume = unreliable.",
+    tell:"Must occur after an uptrend. Red body must fully contain the green body.",
+    steps:["Price is in an uptrend or at resistance","A green candle forms — continuation expected","Next candle opens above the green close","Sellers flood in — price drops hard","Red candle closes below the green open — full engulfing"],
+    drawGood:(x,W,H)=>{
+      dC(ctx,40,H*0.68,H*0.62,H*0.60,H*0.72,10);
+      dC(ctx,65,H*0.62,H*0.55,H*0.52,H*0.65,10);
+      dC(ctx,90,H*0.55,H*0.48,H*0.45,H*0.58,10);
+      dC(ctx,125,H*0.48,H*0.40,H*0.38,H*0.50,12);
+      // Large red engulfing
+      dC(ctx,160,H*0.38,H*0.52,H*0.35,H*0.55,16);
+      dC(ctx,195,H*0.52,H*0.60,H*0.50,H*0.63,10);
+      dC(ctx,220,H*0.60,H*0.68,H*0.58,H*0.72,10);
+      dVol(ctx,[[40,12,1],[65,15,1],[90,18,1],[125,14,1],[160,38,0],[195,25,0],[220,20,0]],W,H);
+      dT(ctx,"Full wrap",160,H*0.60,R,9);
+      dT(ctx,"✓ Large body wraps prior + volume",W/2,H-22,G,10);
+    },
+    drawBad:(x,W,H)=>{
+      dC(ctx,40,H*0.68,H*0.62,H*0.60,H*0.72,10);
+      dC(ctx,65,H*0.62,H*0.55,H*0.52,H*0.65,10);
+      dC(ctx,90,H*0.55,H*0.48,H*0.45,H*0.58,10);
+      dC(ctx,125,H*0.48,H*0.40,H*0.38,H*0.50,12);
+      // Red candle but doesn't engulf fully
+      dC(ctx,160,H*0.39,H*0.46,H*0.36,H*0.48,14);
+      dC(ctx,195,H*0.44,H*0.40,H*0.38,H*0.46,10);
+      dVol(ctx,[[40,12,1],[65,15,1],[90,18,1],[125,14,1],[160,16,0],[195,14,1]],W,H);
+      dT(ctx,"Partial",160,H*0.52,R,9);
+      dT(ctx,"✗ Doesn't fully wrap prior body — weak",W/2,H-22,R,10);
+    }},
+  {id:"morning_star",name:"Morning Star",type:"Bullish Reversal",color:G,
+    desc:"Three-candle reversal: big red, small body (indecision), big green. The dawn after the darkest hour.",
+    trade:"Enter at the close of the third candle. Stop below the star (middle candle) low.",
+    volume:"Third candle should have higher volume than the first. Star candle typically has low volume.",
+    tell:"The star (middle candle) should gap below the first candle's close. Third candle must close above the first candle's midpoint.",
+    steps:["Downtrend produces a large red candle","Next candle has a small body — indecision (the star)","Star gaps below the red candle's close ideally","Third candle is a large green — buyers take control","Green candle closes above the midpoint of the first red candle"],
+    drawGood:(x,W,H)=>{
+      dC(ctx,50,H*0.30,H*0.52,H*0.27,H*0.55,16);
+      // Star - small body
+      dC(ctx,95,H*0.56,H*0.58,H*0.54,H*0.62,8);
+      // Big green
+      dC(ctx,140,H*0.55,H*0.32,H*0.30,H*0.58,16);
+      // Follow through
+      dC(ctx,180,H*0.32,H*0.25,H*0.22,H*0.34,12);
+      dVol(ctx,[[50,28,0],[95,8,0],[140,35,1],[180,22,1]],W,H);
+      dT(ctx,"Red",50,H*0.22,R,8);dT(ctx,"Tiny body",95,H*0.50,Y,8);dT(ctx,"Green",140,H*0.25,G,8);
+      dT(ctx,"✓ Indecision candle then strong reversal",W/2,H-22,G,10);
+    },
+    drawBad:(x,W,H)=>{
+      dC(ctx,50,H*0.30,H*0.52,H*0.27,H*0.55,16);
+      // Star too big — not indecision, just a normal candle
+      dC(ctx,95,H*0.54,H*0.62,H*0.52,H*0.65,14);
+      dC(ctx,140,H*0.60,H*0.50,H*0.48,H*0.63,12);
+      dC(ctx,180,H*0.52,H*0.58,H*0.50,H*0.62,10);
+      dVol(ctx,[[50,28,0],[95,22,0],[140,14,1],[180,10,0]],W,H);
+      dT(ctx,"Star too big",95,H*0.48,R,8);
+      dT(ctx,"✗ Middle candle too large — no indecision",W/2,H-22,R,10);
+    }},
+  {id:"evening_star",name:"Evening Star",type:"Bearish Reversal",color:R,
+    desc:"Three-candle reversal: big green, small body (indecision), big red. The sunset on the uptrend.",
+    trade:"Enter short at the close of the third candle. Stop above the star high.",
+    volume:"Third red candle should have highest volume. Star is typically low volume.",
+    tell:"Star should ideally gap above the first green's close. Third candle must close below the first candle's midpoint.",
+    steps:["Uptrend produces a large green candle","Next candle has a small body — momentum stalling (the star)","Star gaps above the green candle's close ideally","Third candle is a large red — sellers take control","Red candle closes below the midpoint of the first green"],
+    drawGood:(x,W,H)=>{
+      dC(ctx,50,H*0.65,H*0.42,H*0.40,H*0.68,16);
+      // Star
+      dC(ctx,95,H*0.40,H*0.38,H*0.35,H*0.42,8);
+      // Big red
+      dC(ctx,140,H*0.40,H*0.62,H*0.38,H*0.65,16);
+      dC(ctx,180,H*0.62,H*0.72,H*0.60,H*0.75,12);
+      dVol(ctx,[[50,28,1],[95,8,0],[140,35,0],[180,22,0]],W,H);
+      dT(ctx,"Green",50,H*0.75,G,8);dT(ctx,"Tiny body",95,H*0.32,Y,8);dT(ctx,"Red",140,H*0.72,R,8);
+      dT(ctx,"✓ Indecision candle then strong reversal",W/2,H-22,G,10);
+    },
+    drawBad:(x,W,H)=>{
+      dC(ctx,50,H*0.65,H*0.42,H*0.40,H*0.68,16);
+      dC(ctx,95,H*0.40,H*0.32,H*0.30,H*0.42,14);
+      dC(ctx,140,H*0.34,H*0.38,H*0.32,H*0.40,10);
+      dC(ctx,180,H*0.36,H*0.30,H*0.28,H*0.38,10);
+      dVol(ctx,[[50,28,1],[95,25,1],[140,10,0],[180,12,1]],W,H);
+      dT(ctx,"Star too big",95,H*0.26,R,8);
+      dT(ctx,"✗ Middle candle is bullish — not indecision",W/2,H-22,R,10);
+    }},
+  {id:"three_soldiers",name:"Three White Soldiers",type:"Bullish Reversal",color:G,
+    desc:"Three consecutive green candles, each closing higher. Shows sustained buying pressure and trend shift.",
+    trade:"Enter after the third candle closes. Stop below the first soldier's low. Target = pattern height projected.",
+    volume:"Each candle should have equal or increasing volume — confirms growing conviction.",
+    tell:"Each candle should open within the prior candle's body and close near its high. Long wicks weaken the signal.",
+    steps:["After a downtrend, first green candle appears","Second green candle opens in the first's body, closes higher","Third green candle opens in the second's body, closes higher still","All three have solid bodies with small upper wicks","Volume steady or increasing across all three"],
+    drawGood:(x,W,H)=>{
+      // Downtrend context
+      dC(ctx,30,H*0.35,H*0.42,H*0.32,H*0.45,10);
+      dC(ctx,55,H*0.42,H*0.50,H*0.40,H*0.53,10);
+      dC(ctx,80,H*0.50,H*0.58,H*0.48,H*0.60,10);
+      // Three soldiers
+      dC(ctx,120,H*0.58,H*0.45,H*0.44,H*0.60,14);
+      dC(ctx,155,H*0.46,H*0.35,H*0.34,H*0.48,14);
+      dC(ctx,190,H*0.36,H*0.25,H*0.24,H*0.38,14);
+      // Follow through
+      dC(ctx,225,H*0.26,H*0.20,H*0.18,H*0.28,10);
+      dVol(ctx,[[30,10,0],[55,12,0],[80,14,0],[120,24,1],[155,28,1],[190,32,1],[225,20,1]],W,H);
+      dT(ctx,"1",120,H*0.65,G,9);dT(ctx,"2",155,H*0.53,G,9);dT(ctx,"3",190,H*0.42,G,9);
+      dT(ctx,"✓ Three ascending bodies + rising volume",W/2,H-22,G,10);
+    },
+    drawBad:(x,W,H)=>{
+      dC(ctx,30,H*0.35,H*0.42,H*0.32,H*0.45,10);
+      dC(ctx,55,H*0.42,H*0.50,H*0.40,H*0.53,10);
+      dC(ctx,80,H*0.50,H*0.58,H*0.48,H*0.60,10);
+      // Soldiers with long upper wicks — resistance
+      dC(ctx,120,H*0.58,H*0.48,H*0.42,H*0.60,14);
+      dC(ctx,155,H*0.49,H*0.40,H*0.34,H*0.51,14);
+      dC(ctx,190,H*0.41,H*0.35,H*0.28,H*0.43,14);
+      dVol(ctx,[[30,10,0],[55,12,0],[80,14,0],[120,22,1],[155,18,1],[190,14,1]],W,H);
+      dT(ctx,"Long wicks!",155,H*0.28,R,8);
+      dT(ctx,"✗ Long upper wicks + declining volume",W/2,H-22,R,10);
+    }},
+  {id:"three_crows",name:"Three Black Crows",type:"Bearish Reversal",color:R,
+    desc:"Three consecutive red candles, each closing lower. Mirror of three soldiers — sustained selling pressure.",
+    trade:"Enter short after third candle closes. Stop above the first crow's high.",
+    volume:"Each candle should have equal or increasing volume — growing selling conviction.",
+    tell:"Each candle opens within the prior body and closes near its low. Long lower wicks weaken the pattern.",
+    steps:["After an uptrend, first red candle appears","Second red opens in the first's body, closes lower","Third red opens in the second's body, closes lower still","All three have solid bodies with small lower wicks","Volume steady or increasing confirms conviction"],
+    drawGood:(x,W,H)=>{
+      dC(ctx,30,H*0.60,H*0.52,H*0.50,H*0.62,10);
+      dC(ctx,55,H*0.52,H*0.45,H*0.42,H*0.55,10);
+      dC(ctx,80,H*0.45,H*0.38,H*0.35,H*0.48,10);
+      // Three crows
+      dC(ctx,120,H*0.38,H*0.50,H*0.36,H*0.52,14);
+      dC(ctx,155,H*0.49,H*0.60,H*0.47,H*0.62,14);
+      dC(ctx,190,H*0.59,H*0.70,H*0.57,H*0.72,14);
+      dC(ctx,225,H*0.69,H*0.76,H*0.67,H*0.78,10);
+      dVol(ctx,[[30,10,1],[55,12,1],[80,14,1],[120,24,0],[155,28,0],[190,32,0],[225,22,0]],W,H);
+      dT(ctx,"1",120,H*0.30,R,9);dT(ctx,"2",155,H*0.42,R,9);dT(ctx,"3",190,H*0.52,R,9);
+      dT(ctx,"✓ Three descending bodies + rising volume",W/2,H-22,G,10);
+    },
+    drawBad:(x,W,H)=>{
+      dC(ctx,30,H*0.60,H*0.52,H*0.50,H*0.62,10);
+      dC(ctx,55,H*0.52,H*0.45,H*0.42,H*0.55,10);
+      dC(ctx,80,H*0.45,H*0.38,H*0.35,H*0.48,10);
+      // Crows with long lower wicks — buyers defending
+      dC(ctx,120,H*0.38,H*0.46,H*0.36,H*0.54,14);
+      dC(ctx,155,H*0.45,H*0.52,H*0.43,H*0.60,14);
+      dC(ctx,190,H*0.51,H*0.56,H*0.49,H*0.65,14);
+      dVol(ctx,[[30,10,1],[55,12,1],[80,14,1],[120,22,0],[155,18,0],[190,14,0]],W,H);
+      dT(ctx,"Long wicks!",155,H*0.66,R,8);
+      dT(ctx,"✗ Long lower wicks — buyers defending",W/2,H-22,R,10);
+    }},
+  // ═══ MORE CANDLESTICK PATTERNS ═══
+  {id:"hammer",name:"Hammer",type:"Bullish Reversal",color:G,
+    desc:"Small body at the top with a long lower wick (2x+ body). Sellers pushed price down but buyers reclaimed it all.",
+    trade:"Enter above the hammer high. Stop below the hammer low (the wick). Confirmation = next candle closes green.",
+    volume:"Hammer on high volume is strongest — shows heavy selling absorbed by buyers.",
+    tell:"Lower wick must be at least 2x the body length. Little to no upper wick. Must appear after a downtrend.",
+    steps:["Price is in a downtrend","A candle opens, drops significantly during the session","Buyers step in and push price back up near the open","Result: small body at top, long lower shadow","Confirmation comes if next candle closes above hammer high"],
+    drawGood:(x,W,H)=>{
+      dC(ctx,30,H*0.30,H*0.36,H*0.27,H*0.40,10);dC(ctx,55,H*0.36,H*0.44,H*0.33,H*0.48,10);
+      dC(ctx,80,H*0.44,H*0.52,H*0.42,H*0.55,10);dC(ctx,105,H*0.52,H*0.58,H*0.50,H*0.62,10);
+      // Hammer: small body at top, long lower wick
+      x.fillStyle=G;x.fillRect(130-7,H*0.55,14,H*0.06);x.strokeStyle=G;x.lineWidth=1;
+      x.beginPath();x.moveTo(130,H*0.55);x.lineTo(130,H*0.54);x.stroke();
+      x.beginPath();x.moveTo(130,H*0.61);x.lineTo(130,H*0.82);x.stroke();
+      dC(ctx,160,H*0.54,H*0.48,H*0.46,H*0.56,10);dC(ctx,185,H*0.48,H*0.40,H*0.38,H*0.50,10);
+      dVol(ctx,[[30,12,0],[55,15,0],[80,18,0],[105,14,0],[130,35,1],[160,22,1],[185,20,1]],W,H);
+      dT(ctx,"2x lower wick",130,H*0.48,G,9);
+      dT(ctx,"✓ Long lower wick, small body at top",W/2,H-22,G,10);
+    },
+    drawBad:(x,W,H)=>{
+      dC(ctx,30,H*0.30,H*0.36,H*0.27,H*0.40,10);dC(ctx,55,H*0.36,H*0.44,H*0.33,H*0.48,10);
+      dC(ctx,80,H*0.44,H*0.52,H*0.42,H*0.55,10);dC(ctx,105,H*0.52,H*0.58,H*0.50,H*0.62,10);
+      // Looks like hammer but wick too short — not 2x body
+      x.fillStyle=G;x.fillRect(130-7,H*0.55,14,H*0.08);x.strokeStyle=G;x.lineWidth=1;
+      x.beginPath();x.moveTo(130,H*0.55);x.lineTo(130,H*0.53);x.stroke();
+      x.beginPath();x.moveTo(130,H*0.63);x.lineTo(130,H*0.72);x.stroke();
+      dC(ctx,160,H*0.60,H*0.65,H*0.58,H*0.68,10);
+      dVol(ctx,[[30,12,0],[55,15,0],[80,18,0],[105,14,0],[130,10,1],[160,12,0]],W,H);
+      dT(ctx,"Wick too short",130,H*0.48,R,8);
+      dT(ctx,"✗ Wick not 2x body + low volume",W/2,H-22,R,10);
+    }},
+  {id:"shooting_star",name:"Shooting Star",type:"Bearish Reversal",color:R,
+    desc:"Small body at the bottom with a long upper wick. Buyers tried to push higher but sellers slammed it back down.",
+    trade:"Enter below the shooting star low. Stop above the upper wick. Confirmation = next candle closes red.",
+    volume:"High volume shooting star is strongest — shows buying attempt absorbed by sellers.",
+    tell:"Upper wick must be at least 2x the body. Little to no lower wick. Must appear after an uptrend.",
+    steps:["Price is in an uptrend","A candle opens, rallies significantly during the session","Sellers overwhelm and push price back down near the open","Result: small body at bottom, long upper shadow","Confirmation if next candle closes below shooting star low"],
+    drawGood:(x,W,H)=>{
+      dC(ctx,30,H*0.65,H*0.58,H*0.55,H*0.68,10);dC(ctx,55,H*0.58,H*0.50,H*0.48,H*0.60,10);
+      dC(ctx,80,H*0.50,H*0.42,H*0.40,H*0.52,10);dC(ctx,105,H*0.42,H*0.36,H*0.34,H*0.44,10);
+      // Shooting star: small body at bottom, long upper wick
+      x.fillStyle=R;x.fillRect(130-7,H*0.35,14,H*0.06);x.strokeStyle=R;x.lineWidth=1;
+      x.beginPath();x.moveTo(130,H*0.41);x.lineTo(130,H*0.43);x.stroke();
+      x.beginPath();x.moveTo(130,H*0.35);x.lineTo(130,H*0.14);x.stroke();
+      dC(ctx,160,H*0.42,H*0.48,H*0.40,H*0.50,10);dC(ctx,185,H*0.48,H*0.56,H*0.46,H*0.58,10);
+      dVol(ctx,[[30,12,1],[55,15,1],[80,18,1],[105,14,1],[130,35,0],[160,22,0],[185,20,0]],W,H);
+      dT(ctx,"2x upper wick",130,H*0.48,R,9);
+      dT(ctx,"✓ Long upper wick rejection",W/2,H-22,G,10);
+    },
+    drawBad:(x,W,H)=>{
+      dC(ctx,30,H*0.65,H*0.58,H*0.55,H*0.68,10);dC(ctx,55,H*0.58,H*0.50,H*0.48,H*0.60,10);
+      dC(ctx,80,H*0.50,H*0.42,H*0.40,H*0.52,10);dC(ctx,105,H*0.42,H*0.36,H*0.34,H*0.44,10);
+      // Upper wick present but body too large
+      x.fillStyle=R;x.fillRect(130-7,H*0.28,14,H*0.14);x.strokeStyle=R;x.lineWidth=1;
+      x.beginPath();x.moveTo(130,H*0.28);x.lineTo(130,H*0.18);x.stroke();
+      x.beginPath();x.moveTo(130,H*0.42);x.lineTo(130,H*0.44);x.stroke();
+      dC(ctx,160,H*0.38,H*0.34,H*0.32,H*0.40,10);
+      dVol(ctx,[[30,12,1],[55,15,1],[80,18,1],[105,14,1],[130,12,0],[160,14,1]],W,H);
+      dT(ctx,"Body too big",130,H*0.50,R,8);
+      dT(ctx,"✗ Body too large relative to wick",W/2,H-22,R,10);
+    }},
+  {id:"hanging_man",name:"Hanging Man",type:"Bearish Reversal",color:R,
+    desc:"Same shape as a hammer but at the TOP of an uptrend. The long lower wick shows selling pressure emerging.",
+    trade:"Enter below the hanging man low. Stop above the high. Need bearish confirmation next candle.",
+    volume:"High volume hanging man is more significant — heavy selling appeared even though price recovered.",
+    tell:"Identical shape to hammer — context determines meaning. At bottom = hammer (bullish). At top = hanging man (bearish).",
+    steps:["Price is in an uptrend — this is key to identification","A candle with a small body and long lower wick appears","Same shape as hammer but at the top, not bottom","The long wick reveals selling pressure is entering","Bearish confirmation: next candle closes below hanging man body"],
+    drawGood:(x,W,H)=>{
+      dC(ctx,30,H*0.72,H*0.65,H*0.62,H*0.75,10);dC(ctx,55,H*0.65,H*0.55,H*0.52,H*0.68,10);
+      dC(ctx,80,H*0.55,H*0.45,H*0.42,H*0.58,10);dC(ctx,105,H*0.45,H*0.36,H*0.33,H*0.48,10);
+      // Hanging man at top
+      x.fillStyle=R;x.fillRect(130-7,H*0.30,14,H*0.06);x.strokeStyle=R;x.lineWidth=1;
+      x.beginPath();x.moveTo(130,H*0.30);x.lineTo(130,H*0.28);x.stroke();
+      x.beginPath();x.moveTo(130,H*0.36);x.lineTo(130,H*0.58);x.stroke();
+      dC(ctx,160,H*0.38,H*0.45,H*0.36,H*0.48,10);dC(ctx,185,H*0.45,H*0.55,H*0.43,H*0.58,10);
+      dVol(ctx,[[30,12,1],[55,15,1],[80,18,1],[105,14,1],[130,30,0],[160,22,0],[185,25,0]],W,H);
+      dT(ctx,"Long wick at top",130,H*0.23,R,9);
+      dT(ctx,"✓ Long lower wick at top = warning",W/2,H-22,G,10);
+    },
+    drawBad:(x,W,H)=>{
+      dC(ctx,30,H*0.72,H*0.65,H*0.62,H*0.75,10);dC(ctx,55,H*0.65,H*0.55,H*0.52,H*0.68,10);
+      dC(ctx,80,H*0.55,H*0.45,H*0.42,H*0.58,10);dC(ctx,105,H*0.45,H*0.36,H*0.33,H*0.48,10);
+      // Same shape but no confirmation — next candle is green
+      x.fillStyle=R;x.fillRect(130-7,H*0.30,14,H*0.06);x.strokeStyle=R;x.lineWidth=1;
+      x.beginPath();x.moveTo(130,H*0.30);x.lineTo(130,H*0.28);x.stroke();
+      x.beginPath();x.moveTo(130,H*0.36);x.lineTo(130,H*0.58);x.stroke();
+      dC(ctx,160,H*0.32,H*0.26,H*0.24,H*0.34,10);dC(ctx,185,H*0.26,H*0.20,H*0.18,H*0.28,10);
+      dVol(ctx,[[30,12,1],[55,15,1],[80,18,1],[105,14,1],[130,10,0],[160,18,1],[185,20,1]],W,H);
+      dT(ctx,"No confirmation",160,H*0.18,G,8);
+      dT(ctx,"✗ Low vol + bulls continued higher",W/2,H-22,R,10);
+    }},
+  {id:"doji",name:"Doji",type:"Neutral",color:Y,
+    desc:"Open and close at nearly the same price. Pure indecision — neither bulls nor bears won the session.",
+    trade:"Don't trade the doji alone. Wait for the next candle to confirm direction. Doji = pause, not signal.",
+    volume:"High volume doji is more significant — lots of activity but no resolution.",
+    tell:"Context is everything. Doji after a long trend = potential reversal. Doji in a range = noise.",
+    steps:["Price opens at a level","During the session, price moves up and down","By close, price returns to nearly the open","Result: tiny body with wicks on both sides","Next candle determines direction — the doji just signals indecision"],
+    drawGood:(x,W,H)=>{
+      dC(ctx,25,H*0.28,H*0.35,H*0.25,H*0.38,10);dC(ctx,50,H*0.35,H*0.42,H*0.32,H*0.45,10);
+      dC(ctx,75,H*0.42,H*0.48,H*0.40,H*0.52,10);dC(ctx,100,H*0.48,H*0.55,H*0.46,H*0.58,10);
+      // Doji at bottom of downtrend
+      x.strokeStyle=Y;x.lineWidth=2;x.beginPath();x.moveTo(130,H*0.42);x.lineTo(130,H*0.68);x.stroke();
+      x.fillStyle=Y;x.fillRect(130-8,H*0.54,16,3);
+      // Bullish confirmation
+      dC(ctx,160,H*0.52,H*0.44,H*0.42,H*0.55,10);dC(ctx,185,H*0.44,H*0.36,H*0.34,H*0.46,10);
+      dVol(ctx,[[25,12,0],[50,15,0],[75,18,0],[100,14,0],[130,28,0],[160,25,1],[185,22,1]],W,H);
+      dT(ctx,"Doji",130,H*0.36,Y,9);dT(ctx,"Confirmed ↑",175,H*0.30,G,8);
+      dT(ctx,"✓ Doji at support + bullish confirmation",W/2,H-22,G,10);
+    },
+    drawBad:(x,W,H)=>{
+      dC(ctx,25,H*0.42,H*0.46,H*0.40,H*0.48,10);dC(ctx,50,H*0.44,H*0.48,H*0.42,H*0.50,10);
+      dC(ctx,75,H*0.46,H*0.50,H*0.44,H*0.52,10);dC(ctx,100,H*0.48,H*0.52,H*0.46,H*0.54,10);
+      // Doji in the middle of a range — meaningless
+      x.strokeStyle=Y;x.lineWidth=2;x.beginPath();x.moveTo(130,H*0.42);x.lineTo(130,H*0.58);x.stroke();
+      x.fillStyle=Y;x.fillRect(130-8,H*0.49,16,3);
+      dC(ctx,160,H*0.48,H*0.52,H*0.46,H*0.54,10);dC(ctx,185,H*0.50,H*0.48,H*0.46,H*0.52,10);
+      dVol(ctx,[[25,10,1],[50,8,0],[75,10,1],[100,8,0],[130,6,0],[160,8,1],[185,6,0]],W,H);
+      dT(ctx,"Doji",130,H*0.36,Y,9);dT(ctx,"No trend",85,H*0.58,D,8);
+      dT(ctx,"✗ Doji in a range — just noise",W/2,H-22,R,10);
+    }},
+  {id:"harami_bull",name:"Bullish Harami",type:"Bullish Reversal",color:G,
+    desc:"Small green candle contained within the prior large red candle. Selling momentum fading — potential reversal.",
+    trade:"Enter above the harami candle high. Stop below the large red candle low. Wait for confirmation.",
+    volume:"The small candle typically has lower volume — pause in selling. Confirmation candle needs volume.",
+    tell:"The small candle's body must be completely inside the large candle's body. Opposite of engulfing.",
+    steps:["Downtrend produces a large red candle","Next candle opens above the red close","Small green body forms entirely within the red body","This shows selling pressure has stalled","Bullish confirmation needed — next candle closes above harami high"],
+    drawGood:(x,W,H)=>{
+      dC(ctx,30,H*0.28,H*0.35,H*0.25,H*0.38,10);dC(ctx,55,H*0.35,H*0.42,H*0.32,H*0.45,10);
+      // Large red
+      dC(ctx,90,H*0.40,H*0.60,H*0.38,H*0.63,16);
+      // Small green inside
+      dC(ctx,120,H*0.56,H*0.48,H*0.46,H*0.58,10);
+      // Confirmation
+      dC(ctx,150,H*0.46,H*0.38,H*0.36,H*0.48,12);dC(ctx,180,H*0.38,H*0.30,H*0.28,H*0.40,10);
+      dVol(ctx,[[30,14,0],[55,18,0],[90,30,0],[120,10,1],[150,25,1],[180,20,1]],W,H);
+      dT(ctx,"Smaller body",120,H*0.42,G,8);
+      dT(ctx,"✓ Small body inside large — momentum stalling",W/2,H-22,G,10);
+    },
+    drawBad:(x,W,H)=>{
+      dC(ctx,30,H*0.28,H*0.35,H*0.25,H*0.38,10);dC(ctx,55,H*0.35,H*0.42,H*0.32,H*0.45,10);
+      dC(ctx,90,H*0.40,H*0.60,H*0.38,H*0.63,16);
+      // "Harami" but candle extends outside the body
+      dC(ctx,120,H*0.62,H*0.48,H*0.46,H*0.64,12);
+      dC(ctx,150,H*0.50,H*0.55,H*0.48,H*0.58,10);
+      dVol(ctx,[[30,14,0],[55,18,0],[90,30,0],[120,8,1],[150,12,0]],W,H);
+      dT(ctx,"Not contained",120,H*0.42,R,8);
+      dT(ctx,"✗ Body extends outside — not contained",W/2,H-22,R,10);
+    }},
+  {id:"harami_bear",name:"Bearish Harami",type:"Bearish Reversal",color:R,
+    desc:"Small red candle contained within the prior large green candle. Buying momentum fading — potential reversal.",
+    trade:"Enter below the harami candle low. Stop above the large green candle high.",
+    volume:"Small candle on lower volume — pause in buying. Bearish confirmation needed.",
+    tell:"Small body must sit entirely inside the large candle's body. After an uptrend only.",
+    steps:["Uptrend produces a large green candle","Next candle opens below the green close","Small red body forms entirely within the green body","This shows buying pressure has stalled","Bearish confirmation — next candle closes below harami low"],
+    drawGood:(x,W,H)=>{
+      dC(ctx,30,H*0.68,H*0.60,H*0.58,H*0.72,10);dC(ctx,55,H*0.60,H*0.52,H*0.50,H*0.62,10);
+      dC(ctx,90,H*0.55,H*0.35,H*0.33,H*0.58,16);
+      dC(ctx,120,H*0.40,H*0.48,H*0.38,H*0.50,10);
+      dC(ctx,150,H*0.50,H*0.58,H*0.48,H*0.60,12);dC(ctx,180,H*0.58,H*0.66,H*0.56,H*0.68,10);
+      dVol(ctx,[[30,14,1],[55,18,1],[90,30,1],[120,10,0],[150,25,0],[180,20,0]],W,H);
+      dT(ctx,"Smaller body",120,H*0.54,R,8);
+      dT(ctx,"✓ Small body inside — momentum fading",W/2,H-22,G,10);
+    },
+    drawBad:(x,W,H)=>{
+      dC(ctx,30,H*0.68,H*0.60,H*0.58,H*0.72,10);dC(ctx,55,H*0.60,H*0.52,H*0.50,H*0.62,10);
+      dC(ctx,90,H*0.55,H*0.35,H*0.33,H*0.58,16);
+      dC(ctx,120,H*0.38,H*0.48,H*0.35,H*0.50,12);
+      dC(ctx,150,H*0.46,H*0.40,H*0.38,H*0.48,10);dC(ctx,180,H*0.40,H*0.34,H*0.32,H*0.42,10);
+      dVol(ctx,[[30,14,1],[55,18,1],[90,30,1],[120,8,0],[150,18,1],[180,22,1]],W,H);
+      dT(ctx,"Not contained",120,H*0.30,R,8);
+      dT(ctx,"✗ Extends outside + buyers continue",W/2,H-22,R,10);
+    }},
+  {id:"piercing",name:"Piercing Line",type:"Bullish Reversal",color:G,
+    desc:"Two-candle pattern: large red followed by green that opens below the low and closes above the midpoint of the red.",
+    trade:"Enter above the green candle high. Stop below the pattern low.",
+    volume:"Green candle should have higher volume than the red — buying conviction.",
+    tell:"Green must close above the 50% midpoint of the red body. Below 50% = not a valid piercing line.",
+    steps:["Downtrend produces a large red candle","Next candle gaps down below the red's low","Buyers surge in — price rallies hard","Green candle closes above the red body's midpoint","The deeper the penetration, the stronger the signal"],
+    drawGood:(x,W,H)=>{
+      dC(ctx,30,H*0.30,H*0.38,H*0.27,H*0.42,10);dC(ctx,55,H*0.38,H*0.46,H*0.35,H*0.50,10);
+      // Large red
+      dC(ctx,95,H*0.44,H*0.62,H*0.42,H*0.65,16);
+      // Piercing: opens below low, closes above midpoint
+      dC(ctx,135,H*0.68,H*0.48,H*0.46,H*0.70,16);
+      dD(ctx,75,H*0.53,160,H*0.53,Y+"66",1);
+      dC(ctx,170,H*0.46,H*0.38,H*0.36,H*0.48,10);
+      dVol(ctx,[[30,12,0],[55,15,0],[95,25,0],[135,35,1],[170,20,1]],W,H);
+      dT(ctx,"50%",165,H*0.52,Y,8);
+      dT(ctx,"✓ Closes above 50% of red body",W/2,H-22,G,10);
+    },
+    drawBad:(x,W,H)=>{
+      dC(ctx,30,H*0.30,H*0.38,H*0.27,H*0.42,10);dC(ctx,55,H*0.38,H*0.46,H*0.35,H*0.50,10);
+      dC(ctx,95,H*0.44,H*0.62,H*0.42,H*0.65,16);
+      // Green but doesn't close above midpoint
+      dC(ctx,135,H*0.68,H*0.56,H*0.54,H*0.70,14);
+      dD(ctx,75,H*0.53,160,H*0.53,Y+"66",1);
+      dC(ctx,170,H*0.58,H*0.62,H*0.56,H*0.65,10);
+      dVol(ctx,[[30,12,0],[55,15,0],[95,25,0],[135,15,1],[170,10,0]],W,H);
+      dT(ctx,"Below 50%",165,H*0.52,R,8);
+      dT(ctx,"✗ Doesn't reach 50% — weak signal",W/2,H-22,R,10);
+    }},
+  {id:"dark_cloud",name:"Dark Cloud Cover",type:"Bearish Reversal",color:R,
+    desc:"Two-candle pattern: large green followed by red that opens above the high and closes below the midpoint.",
+    trade:"Enter below the red candle low. Stop above the pattern high.",
+    volume:"Red candle should have higher volume — selling conviction.",
+    tell:"Mirror of piercing line. Red must close below the 50% midpoint of the green body.",
+    steps:["Uptrend produces a large green candle","Next candle gaps up above the green's high","Sellers flood in — price drops hard","Red candle closes below the green body's midpoint","The deeper the penetration, the stronger the signal"],
+    drawGood:(x,W,H)=>{
+      dC(ctx,30,H*0.65,H*0.58,H*0.55,H*0.68,10);dC(ctx,55,H*0.58,H*0.50,H*0.48,H*0.60,10);
+      dC(ctx,95,H*0.52,H*0.34,H*0.32,H*0.55,16);
+      // Dark cloud: opens above high, closes below midpoint
+      dC(ctx,135,H*0.28,H*0.48,H*0.26,H*0.50,16);
+      dD(ctx,75,H*0.43,160,H*0.43,Y+"66",1);
+      dC(ctx,170,H*0.50,H*0.58,H*0.48,H*0.60,10);
+      dVol(ctx,[[30,12,1],[55,15,1],[95,25,1],[135,35,0],[170,20,0]],W,H);
+      dT(ctx,"50%",165,H*0.42,Y,8);
+      dT(ctx,"✓ Closes below 50% of green body",W/2,H-22,G,10);
+    },
+    drawBad:(x,W,H)=>{
+      dC(ctx,30,H*0.65,H*0.58,H*0.55,H*0.68,10);dC(ctx,55,H*0.58,H*0.50,H*0.48,H*0.60,10);
+      dC(ctx,95,H*0.52,H*0.34,H*0.32,H*0.55,16);
+      dC(ctx,135,H*0.28,H*0.38,H*0.26,H*0.40,14);
+      dD(ctx,75,H*0.43,160,H*0.43,Y+"66",1);
+      dC(ctx,170,H*0.36,H*0.32,H*0.30,H*0.38,10);
+      dVol(ctx,[[30,12,1],[55,15,1],[95,25,1],[135,15,0],[170,18,1]],W,H);
+      dT(ctx,"Above 50%",165,H*0.42,R,8);
+      dT(ctx,"✗ Doesn't reach 50% — bulls still strong",W/2,H-22,R,10);
+    }},
+  {id:"tweezer_top",name:"Tweezer Top",type:"Bearish Reversal",color:R,
+    desc:"Two candles with matching highs at the top of an uptrend. Resistance confirmed by two tests at the same level.",
+    trade:"Enter below the second candle's low. Stop above the matching highs.",
+    volume:"Second candle (red) on higher volume strengthens the signal.",
+    tell:"The highs should be within a few ticks of each other. First candle green, second red — sentiment shift.",
+    steps:["Uptrend pushes price to a new high","First candle (green) reaches a high point","Second candle (red) tests the exact same high","Both candles rejected from the same level","Two tests, same level, different outcomes = reversal"],
+    drawGood:(x,W,H)=>{
+      dC(ctx,30,H*0.72,H*0.62,H*0.60,H*0.75,10);dC(ctx,55,H*0.62,H*0.52,H*0.50,H*0.65,10);
+      dC(ctx,80,H*0.52,H*0.42,H*0.40,H*0.55,10);
+      // Tweezer: green then red, same highs
+      dC(ctx,115,H*0.40,H*0.28,H*0.22,H*0.42,14);
+      dC(ctx,150,H*0.30,H*0.42,H*0.22,H*0.44,14);
+      dD(ctx,100,H*0.22,170,H*0.22,R+"88",1.5);
+      dC(ctx,180,H*0.44,H*0.52,H*0.42,H*0.55,10);dC(ctx,205,H*0.52,H*0.60,H*0.50,H*0.62,10);
+      dVol(ctx,[[30,12,1],[55,15,1],[80,18,1],[115,25,1],[150,30,0],[180,22,0],[205,18,0]],W,H);
+      dT(ctx,"Equal highs",135,H*0.16,R,8);
+      dT(ctx,"✓ Matching highs — double rejection",W/2,H-22,G,10);
+    },
+    drawBad:(x,W,H)=>{
+      dC(ctx,30,H*0.72,H*0.62,H*0.60,H*0.75,10);dC(ctx,55,H*0.62,H*0.52,H*0.50,H*0.65,10);
+      dC(ctx,80,H*0.52,H*0.42,H*0.40,H*0.55,10);
+      dC(ctx,115,H*0.40,H*0.28,H*0.22,H*0.42,14);
+      // Second candle makes a HIGHER high — levels don't match
+      dC(ctx,150,H*0.30,H*0.38,H*0.18,H*0.40,14);
+      dC(ctx,180,H*0.36,H*0.30,H*0.28,H*0.38,10);
+      dVol(ctx,[[30,12,1],[55,15,1],[80,18,1],[115,25,1],[150,28,1],[180,20,1]],W,H);
+      dT(ctx,"Higher high!",150,H*0.12,G,8);
+      dT(ctx,"✗ Second candle makes higher high",W/2,H-22,R,10);
+    }},
+  {id:"tweezer_bottom",name:"Tweezer Bottom",type:"Bullish Reversal",color:G,
+    desc:"Two candles with matching lows at the bottom of a downtrend. Support confirmed by two tests.",
+    trade:"Enter above the second candle's high. Stop below the matching lows.",
+    volume:"Second candle (green) on higher volume strengthens the signal.",
+    tell:"Lows within a few ticks. First candle red, second green — sentiment shift at support.",
+    steps:["Downtrend pushes price to a new low","First candle (red) reaches a low point","Second candle (green) tests the exact same low","Both candles held at the same level","Two tests, same support = reversal"],
+    drawGood:(x,W,H)=>{
+      dC(ctx,30,H*0.28,H*0.38,H*0.25,H*0.42,10);dC(ctx,55,H*0.38,H*0.48,H*0.35,H*0.52,10);
+      dC(ctx,80,H*0.48,H*0.55,H*0.45,H*0.58,10);
+      dC(ctx,115,H*0.52,H*0.68,H*0.55,H*0.75,14);
+      dC(ctx,150,H*0.65,H*0.52,H*0.55,H*0.75,14);
+      dD(ctx,100,H*0.75,170,H*0.75,G+"88",1.5);
+      dC(ctx,180,H*0.50,H*0.42,H*0.40,H*0.52,10);dC(ctx,205,H*0.42,H*0.35,H*0.32,H*0.44,10);
+      dVol(ctx,[[30,12,0],[55,15,0],[80,18,0],[115,25,0],[150,30,1],[180,22,1],[205,18,1]],W,H);
+      dT(ctx,"Equal lows",135,H*0.80,G,8);
+      dT(ctx,"✓ Matching lows — double support test",W/2,H-22,G,10);
+    },
+    drawBad:(x,W,H)=>{
+      dC(ctx,30,H*0.28,H*0.38,H*0.25,H*0.42,10);dC(ctx,55,H*0.38,H*0.48,H*0.35,H*0.52,10);
+      dC(ctx,80,H*0.48,H*0.55,H*0.45,H*0.58,10);
+      dC(ctx,115,H*0.52,H*0.68,H*0.55,H*0.75,14);
+      // Second candle makes LOWER low
+      dC(ctx,150,H*0.65,H*0.72,H*0.58,H*0.80,14);
+      dC(ctx,180,H*0.74,H*0.80,H*0.72,H*0.84,10);
+      dVol(ctx,[[30,12,0],[55,15,0],[80,18,0],[115,25,0],[150,28,0],[180,30,0]],W,H);
+      dT(ctx,"Lower low!",150,H*0.85,R,8);
+      dT(ctx,"✗ Second candle breaks lower — levels don't match",W/2,H-22,R,10);
+    }},
+  {id:"abandon_bull",name:"Abandoned Baby Bull",type:"Bullish Reversal",color:G,
+    desc:"Rare three-candle pattern: red candle, gap-down doji, gap-up green. The doji is 'abandoned' between two gaps.",
+    trade:"Enter above the green candle high. Stop below the doji low. Very high reliability when it appears.",
+    volume:"Doji typically low volume (exhaustion). Green candle on high volume confirms.",
+    tell:"Both gaps must be clean — no overlap. The doji sits isolated below. Rarer than morning star but stronger.",
+    steps:["Downtrend produces a large red candle","Next candle gaps DOWN and forms a doji (indecision)","The doji is isolated — gap on both sides","Third candle gaps UP and closes strongly green","The abandoned doji shows complete exhaustion of sellers"],
+    drawGood:(x,W,H)=>{
+      dC(ctx,40,H*0.28,H*0.35,H*0.25,H*0.38,12);dC(ctx,70,H*0.35,H*0.48,H*0.32,H*0.52,14);
+      // Gap down
+      x.fillStyle="rgba(201,168,76,0.06)";x.fillRect(88,H*0.52,10,H*0.10);
+      // Doji abandoned
+      x.strokeStyle=Y;x.lineWidth=2;x.beginPath();x.moveTo(110,H*0.58);x.lineTo(110,H*0.72);x.stroke();
+      x.fillStyle=Y;x.fillRect(110-6,H*0.64,12,3);
+      // Gap up
+      x.fillStyle="rgba(201,168,76,0.06)";x.fillRect(125,H*0.52,10,H*0.10);
+      dC(ctx,150,H*0.52,H*0.38,H*0.36,H*0.54,14);dC(ctx,185,H*0.38,H*0.28,H*0.26,H*0.40,12);
+      dVol(ctx,[[40,18,0],[70,25,0],[110,6,0],[150,32,1],[185,25,1]],W,H);
+      dT(ctx,"Isolated",110,H*0.52,Y,8);
+      dT(ctx,"✓ Candle isolated by gaps — powerful signal",W/2,H-22,G,10);
+    },
+    drawBad:(x,W,H)=>{
+      dC(ctx,40,H*0.28,H*0.35,H*0.25,H*0.38,12);dC(ctx,70,H*0.35,H*0.48,H*0.32,H*0.52,14);
+      // Small gap down but doji overlaps
+      x.strokeStyle=Y;x.lineWidth=2;x.beginPath();x.moveTo(110,H*0.48);x.lineTo(110,H*0.68);x.stroke();
+      x.fillStyle=Y;x.fillRect(110-6,H*0.56,12,3);
+      dC(ctx,150,H*0.52,H*0.45,H*0.42,H*0.55,14);
+      dVol(ctx,[[40,18,0],[70,25,0],[110,6,0],[150,12,1]],W,H);
+      dT(ctx,"Gaps overlap",110,H*0.42,R,8);
+      dT(ctx,"✗ No clean gaps — weaker signal",W/2,H-22,R,10);
+    }},
+  {id:"abandon_bear",name:"Abandoned Baby Bear",type:"Bearish Reversal",color:R,
+    desc:"Rare three-candle pattern: green candle, gap-up doji, gap-down red. Bearish mirror of abandoned baby.",
+    trade:"Enter below the red candle low. Stop above the doji high.",
+    volume:"Doji on low volume (exhaustion). Red candle on high volume confirms reversal.",
+    tell:"Both gaps must be clean. The isolated doji above shows complete buyer exhaustion at the top.",
+    steps:["Uptrend produces a large green candle","Next candle gaps UP and forms a doji","Doji isolated above — gap on both sides","Third candle gaps DOWN and closes strongly red","The abandoned doji marks the exact top"],
+    drawGood:(x,W,H)=>{
+      dC(ctx,40,H*0.68,H*0.60,H*0.58,H*0.72,12);dC(ctx,70,H*0.58,H*0.45,H*0.42,H*0.60,14);
+      x.fillStyle="rgba(201,168,76,0.06)";x.fillRect(88,H*0.32,10,H*0.10);
+      x.strokeStyle=Y;x.lineWidth=2;x.beginPath();x.moveTo(110,H*0.22);x.lineTo(110,H*0.38);x.stroke();
+      x.fillStyle=Y;x.fillRect(110-6,H*0.30,12,3);
+      x.fillStyle="rgba(201,168,76,0.06)";x.fillRect(125,H*0.32,10,H*0.10);
+      dC(ctx,150,H*0.42,H*0.58,H*0.40,H*0.60,14);dC(ctx,185,H*0.58,H*0.68,H*0.56,H*0.72,12);
+      dVol(ctx,[[40,18,1],[70,25,1],[110,6,0],[150,32,0],[185,25,0]],W,H);
+      dT(ctx,"Isolated",110,H*0.42,Y,8);
+      dT(ctx,"✓ Isolated candle at top — strong signal",W/2,H-22,G,10);
+    },
+    drawBad:(x,W,H)=>{
+      dC(ctx,40,H*0.68,H*0.60,H*0.58,H*0.72,12);dC(ctx,70,H*0.58,H*0.45,H*0.42,H*0.60,14);
+      x.strokeStyle=Y;x.lineWidth=2;x.beginPath();x.moveTo(110,H*0.28);x.lineTo(110,H*0.48);x.stroke();
+      x.fillStyle=Y;x.fillRect(110-6,H*0.38,12,3);
+      dC(ctx,150,H*0.42,H*0.50,H*0.40,H*0.52,14);
+      dVol(ctx,[[40,18,1],[70,25,1],[110,6,0],[150,12,0]],W,H);
+      dT(ctx,"No clean gap",110,H*0.52,R,8);
+      dT(ctx,"✗ Gaps overlap — weaker signal",W/2,H-22,R,10);
+    }},
+  {id:"rise_three",name:"Rising Three Methods",type:"Bullish Continuation",color:G,
+    desc:"Long green candle, 3 small red candles that stay within the green's range, then another long green. Continuation.",
+    trade:"Enter above the final green candle's high. Stop below the pattern low.",
+    volume:"The 3 small candles should have declining volume. Final green candle needs high volume.",
+    tell:"The small candles must stay within the first green's range. If they break below, the pattern fails.",
+    steps:["Strong green candle establishes the trend","Three small red candles pull back — but stay within the green's range","Volume declines on the small candles (no real selling)","Fifth candle is a strong green that closes above the first","The pullback was just a pause — trend continues"],
+    drawGood:(x,W,H)=>{
+      dC(ctx,35,H*0.58,H*0.35,H*0.33,H*0.60,16);
+      dC(ctx,70,H*0.38,H*0.42,H*0.36,H*0.44,8);dC(ctx,95,H*0.42,H*0.46,H*0.40,H*0.48,8);dC(ctx,120,H*0.46,H*0.50,H*0.44,H*0.52,8);
+      dC(ctx,155,H*0.48,H*0.28,H*0.26,H*0.50,16);
+      dC(ctx,190,H*0.28,H*0.20,H*0.18,H*0.30,12);
+      dVol(ctx,[[35,30,1],[70,10,0],[95,8,0],[120,6,0],[155,35,1],[190,22,1]],W,H);
+      dT(ctx,"Small reds stay inside",95,H*0.58,D,8);
+      dT(ctx,"✓ Contained pullback then continuation",W/2,H-22,G,10);
+    },
+    drawBad:(x,W,H)=>{
+      dC(ctx,35,H*0.58,H*0.35,H*0.33,H*0.60,16);
+      // Small reds but they break below the first green's low
+      dC(ctx,70,H*0.38,H*0.45,H*0.36,H*0.48,8);dC(ctx,95,H*0.45,H*0.52,H*0.43,H*0.55,8);dC(ctx,120,H*0.52,H*0.62,H*0.50,H*0.65,10);
+      dC(ctx,155,H*0.60,H*0.55,H*0.52,H*0.63,10);
+      dVol(ctx,[[35,30,1],[70,12,0],[95,15,0],[120,22,0],[155,14,1]],W,H);
+      dT(ctx,"Broke below!",120,H*0.68,R,8);
+      dT(ctx,"✗ Reds broke below first green — failed",W/2,H-22,R,10);
+    }},
+  {id:"fall_three",name:"Falling Three Methods",type:"Bearish Continuation",color:R,
+    desc:"Long red candle, 3 small greens within its range, then another long red. Bearish continuation.",
+    trade:"Enter below the final red candle's low. Stop above the pattern high.",
+    volume:"Small candles on low volume. Final red on high volume confirms continuation.",
+    tell:"Mirror of rising three methods. Small candles must stay within the first red's range.",
+    steps:["Strong red candle establishes the downtrend","Three small green candles rally — but stay within the red's range","Volume declines on the small candles (just short covering)","Fifth candle is a strong red closing below the first","The rally was just a pause — downtrend continues"],
+    drawGood:(x,W,H)=>{
+      dC(ctx,35,H*0.35,H*0.58,H*0.33,H*0.60,16);
+      dC(ctx,70,H*0.55,H*0.50,H*0.48,H*0.57,8);dC(ctx,95,H*0.50,H*0.46,H*0.44,H*0.52,8);dC(ctx,120,H*0.46,H*0.42,H*0.40,H*0.48,8);
+      dC(ctx,155,H*0.44,H*0.65,H*0.42,H*0.68,16);
+      dC(ctx,190,H*0.65,H*0.75,H*0.63,H*0.78,12);
+      dVol(ctx,[[35,30,0],[70,10,1],[95,8,1],[120,6,1],[155,35,0],[190,22,0]],W,H);
+      dT(ctx,"Small greens inside",95,H*0.35,D,8);
+      dT(ctx,"✓ Contained rally then continuation down",W/2,H-22,G,10);
+    },
+    drawBad:(x,W,H)=>{
+      dC(ctx,35,H*0.35,H*0.58,H*0.33,H*0.60,16);
+      dC(ctx,70,H*0.55,H*0.50,H*0.48,H*0.57,8);dC(ctx,95,H*0.50,H*0.42,H*0.40,H*0.52,8);dC(ctx,120,H*0.42,H*0.32,H*0.30,H*0.44,10);
+      dC(ctx,155,H*0.34,H*0.28,H*0.26,H*0.36,10);
+      dVol(ctx,[[35,30,0],[70,12,1],[95,18,1],[120,25,1],[155,28,1]],W,H);
+      dT(ctx,"Broke above!",120,H*0.26,G,8);
+      dT(ctx,"✗ Greens broke above first red — reversal",W/2,H-22,R,10);
+    }},];
+
+const CATS=["All","Bullish Continuation","Bullish Reversal","Bearish Reversal","Bearish Continuation","Neutral"];
+
+
+const LAYERS=[
+{layer:1,title:"EMA Alignment",sub:"15-Min",icon:"\u25C8",question:"Are the 9 and 21 EMAs stacked?",go:["9 EMA above 21 EMA","Both sloping upward","Price above both"],caution:["EMAs close or crossing","One flat","Price between"],no:["Tangled","Both flat","Wrong side"],tip:"No alignment = no trade.",
+  drawGood:(x,W,H)=>{const e9=[[10,H*0.70],[55,H*0.52],[110,H*0.38],[165,H*0.28],[220,H*0.22],[275,H*0.18],[330,H*0.16]];const e21=[[10,H*0.75],[55,H*0.60],[110,H*0.48],[165,H*0.40],[220,H*0.35],[275,H*0.32],[330,H*0.30]];[[30,H*0.62,H*0.56,H*0.54,H*0.65],[70,H*0.46,H*0.40,H*0.38,H*0.50],[115,H*0.36,H*0.30,H*0.28,H*0.40],[160,H*0.28,H*0.23,H*0.21,H*0.32],[205,H*0.22,H*0.18,H*0.16,H*0.25],[250,H*0.19,H*0.15,H*0.13,H*0.22],[295,H*0.16,H*0.12,H*0.10,H*0.18]].forEach(([px,o,c,h,l])=>dC(x,px,o,c,h,l,8));dL(x,e9,Y,2);dL(x,e21,"#6B8CFF",2);dT(x,"9 EMA",W-28,H*0.14,Y,9);dT(x,"21 EMA",W-25,H*0.30,"#6B8CFF",9);dT(x,"\u2713 Bullish",W/2,H-6,G,10)},
+  drawBad:(x,W,H)=>{const e9=[[10,H*0.45],[55,H*0.42],[110,H*0.50],[165,H*0.46],[220,H*0.52],[275,H*0.48],[330,H*0.50]];const e21=[[10,H*0.48],[55,H*0.50],[110,H*0.45],[165,H*0.50],[220,H*0.47],[275,H*0.52],[330,H*0.48]];[[30,H*0.42,H*0.46,H*0.40,H*0.48],[70,H*0.50,H*0.44,H*0.42,H*0.52],[115,H*0.45,H*0.50,H*0.43,H*0.52],[160,H*0.48,H*0.44,H*0.42,H*0.50],[205,H*0.46,H*0.50,H*0.44,H*0.52],[250,H*0.52,H*0.46,H*0.44,H*0.54],[295,H*0.48,H*0.52,H*0.46,H*0.54]].forEach(([px,o,c,h,l])=>dC(x,px,o,c,h,l,8));dL(x,e9,Y,2);dL(x,e21,"#6B8CFF",2);dT(x,"\u2717 Tangled",W/2,H-6,R,10)}},
+{layer:2,title:"Fibonacci OTE",sub:"5-Min",icon:"\u25C9",question:"Price in the 61.8%-78.6% OTE zone?",go:["In OTE zone","Reaction at 70.5%","Zone holding"],caution:["Near OTE, no reaction","Shallow","Wicking"],no:["Through 78.6%","No swing points","Too shallow"],tip:"OTE is where you LOOK.",
+  drawGood:(x,W,H)=>{dL(x,[[10,H*0.85],[40,H*0.65],[75,H*0.45],[110,H*0.18]],G,2);dL(x,[[110,H*0.18],[145,H*0.32],[175,H*0.45],[200,H*0.52]],R+"bb",1.5);dA(x,[[110,H*0.56],[W-20,H*0.56],[W-20,H*0.70],[110,H*0.70]],"rgba(201,168,76,0.07)");dD(x,110,H*0.56,W-20,H*0.56,Y+"66",1);dD(x,110,H*0.63,W-20,H*0.63,Y+"aa",1);dD(x,110,H*0.70,W-20,H*0.70,Y+"66",1);dL(x,[[225,H*0.56],[255,H*0.42],[290,H*0.28],[330,H*0.15]],G,2);dT(x,"OTE",160,H*0.64,Y,9);dT(x,"\u2713 Bounce",W/2,H-6,G,10)},
+  drawBad:(x,W,H)=>{dL(x,[[10,H*0.85],[40,H*0.65],[75,H*0.45],[110,H*0.18]],G,2);dL(x,[[110,H*0.18],[145,H*0.38],[180,H*0.52],[215,H*0.65],[250,H*0.76],[290,H*0.85]],R,2);dD(x,110,H*0.70,W-20,H*0.70,Y+"44",1);dT(x,"\u2717 Sliced Through",W/2,H-6,R,10)}},
+{layer:3,title:"BOS / ChoCh",sub:"5-Min",icon:"\u25D1",question:"Break of Structure confirming pullback over?",go:["Higher low in OTE","Break above swing high","Shifting bullish"],caution:["ChoCh but no BOS","BOS only 1-min","Ambiguous"],no:["No BOS on 5-min","Still lower highs","1-min contradicts"],tip:"EMAs=direction. Fib=where. BOS=WHEN.",
+  drawGood:(x,W,H)=>{dL(x,[[10,H*0.22],[40,H*0.32],[65,H*0.50],[90,H*0.68]],R+"bb",1.5);dL(x,[[90,H*0.68],[115,H*0.48],[135,H*0.55]],C+"bb",1.5);dL(x,[[135,H*0.55],[155,H*0.62],[175,H*0.50]],C+"bb",1.5);dT(x,"HL",158,H*0.66,G,8);dD(x,115,H*0.48,260,H*0.48,G+"55",1);dL(x,[[175,H*0.50],[205,H*0.38],[240,H*0.28],[280,H*0.15]],G,2.5);dT(x,"BOS",220,H*0.46,G,10);dT(x,"\u2713 Confirmed",W/2,H-6,G,10)},
+  drawBad:(x,W,H)=>{dL(x,[[10,H*0.22],[40,H*0.32],[65,H*0.50],[90,H*0.68]],R+"bb",1.5);dL(x,[[90,H*0.68],[115,H*0.52],[135,H*0.58]],C+"bb",1.5);dL(x,[[135,H*0.58],[160,H*0.72],[185,H*0.65]],C+"bb",1.5);dL(x,[[185,H*0.65],[215,H*0.78],[250,H*0.85]],R,2);dT(x,"\u2717 Lower Highs",W/2,H-6,R,10)}},
+{layer:4,title:"Volume Profile",sub:"VRVP",icon:"\u25D0",question:"Volume profile supports entry?",go:["Near POC/HVN","Near VAL","Volume expanding"],caution:["Medium zone","Flat vol","POC nearby"],no:["Volume gap","Declining vol","Trapped"],tip:"Volume doesn't lie.",
+  drawGood:(x,W,H)=>{[[H*0.12,15],[H*0.20,25],[H*0.28,40],[H*0.36,55],[H*0.44,90],[H*0.52,60],[H*0.60,80],[H*0.68,95],[H*0.76,50],[H*0.84,25]].forEach(([y,v])=>{const w=v*1.6;x.fillStyle=v>=90?"rgba(201,168,76,0.35)":"rgba(255,255,255,0.07)";x.fillRect(W-w-8,y-4,w,8);if(v>=90)dT(x,"POC",W-w-22,y+3,Y,8)});dL(x,[[10,H*0.18],[50,H*0.32],[90,H*0.48],[130,H*0.62],[150,H*0.68]],R+"88",1.5);dL(x,[[150,H*0.68],[180,H*0.52],[215,H*0.38],[255,H*0.22]],G,2);dT(x,"\u2713 Volume Node",W/2,H-6,G,10)},
+  drawBad:(x,W,H)=>{[[H*0.12,15],[H*0.20,80],[H*0.28,90],[H*0.36,60],[H*0.44,10],[H*0.52,8],[H*0.60,6],[H*0.68,12],[H*0.76,40],[H*0.84,30]].forEach(([y,v])=>{const w=v*1.6;x.fillStyle=v>=80?"rgba(201,168,76,0.25)":"rgba(255,255,255,0.05)";x.fillRect(W-w-8,y-4,w,8)});dL(x,[[10,H*0.18],[50,H*0.28],[90,H*0.40],[130,H*0.50],[170,H*0.55]],R+"88",1.5);x.fillStyle="rgba(224,82,82,0.06)";x.fillRect(30,H*0.40,180,H*0.22);dT(x,"Gap",120,H*0.52,R+"aa",9);dT(x,"\u2717 No Support",W/2,H-6,R,10)}},
+{layer:5,title:"GEX Levels",sub:"Pre-Session",icon:"\u25CE",question:"How do gamma levels frame the trade?",go:["+Gamma floor below","Wall above as target","Above HVL"],caution:["Near HVL","Mixed","No clear target"],no:["Below HVL","-Gamma","Major expiry"],tip:"GEX = context and targets.",
+  drawGood:(x,W,H)=>{dD(x,10,H*0.16,W-10,H*0.16,G+"88",1.5);dT(x,"Gamma Wall",W/2,H*0.12,G,9);dD(x,10,H*0.48,W-10,H*0.48,Y+"88",1.5);dT(x,"HVL",W-22,H*0.46,Y,9);dD(x,10,H*0.72,W-10,H*0.72,G+"55",1.5);dT(x,"+GEX Floor",W/2,H*0.76,G,9);dL(x,[[30,H*0.65],[70,H*0.55],[110,H*0.58],[150,H*0.45],[190,H*0.38],[230,H*0.30],[270,H*0.22]],G,2);x.fillStyle=Y;x.beginPath();x.arc(110,H*0.58,4,0,Math.PI*2);x.fill();dT(x,"\u2713 Floor+Target",W/2,H-6,G,10)},
+  drawBad:(x,W,H)=>{dD(x,10,H*0.32,W-10,H*0.32,Y+"88",1.5);dT(x,"HVL",W-22,H*0.30,Y,9);dD(x,10,H*0.55,W-10,H*0.55,R+"55",1.5);dT(x,"-GEX",W/2,H*0.59,R,9);dL(x,[[30,H*0.28],[70,H*0.36],[110,H*0.44],[150,H*0.55],[190,H*0.65],[230,H*0.75],[270,H*0.82]],R,2);x.fillStyle=Y;x.beginPath();x.arc(110,H*0.44,4,0,Math.PI*2);x.fill();dT(x,"\u2717 Below HVL",W/2,H-6,R,10)}},
+];
+
+let currentTab='patterns',selectedPattern=null,patternStep=0,catFilter='All';
+let fwStep=0,fwAnswers={},fwDone=false;
+let quizIdx=0,quizScore=0,quizTotal=0,quizStreak=0,quizAns=null;
+let quizDeck=[],quizOpts=[];
+
+function render(){const el=document.getElementById('ci-content');if(!el)return;if(currentTab==='patterns')renderPatterns(el);else if(currentTab==='framework')renderFramework(el);else if(currentTab==='quiz')renderQuiz(el)}
+
+function renderPatterns(el){
+  if(selectedPattern)return renderPatternDetail(el);
+  const filtered=catFilter==='All'?P:P.filter(p=>p.type===catFilter);
+  let h='<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px">';
+  CATS.forEach(c=>{h+=`<button class="ci-filter ${catFilter===c?'active':''}" onclick="CI.setCat('${c}')">${c}</button>`});
+  h+='</div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px">';
+  filtered.forEach(p=>{h+=`<div class="ci-card" onclick="CI.selectPattern('${p.id}')"><div style="font-family:var(--serif);font-size:18px;color:${p.color}">${p.name}</div><div style="font-family:var(--mono);font-size:9px;color:${p.color};letter-spacing:0.08em;text-transform:uppercase;margin-bottom:8px">${p.type}</div><div style="font-size:12px;color:var(--cream2);font-weight:300;line-height:1.5">${p.desc}</div></div>`});
+  h+='</div>';el.innerHTML=h}
+
+function renderPatternDetail(el){
+  const p=selectedPattern;
+  let h=`<button class="ci-btn" onclick="CI.backToLibrary()" style="margin-bottom:16px">← Back</button>
+    <div style="font-family:var(--serif);font-size:28px;color:${p.color}">${p.name}</div>
+    <div style="font-family:var(--mono);font-size:10px;color:${p.color};letter-spacing:0.1em;text-transform:uppercase;margin-bottom:16px">${p.type}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+      <div style="background:var(--bg2);border-radius:8px;padding:10px;border:1px solid rgba(82,168,130,0.15)">
+        <div style="font-family:var(--mono);font-size:9px;color:var(--green);letter-spacing:0.1em;margin-bottom:6px;text-align:center">✓ TAKE THIS TRADE</div>
+        <canvas id="ci-good" style="border-radius:6px;display:block;width:100%"></canvas>
+      </div>
+      <div style="background:var(--bg2);border-radius:8px;padding:10px;border:1px solid rgba(224,82,82,0.15)">
+        <div style="font-family:var(--mono);font-size:9px;color:var(--red);letter-spacing:0.1em;margin-bottom:6px;text-align:center">✗ AVOID THIS TRADE</div>
+        <canvas id="ci-bad" style="border-radius:6px;display:block;width:100%"></canvas>
+      </div>
+    </div>
+    <div style="font-family:var(--mono);font-size:9px;color:var(--cream3);letter-spacing:0.12em;margin-bottom:8px">STEP-BY-STEP</div>
+    <div style="display:flex;gap:3px;margin-bottom:14px">`;
+  p.steps.forEach((_,i)=>{h+=`<div style="flex:1;height:3px;border-radius:2px;background:${i<=patternStep?'var(--gold)':'var(--border)'};cursor:pointer" onclick="CI.setPatStep(${i})"></div>`});
+  h+=`</div><div style="background:var(--bg3);border:1px solid var(--gold-border);border-radius:10px;padding:16px;margin-bottom:14px">
+    <div style="font-family:var(--mono);font-size:9px;color:var(--gold);letter-spacing:0.1em;margin-bottom:6px">STEP ${patternStep+1} OF ${p.steps.length}</div>
+    <div style="font-size:14px;font-weight:300;line-height:1.6">${p.steps[patternStep]}</div>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:18px">
+    <button class="ci-btn" onclick="CI.setPatStep(${patternStep-1})" ${patternStep===0?'disabled':''}>← Prev</button>
+    <button class="ci-btn ${patternStep>=p.steps.length-1?'':'ci-btn-gold'}" onclick="CI.setPatStep(${patternStep+1})" ${patternStep>=p.steps.length-1?'disabled':''}>Next →</button>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:13px"><div style="font-family:var(--mono);font-size:9px;color:var(--gold);letter-spacing:0.1em;margin-bottom:5px">HOW TO TRADE</div><div style="font-size:12px;color:var(--cream2);font-weight:300;line-height:1.6">${p.trade}</div></div>
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:13px"><div style="font-family:var(--mono);font-size:9px;color:var(--gold);letter-spacing:0.1em;margin-bottom:5px">VOLUME</div><div style="font-size:12px;color:var(--cream2);font-weight:300;line-height:1.6">${p.volume}</div></div>
+  </div>
+  <div style="background:var(--bg3);border-left:2px solid var(--gold);border-radius:0 8px 8px 0;padding:11px 13px"><div style="font-family:var(--mono);font-size:9px;color:var(--gold);letter-spacing:0.1em;margin-bottom:4px">KEY TELL</div><div style="font-size:12px;font-weight:300;line-height:1.6">${p.tell}</div></div>`;
+  el.innerHTML=h;
+  setTimeout(()=>{const gc=document.getElementById('ci-good'),bc=document.getElementById('ci-bad');if(gc)drawCanvas(gc,p.drawGood,360,170);if(bc)drawCanvas(bc,p.drawBad,360,170)},10)}
+
+function shuffleOpts(){const cur=quizDeck[quizIdx%quizDeck.length];const wrong=P.filter(p=>p.id!==cur.id).sort(()=>Math.random()-0.5).slice(0,3);quizOpts=[cur,...wrong].sort(()=>Math.random()-0.5)}
+
+function renderQuiz(el){
+  if(!quizDeck.length){quizDeck=[...P].sort(()=>Math.random()-0.5);shuffleOpts()}
+  const cur=quizDeck[quizIdx%quizDeck.length];const showGood=quizIdx%3!==0;
+  let h=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div style="font-size:13px;color:var(--cream3)">Identify the pattern${showGood?'':' (trap version)'}</div><div style="display:flex;gap:14px"><span style="font-family:var(--mono);font-size:11px;color:var(--gold)">${quizStreak} streak</span><span style="font-family:var(--mono);font-size:11px;color:var(--cream3)">${quizScore}/${quizTotal}</span></div></div>
+  <div style="background:var(--bg2);border-radius:8px;padding:16px;margin-bottom:14px"><canvas id="ci-qc" style="border-radius:6px;display:block;width:100%"></canvas></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">`;
+  quizOpts.forEach(p=>{const ok=quizAns!==null&&p.id===cur.id;const bad=quizAns===p.id&&p.id!==cur.id;
+    h+=`<div class="quiz-choice" onclick="CI.quizPick('${p.id}')" style="background:${ok?'rgba(82,168,130,0.1)':bad?'rgba(224,82,82,0.1)':'var(--bg3)'};border-color:${ok?'rgba(82,168,130,0.4)':bad?'rgba(224,82,82,0.4)':'var(--border)'};${quizAns?'cursor:default':''}"><div style="font-size:14px;color:${ok?'var(--green)':bad?'var(--red)':'var(--cream)'}">${p.name}</div><div style="font-size:9px;color:var(--cream3);margin-top:2px">${p.type}</div></div>`});
+  h+='</div>';
+  if(quizAns){const correct=quizAns===cur.id;h+=`<div style="margin-top:12px;padding:12px 14px;border-radius:8px;background:${correct?'rgba(82,168,130,0.06)':'rgba(224,82,82,0.06)'};border:1px solid ${correct?'rgba(82,168,130,0.25)':'rgba(224,82,82,0.25)'}"><div style="font-family:var(--mono);font-size:9px;color:${correct?'var(--green)':'var(--red)'};margin-bottom:4px">${correct?'✓ CORRECT':'✗ That was '+cur.name}</div><div style="font-size:11px;color:var(--cream2);font-weight:300;line-height:1.5">${showGood?'VALID setup — ':'TRAP setup — '}${cur.tell}</div></div>`}
+  el.innerHTML=h;
+  setTimeout(()=>{const qc=document.getElementById('ci-qc');if(qc)drawCanvas(qc,showGood?cur.drawGood:cur.drawBad,420,190)},10)}
+
+function renderFramework(el){
+  let h='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><div style="font-size:13px;color:var(--cream3)">Evaluate your setup layer by layer</div><button class="ci-btn" onclick="CI.fwReset()">Reset</button></div>';
+  h+='<div style="display:flex;gap:4px;margin-bottom:20px">';
+  LAYERS.forEach((_,i)=>{const c=fwAnswers[i]==='go'?'var(--green)':fwAnswers[i]==='caution'?'var(--gold)':fwAnswers[i]==='no'?'var(--red)':i<=fwStep?'rgba(201,168,76,0.25)':'var(--border)';h+=`<div style="flex:1;height:4px;border-radius:2px;background:${c}"></div>`});
+  h+='</div>';
+  if(!fwDone){const L=LAYERS[fwStep];
+    h+=`<div style="background:var(--bg3);border:1px solid var(--gold-border);border-radius:12px;padding:22px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+        <div style="width:32px;height:32px;border-radius:50%;background:var(--gold-dim);border:1px solid var(--gold-border);display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--gold)">${L.icon}</div>
+        <div><div style="font-family:var(--mono);font-size:9px;color:var(--gold);letter-spacing:0.12em">LAYER ${L.layer} OF 5</div><div style="font-family:var(--serif);font-size:20px">${L.title}</div></div>
+        <div style="margin-left:auto;font-family:var(--mono);font-size:9px;color:var(--cream3)">${L.sub}</div>
+      </div>
+      <div style="font-size:15px;font-weight:300;margin-bottom:16px;line-height:1.5">${L.question}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+        <div style="background:var(--bg2);border-radius:8px;padding:10px;border:1px solid rgba(82,168,130,0.15)"><div style="font-family:var(--mono);font-size:8px;color:var(--green);letter-spacing:0.1em;margin-bottom:6px;text-align:center">WHAT GOOD LOOKS LIKE</div><canvas id="ci-fg" style="border-radius:6px;display:block;width:100%"></canvas></div>
+        <div style="background:var(--bg2);border-radius:8px;padding:10px;border:1px solid rgba(224,82,82,0.15)"><div style="font-family:var(--mono);font-size:8px;color:var(--red);letter-spacing:0.1em;margin-bottom:6px;text-align:center">WHAT BAD LOOKS LIKE</div><canvas id="ci-fb" style="border-radius:6px;display:block;width:100%"></canvas></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px">`;
+    [['go','✓ ALIGNED',G,L.go],['caution','≈ PARTIAL',Y,L.caution],['no','✗ NOT PRESENT',R,L.no]].forEach(([key,label,color,items])=>{
+      h+=`<div class="ci-opt" onclick="CI.fwAnswer('${key}')" style="background:${color}08;border:1px solid ${color}33">
+        <div style="font-family:var(--mono);font-size:9px;color:${color};letter-spacing:0.08em;margin-bottom:8px">${label}</div>`;
+      items.forEach(t=>{h+=`<div style="font-size:11px;color:var(--cream2);font-weight:300;line-height:1.5;margin-bottom:3px">• ${t}</div>`});h+='</div>'});
+    h+=`</div><div style="background:var(--bg2);border-left:2px solid var(--gold);border-radius:0 5px 5px 0;padding:8px 12px;font-size:11px;color:var(--cream3);font-weight:300;line-height:1.5">💡 ${L.tip}</div></div>`
+  } else {
+    const gn=Object.values(fwAnswers).filter(a=>a==='go').length,yn=Object.values(fwAnswers).filter(a=>a==='caution').length,rn=Object.values(fwAnswers).filter(a=>a==='no').length;
+    const v=gn>=4?'TRADE':gn>=3&&rn===0?'CAUTIOUS':'NO TRADE';const vc=v==='TRADE'?'var(--green)':v==='CAUTIOUS'?'var(--gold)':'var(--red)';
+    h+=`<div style="background:var(--bg3);border:2px solid ${vc}66;border-radius:12px;padding:28px;text-align:center">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--cream3);letter-spacing:0.12em;margin-bottom:10px">5-LAYER VERDICT</div>
+      <div style="font-family:var(--serif);font-size:44px;font-weight:300;color:${vc};margin-bottom:10px">${v}</div>
+      <div style="display:flex;justify-content:center;gap:20px;margin-bottom:16px">
+        <div><span style="color:var(--green);font-family:var(--mono);font-size:18px">${gn}</span><div style="font-size:9px;color:var(--cream3)">Aligned</div></div>
+        <div><span style="color:var(--gold);font-family:var(--mono);font-size:18px">${yn}</span><div style="font-size:9px;color:var(--cream3)">Partial</div></div>
+        <div><span style="color:var(--red);font-family:var(--mono);font-size:18px">${rn}</span><div style="font-size:9px;color:var(--cream3)">Missing</div></div>
+      </div>
+      <div style="font-size:13px;color:var(--cream2);font-weight:300;line-height:1.6;max-width:460px;margin:0 auto 16px">${v==='TRADE'?'Strong confluence. Execute with proper sizing.':v==='CAUTIOUS'?'Gaps exist. Reduce size, tighten stops.':'Too many layers disagree. Wait for confluence.'}</div>
+      <button class="ci-btn ci-btn-gold" onclick="CI.fwReset()">Evaluate Another Setup</button>
+    </div>`}
+  el.innerHTML=h;
+  if(!fwDone){setTimeout(()=>{const L=LAYERS[fwStep];const gc=document.getElementById('ci-fg'),bc=document.getElementById('ci-fb');if(gc)drawCanvas(gc,L.drawGood,340,150);if(bc)drawCanvas(bc,L.drawBad,340,150)},10)}}
+
+return{
+  init(){render()},
+  showTab(tab,btn){currentTab=tab;document.querySelectorAll('.ci-tab').forEach(t=>t.classList.remove('active'));btn.classList.add('active');render()},
+  setCat(c){catFilter=c;render()},
+  selectPattern(id){selectedPattern=P.find(p=>p.id===id);patternStep=0;render()},
+  backToLibrary(){selectedPattern=null;render()},
+  setPatStep(n){if(n>=0&&n<selectedPattern.steps.length){patternStep=n;render()}},
+  quizPick(id){if(quizAns)return;quizAns=id;const cur=quizDeck[quizIdx%quizDeck.length];quizTotal++;if(id===cur.id){quizScore++;quizStreak++}else{quizStreak=0}render();setTimeout(()=>{quizAns=null;quizIdx++;shuffleOpts();render()},4500)},
+  fwAnswer(a){fwAnswers[fwStep]=a;if(fwStep<LAYERS.length-1)fwStep++;else fwDone=true;render()},
+  fwReset(){fwStep=0;fwAnswers={};fwDone=false;render()},
+}})();
+function ciShowTab(tab,btn){CI.showTab(tab,btn)}
 
 </script>
 </body>
