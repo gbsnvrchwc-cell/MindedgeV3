@@ -2012,6 +2012,23 @@ The AI will assess your active biases and update the chart in real time.
 
 </main><script>
 // ═══════════════════════════════════════════════════════════════
+//  ACCESS VERIFICATION — check on every page load
+// ═══════════════════════════════════════════════════════════════
+(async function verifyAccess() {
+  try {
+    const res = await fetch('/api/verify');
+    const data = await res.json();
+    if (!data.valid) {
+      window.location.href = '/paywall';
+      return;
+    }
+  } catch (e) {
+    // If server is unreachable, allow cached page to function
+    console.warn('Access verification failed — offline mode');
+  }
+})();
+
+// ═══════════════════════════════════════════════════════════════
 //  DATA
 // ═══════════════════════════════════════════════════════════════
 
