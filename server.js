@@ -400,6 +400,13 @@ function getProducts() {
       tier: 'pro',
       includesGuide: false,
     },
+    app_discord: {
+      name: 'MindEdge Pro + Discord — Monthly',
+      priceId: process.env[_sp + 'APP_DISCORD'],
+      mode: 'subscription',
+      tier: 'pro_discord',
+      includesGuide: false,
+    },
     guide: {
       name: 'SPX Scalping Framework — PDF Guide',
       priceId: process.env[_sp + 'GUIDE'],
@@ -494,6 +501,10 @@ app.get('/payment-success', async (req, res) => {
       }, '365d');
 
       setAccessCookie(res, token);
+      // Discord subscribers get redirected to welcome page with Discord invite
+      if (productInfo.tier === 'pro_discord') {
+        return res.redirect('/welcome-discord');
+      }
       return res.redirect('/app');
     }
 
@@ -513,6 +524,46 @@ app.get('/payment-success', async (req, res) => {
     console.error('Verification error:', err.message);
     res.redirect('/paywall?error=verification_failed');
   }
+});
+
+// Discord welcome page — shown after Pro + Discord purchase
+app.get('/welcome-discord', requireAccess, (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  res.send(`<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Welcome to MindEdge Pro + Discord</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#080807;color:#F0EAD6;font-family:'Outfit',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:40px 20px}
+  .card{max-width:560px;width:100%;background:#0f0f0d;border:1px solid rgba(201,168,76,0.25);border-radius:16px;padding:48px 40px;text-align:center}
+  .check{width:64px;height:64px;border-radius:50%;background:rgba(82,168,130,0.1);border:2px solid rgba(82,168,130,0.4);display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 24px}
+  h1{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:400;margin-bottom:8px;color:#C9A84C}
+  .sub{font-size:14px;color:#8a8475;margin-bottom:32px;line-height:1.6}
+  .steps{text-align:left;margin-bottom:32px}
+  .step{display:flex;gap:14px;margin-bottom:20px;align-items:flex-start}
+  .step-num{width:28px;height:28px;border-radius:50%;background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.25);display:flex;align-items:center;justify-content:center;font-size:12px;color:#C9A84C;flex-shrink:0;margin-top:2px}
+  .step-text{font-size:14px;color:#c8c0a8;line-height:1.6}
+  .step-text strong{color:#F0EAD6}
+  .btn{display:inline-block;padding:14px 32px;border-radius:8px;font-size:15px;font-weight:500;text-decoration:none;cursor:pointer;border:none;font-family:'Outfit',sans-serif;margin:6px}
+  .btn-discord{background:#5865F2;color:white}
+  .btn-discord:hover{background:#4752C4}
+  .btn-app{background:transparent;color:#C9A84C;border:1px solid rgba(201,168,76,0.4)}
+  .btn-app:hover{background:rgba(201,168,76,0.08)}
+</style></head><body>
+<div class="card">
+  <div class="check">✓</div>
+  <h1>Welcome to MindEdge</h1>
+  <div class="sub">Your Pro + Discord subscription is active. Here's how to get started:</div>
+  <div class="steps">
+    <div class="step"><div class="step-num">1</div><div class="step-text"><strong>Join the Discord</strong> — Click the button below to join the MindEdge trading community. This is where daily live coaching happens.</div></div>
+    <div class="step"><div class="step-num">2</div><div class="step-text"><strong>Explore the platform</strong> — Open MindEdge and start with Chart Intelligence or the 5-Layer Framework Reader to sharpen your reads.</div></div>
+    <div class="step"><div class="step-num">3</div><div class="step-text"><strong>Show up tomorrow</strong> — Coaching starts pre-market. Bring your charts, bring your questions.</div></div>
+  </div>
+  <a href="https://discord.gg/NaAPNNCap" target="_blank" class="btn btn-discord">Join Discord Server</a>
+  <a href="/app" class="btn btn-app">Open MindEdge →</a>
+</div>
+</body></html>`);
 });
 
 // Guide download page
