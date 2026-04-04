@@ -290,9 +290,9 @@
   /* PRODUCT CARDS */
   .product-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
     gap: 16px;
-    max-width: 900px;
+    max-width: 820px;
     margin: 0 auto 60px;
   }
   .product-card {
@@ -433,51 +433,74 @@
       <div class="error-msg" id="guide-error"></div>
     </div>
 
-    <!-- MONTHLY — FEATURED -->
-    <div class="product-card featured">
-      <div class="product-badge">MOST POPULAR</div>
-      <div class="product-name">MindEdge<br>Pro Monthly</div>
-      <div class="product-price">$49.99</div>
+    <!-- TOOL MONTHLY -->
+    <div class="product-card">
+      <div class="product-badge">GET STARTED</div>
+      <div class="product-name">MindEdge<br>Pro</div>
+      <div class="product-price">$14.99</div>
       <div class="product-price-label">per month &middot; Cancel anytime</div>
       <ul class="product-features">
-        <li>Daily live coaching in Discord</li>
         <li>46-pattern Chart Intelligence with visual drills</li>
         <li>5-Layer Framework Reader (EMA &middot; Fib &middot; BOS &middot; VRVP &middot; GEX)</li>
         <li>6 Psychology Masters AI coaching</li>
-        <li>200+ flashcard drills &amp; 25 decision scenarios</li>
+        <li>200+ flashcard drills &amp; 100 trading scenarios</li>
         <li>SPX multi-timeframe trade analyzer</li>
         <li>Trade journal with screenshots &amp; P&L</li>
         <li>Pre-market checklist &amp; analytics dashboard</li>
+        <li class="muted">Daily live coaching in Discord</li>
       </ul>
       <button class="btn-pay" onclick="startCheckout('app_monthly')" id="monthly-btn"
-        style="font-size:14px;">
-        Start Monthly &mdash; $49.99/mo
+        style="background:transparent;color:var(--gold);border:1px solid rgba(201,168,76,0.4);font-size:13px;">
+        Start Monthly &mdash; $14.99/mo
       </button>
       <div class="error-msg" id="monthly-error"></div>
     </div>
 
-    <!-- ANNUAL -->
+    <!-- TOOL ANNUAL -->
     <div class="product-card">
       <div class="product-badge">BEST VALUE</div>
-      <div class="saving-badge">Save 33%</div>
+      <div class="saving-badge">Save 20%</div>
       <div class="product-name">MindEdge<br>Pro Annual</div>
-      <div class="product-price">$399.99</div>
-      <div class="product-price-label">per year &middot; $33.33/mo &middot; <span class="strikethrough">$599.88</span></div>
+      <div class="product-price">$143.99</div>
+      <div class="product-price-label">per year &middot; $12.00/mo &middot; <span class="strikethrough">$179.88</span></div>
       <ul class="product-features">
-        <li>Everything in Monthly &mdash; full platform + Discord</li>
-        <li>Daily live coaching in Discord</li>
+        <li>Everything in Pro &mdash; full platform access</li>
         <li>46-pattern Chart Intelligence module</li>
+        <li>5-Layer Framework Reader</li>
         <li>SPX multi-timeframe trade analyzer</li>
-        <li>200+ flashcard drills &amp; 25 decision scenarios</li>
+        <li>200+ flashcard drills &amp; 100 trading scenarios</li>
         <li>Trade journal with screenshots &amp; P&L</li>
         <li>Pre-market checklist &amp; analytics</li>
         <li>Lock in your rate for 12 months</li>
       </ul>
       <button class="btn-pay" onclick="startCheckout('app_annual')" id="annual-btn"
         style="background:transparent;color:var(--gold);border:1px solid rgba(201,168,76,0.4);font-size:13px;">
-        Start Annual &mdash; $399.99/yr
+        Start Annual &mdash; $143.99/yr
       </button>
       <div class="error-msg" id="annual-error"></div>
+    </div>
+
+    <!-- DISCORD BUNDLE — FEATURED -->
+    <div class="product-card featured">
+      <div class="product-badge">FULL ACCESS</div>
+      <div class="product-name">MindEdge Pro<br>+ Discord</div>
+      <div class="product-price">$49.99</div>
+      <div class="product-price-label">per month &middot; Cancel anytime</div>
+      <ul class="product-features">
+        <li>Everything in Pro &mdash; full platform access</li>
+        <li>Daily live coaching in Discord</li>
+        <li>Real-time trade reads &amp; market analysis</li>
+        <li>Direct access to coach &amp; community</li>
+        <li>46-pattern Chart Intelligence module</li>
+        <li>SPX multi-timeframe trade analyzer</li>
+        <li>Trade journal with screenshots &amp; P&L</li>
+        <li>Pre-market checklist &amp; analytics dashboard</li>
+      </ul>
+      <button class="btn-pay" onclick="startCheckout('app_discord')" id="discord-btn"
+        style="font-size:14px;">
+        Start Pro + Discord &mdash; $49.99/mo
+      </button>
+      <div class="error-msg" id="discord-error"></div>
     </div>
 
   </div>
@@ -512,8 +535,18 @@
   <div class="features-grid">
     <div class="feature-card">
       <div class="feature-icon">◈</div>
-      <div class="feature-name">Daily Check-In</div>
-      <div class="feature-desc">Rate your emotional state and confidence each session. Get personalized AI guidance before you trade a single share.</div>
+      <div class="feature-name">Chart Intelligence</div>
+      <div class="feature-desc">46 chart and candlestick patterns with take-the-trade and avoid-the-trade visuals. Step-by-step identification walkthrough for every pattern. Quiz yourself with 92 visual drills.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">◎</div>
+      <div class="feature-name">Chart Practice</div>
+      <div class="feature-desc">49 decision scenarios on realistic SPX price action with dynamic EMAs, Fibonacci levels, and GEX overlays. Plus quick-fire pattern recognition drills with visual annotations after each answer.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">◑</div>
+      <div class="feature-name">5-Layer Framework</div>
+      <div class="feature-desc">Interactive walkthrough of the EMA &rarr; Fibonacci &rarr; BOS/ChoCh &rarr; VRVP &rarr; GEX framework. Evaluate your setup layer by layer and get a TRADE, CAUTIOUS, or NO TRADE verdict.</div>
     </div>
     <div class="feature-card">
       <div class="feature-icon">◉</div>
@@ -521,24 +554,24 @@
       <div class="feature-desc">Select a master and receive coaching in their exact voice and framework — Douglas's zone, Steenbarger's CBT, Tharp's R-multiples.</div>
     </div>
     <div class="feature-card">
-      <div class="feature-icon">◑</div>
+      <div class="feature-icon">◐</div>
       <div class="feature-name">Scenario Lab</div>
-      <div class="feature-desc">100 trading scenarios plus chart practice with decision-point drills and 46-pattern recognition quizzes. Get scored on your reads.</div>
+      <div class="feature-desc">100 trading psychology scenarios across loss recovery, FOMO, overconfidence, patience, risk management, and execution. AI analyzes your decisions.</div>
     </div>
     <div class="feature-card">
-      <div class="feature-icon">◐</div>
-      <div class="feature-name">Bias Tracker</div>
-      <div class="feature-desc">Identify your dominant cognitive biases over time. Describe a trade — AI pinpoints exactly which biases were active.</div>
+      <div class="feature-icon">▲</div>
+      <div class="feature-name">Trade Analyzer</div>
+      <div class="feature-desc">Paste your SPX trade and get a full 5-layer breakdown — EMA alignment, Fibonacci context, market structure, volume profile, and GEX analysis. Graded A through D.</div>
     </div>
     <div class="feature-card">
       <div class="feature-icon">◻</div>
       <div class="feature-name">Trade Journal</div>
-      <div class="feature-desc">Calendar-based journal with screenshot uploads, P&L tracking, mood trends, and performance analytics. AI reflects on each entry.</div>
+      <div class="feature-desc">Calendar-based journal with screenshot uploads, P&L tracking, mood trends, cumulative returns, and tag-based analytics. AI reflects on each entry.</div>
     </div>
     <div class="feature-card">
       <div class="feature-icon">✦</div>
-      <div class="feature-name">AI Coach</div>
-      <div class="feature-desc">Full multi-turn coaching conversations. Ask anything about your trading psychology — available at any hour, on any device.</div>
+      <div class="feature-name">AI Coach &amp; Tools</div>
+      <div class="feature-desc">Full coaching conversations, pre-market readiness checklist, 200+ rule drills from 5 psychology masters, cognitive bias tracker, stop loss calculator, and performance analytics.</div>
     </div>
   </div>
 
@@ -590,11 +623,13 @@ async function startCheckout(product) {
     guide: 'guide-btn',
     app_monthly: 'monthly-btn',
     app_annual: 'annual-btn',
+    app_discord: 'discord-btn',
   };
   const errMap = {
     guide: 'guide-error',
     app_monthly: 'monthly-error',
     app_annual: 'annual-error',
+    app_discord: 'discord-error',
   };
   const btn = document.getElementById(btnMap[product]);
   const errEl = document.getElementById(errMap[product]);
