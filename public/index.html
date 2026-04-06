@@ -1293,8 +1293,8 @@ The AI will assess your active biases and update the chart in real time.
 
           <div style="margin-bottom:16px;">
             <div style="font-size:12px;color:var(--cream3);margin-bottom:4px;">GEX Levels (recommended)</div>
-            <div style="font-size:11px;color:var(--cream3);margin-bottom:6px;font-family:var(--mono);">From SpotGamma or Squeeze Metrics. e.g. "Call wall 5900, Put wall 5750, HVL 5820"</div>
-            <textarea id="trade-gex" placeholder="e.g. Call wall: 5900, Put wall: 5750, HVL: 5820, Flip level: 5840" rows="2" style="margin-bottom:0;"></textarea>
+            <div style="font-size:11px;color:var(--cream3);margin-bottom:6px;font-family:var(--mono);">From SpotGamma or Squeeze Metrics. e.g. "Call wall 5900, Put wall 5750, Vol Trigger 5820"</div>
+            <textarea id="trade-gex" placeholder="e.g. Call wall: 5900, Put wall: 5750, Vol Trigger: 5820, Flip level: 5840" rows="2" style="margin-bottom:0;"></textarea>
           </div>
 
           <div style="margin-bottom:16px;">
@@ -5440,15 +5440,15 @@ const scenarioTemplates = [
     }
   },
   {
-    title: "Below HVL — Negative Gamma Territory",
+    title: "Below Vol Trigger — Negative Gamma Territory",
     badge: "5-Layer", category: "negative_gamma",
     showEMAs: true,
-    context: "SPX just broke below the Hedge Wall Level (HVL). Below the HVL, market makers' hedging amplifies moves instead of dampening them. Volume is spiking on the breakdown. The 15-minute EMAs just crossed bearish.",
-    question: "Price broke below the HVL. EMAs crossed bearish. Volume is surging. You had a long bias this morning. What's your move?",
+    context: "SPX just broke below the Vol Trigger. Below the Vol Trigger, market makers' hedging amplifies moves instead of dampening them. Volume is spiking on the breakdown. The 15-minute EMAs just crossed bearish.",
+    question: "Price broke below the Vol Trigger. EMAs crossed bearish. Volume is surging. You had a long bias this morning. What's your move?",
     answer: "short",
-    explanation: "Everything has flipped. The EMA cross tells you the trend changed. The HVL break means negative gamma will accelerate the drop. Fighting this setup with a long is fighting physics. If you must trade, the short is the only valid direction. Otherwise, go flat and wait for stability.",
+    explanation: "Everything has flipped. The EMA cross tells you the trend changed. The Vol Trigger break means negative gamma will accelerate the drop. Fighting this setup with a long is fighting physics. If you must trade, the short is the only valid direction. Otherwise, go flat and wait for stability.",
     lesson: "Douglas: Rigid beliefs about market direction cause the most damage. The market doesn't care about your morning bias. When the landscape changes, you change with it. Adapting to new information isn't weakness — it's survival.",
-    levels: [{price: 3, label: 'HVL', color: '#C9A84C'}, {price: 0, label: '-GEX Zone', color: '#e05252'}],
+    levels: [{price: 3, label: 'Vol Trigger', color: '#C9A84C'}, {price: 0, label: '-GEX Zone', color: '#e05252'}],
     buildFn: (base) => {
       const ctx = buildCandles(base + 5, [[0.5, 2, 3], [0, 2, 3], [-0.5, 3, 3], [-1, 4, 3], [-1, 5, 3]]);
       const out = buildCandles(ctx[ctx.length-1].c, [[-1, 5, 3], [-1, 4, 3], [-0.5, 3, 3], [0.3, 2, 2], [-0.5, 3, 3]]);
@@ -5473,7 +5473,7 @@ const scenarioTemplates = [
   {
     title: "3 of 5 Layers — Incomplete Confluence",
     badge: "5-Layer", category: "partial_confluence",
-    context: "EMAs are bullish (Layer 1). Price is in the OTE zone (Layer 2). But there's no BOS on the 5-minute yet — still making lower highs. The VRVP shows you're in a low-volume zone, not at a node. GEX is neutral — near the HVL.",
+    context: "EMAs are bullish (Layer 1). Price is in the OTE zone (Layer 2). But there's no BOS on the 5-minute yet — still making lower highs. The VRVP shows you're in a low-volume zone, not at a node. GEX is neutral — near the Vol Trigger.",
     question: "Two layers say go, three say wait or disagree. The setup looks close but isn't complete. What do you do?",
     answer: "flat",
     explanation: "3 of 5 layers with two critical gaps (no BOS, no volume support) is a NO TRADE. The missing layers are specifically the ones that protect you — structure and volume. Without BOS, your entry timing is a guess. Without volume support, there's no floor under you.",
@@ -5561,14 +5561,14 @@ const scenarioTemplates = [
     question:"Price is approaching a put wall that held as support three times this week. EMAs are mixed. Do you buy the level?",answer:"long",
     explanation:"Put walls create a floor where market makers' hedging activity tends to slow or reverse selloffs. Three successful holds at this level is strong evidence. Enter long at the put wall with a tight stop just below.",
     lesson:"Van Tharp: Gamma levels are the invisible hand of the market. When market makers hedge, they create support and resistance that doesn't show up on a regular chart. Use GEX data to see what others can't.",
-    levels:[{price:-2,label:'Put Wall / Support',color:'#52a882'},{price:8,label:'HVL',color:'#C9A84C'}],
+    levels:[{price:-2,label:'Put Wall / Support',color:'#52a882'},{price:8,label:'Vol Trigger',color:'#C9A84C'}],
     buildFn:(b)=>{const c=buildCandles(b+10,[[0.3,2,4],[0.5,2,4],[-0.3,2,4],[-0.5,3,5],[-0.5,3,5],[-0.3,2,5],[0,1.5,4],[0.2,1,3]]);const o=buildCandles(c[c.length-1].c,[[0.5,2,4],[1,3,4],[0.5,2,4],[1,3,3]]);return{context:c,outcome:o}}},
-  {title:"Gamma Flip at HVL — Regime Change",badge:"5-Layer",badgeClass:"badge-red",category:"gex_analysis",
-    context:"SPX was trading above the HVL all morning in positive gamma territory. In the last 30 minutes, price has broken below the HVL. In negative gamma, market makers' hedging amplifies moves instead of dampening them. The EMAs just crossed bearish.",
-    question:"Price broke below the HVL into negative gamma territory. EMAs crossed bearish. The gamma regime has flipped. What do you do?",answer:"short",
-    explanation:"Below the HVL, the gamma landscape flips — drops accelerate instead of being absorbed. Combined with a bearish EMA cross, this is a regime change. Any longs should be exited. If you trade, it's short only with the understanding that moves can be faster and larger than normal.",
+  {title:"Gamma Flip at Vol Trigger — Regime Change",badge:"5-Layer",badgeClass:"badge-red",category:"gex_analysis",
+    context:"SPX was trading above the Vol Trigger all morning in positive gamma territory. In the last 30 minutes, price has broken below the Vol Trigger. In negative gamma, market makers' hedging amplifies moves instead of dampening them. The EMAs just crossed bearish.",
+    question:"Price broke below the Vol Trigger into negative gamma territory. EMAs crossed bearish. The gamma regime has flipped. What do you do?",answer:"short",
+    explanation:"Below the Vol Trigger, the gamma landscape flips — drops accelerate instead of being absorbed. Combined with a bearish EMA cross, this is a regime change. Any longs should be exited. If you trade, it's short only with the understanding that moves can be faster and larger than normal.",
     lesson:"Douglas: Gamma regime changes are like the weather shifting. In positive gamma, the market self-corrects. In negative gamma, it self-reinforces. Adjust your position sizing and expectations accordingly.",
-    showEMAs:true,levels:[{price:3,label:'HVL',color:'#C9A84C'},{price:-3,label:'-Gamma Zone',color:'#e05252'}],
+    showEMAs:true,levels:[{price:3,label:'Vol Trigger',color:'#C9A84C'},{price:-3,label:'-Gamma Zone',color:'#e05252'}],
     buildFn:(b)=>{const c=buildCandles(b+5,[[0.3,2,5],[0.5,2,5],[0.3,1.5,4],[0,2,4],[-0.3,2,4],[-0.5,3,4],[-1,4,4],[-1,3,3]]);const o=buildCandles(c[c.length-1].c,[[-1,5,4],[-1,4,4],[-0.5,3,4],[0.3,2,3]]);return{context:c,outcome:o}}},
   {title:"Call Wall Target — Take Profit?",badge:"5-Layer",badgeClass:"badge-gold",category:"gex_analysis",
     context:"You've been long SPX all morning. Your position is up +2.3R. Price is now 1 point below the major call wall from today's GEX data. This level has been the daily ceiling for 4 consecutive days.",
@@ -5634,7 +5634,7 @@ const scenarioTemplates = [
     levels:[{price:0,label:'HVN + 70.5% + GEX Floor',color:'#C9A84C'},{price:10,label:'Swing High Target',color:'#52a882'}],
     buildFn:(b)=>{const c=buildCandles(b+3,[[0.5,2,5],[1,3,5],[1,4,4],[0.5,2,4],[-0.3,2,5],[-0.3,2,5],[-0.2,1.5,4],[0.2,1,3]]);const o=buildCandles(c[c.length-1].c,[[0.5,2,3],[1,3,4],[1,4,4],[1,3,3],[0.5,2,4]]);return{context:c,outcome:o}}},
   {title:"2 of 5 Layers — Strong Disagree",badge:"5-Layer",badgeClass:"badge-red",category:"confluence",
-    context:"EMAs are bullish (Layer 1). But the pullback didn't reach the OTE zone — only 38.2% (Layer 2 partial). No BOS on the 5-minute (Layer 3 missing). You're in a low volume gap (Layer 4 against). GEX is neutral near HVL (Layer 5 neutral). Only 1 of 5 layers is clearly confirmed.",
+    context:"EMAs are bullish (Layer 1). But the pullback didn't reach the OTE zone — only 38.2% (Layer 2 partial). No BOS on the 5-minute (Layer 3 missing). You're in a low volume gap (Layer 4 against). GEX is neutral near Vol Trigger (Layer 5 neutral). Only 1 of 5 layers is clearly confirmed.",
     question:"Only EMA alignment is clear. Fib is partial. No BOS. Volume gap. GEX neutral. Do you trade?",answer:"flat",
     explanation:"One confirmed layer out of five is not a trade. The framework exists to keep you out of low-probability setups, not to find reasons to enter. When the framework says no, the answer is no — regardless of how bullish the EMAs look alone.",
     lesson:"Steenbarger: Discipline means following the framework even when your gut wants to trade. One layer is never enough. The framework protects you from yourself.",
@@ -7687,9 +7687,9 @@ const LAYERS=[
 {layer:4,title:"Volume Profile",sub:"VRVP",icon:"\u25D0",question:"Volume profile supports entry?",go:["Near POC/HVN","Near VAL","Volume expanding"],caution:["Medium zone","Flat vol","POC nearby"],no:["Volume gap","Declining vol","Trapped"],tip:"Volume doesn't lie.",
   drawGood:(x,W,H)=>{[[H*0.12,15],[H*0.20,25],[H*0.28,40],[H*0.36,55],[H*0.44,90],[H*0.52,60],[H*0.60,80],[H*0.68,95],[H*0.76,50],[H*0.84,25]].forEach(([y,v])=>{const w=v*1.6;x.fillStyle=v>=90?"rgba(201,168,76,0.35)":"rgba(255,255,255,0.07)";x.fillRect(W-w-8,y-4,w,8);if(v>=90)dT(x,"POC",W-w-22,y+3,Y,8)});dL(x,[[10,H*0.18],[50,H*0.32],[90,H*0.48],[130,H*0.62],[150,H*0.68]],R+"88",1.5);dL(x,[[150,H*0.68],[180,H*0.52],[215,H*0.38],[255,H*0.22]],G,2);dT(x,"\u2713 Volume Node",W/2,H-6,G,10)},
   drawBad:(x,W,H)=>{[[H*0.12,15],[H*0.20,80],[H*0.28,90],[H*0.36,60],[H*0.44,10],[H*0.52,8],[H*0.60,6],[H*0.68,12],[H*0.76,40],[H*0.84,30]].forEach(([y,v])=>{const w=v*1.6;x.fillStyle=v>=80?"rgba(201,168,76,0.25)":"rgba(255,255,255,0.05)";x.fillRect(W-w-8,y-4,w,8)});dL(x,[[10,H*0.18],[50,H*0.28],[90,H*0.40],[130,H*0.50],[170,H*0.55]],R+"88",1.5);x.fillStyle="rgba(224,82,82,0.06)";x.fillRect(30,H*0.40,180,H*0.22);dT(x,"Gap",120,H*0.52,R+"aa",9);dT(x,"\u2717 No Support",W/2,H-6,R,10)}},
-{layer:5,title:"GEX Levels",sub:"Pre-Session",icon:"\u25CE",question:"How do gamma levels frame the trade?",go:["+Gamma floor below","Wall above as target","Above HVL"],caution:["Near HVL","Mixed","No clear target"],no:["Below HVL","-Gamma","Major expiry"],tip:"GEX = context and targets.",
-  drawGood:(x,W,H)=>{dD(x,10,H*0.16,W-10,H*0.16,G+"88",1.5);dT(x,"Gamma Wall",W/2,H*0.12,G,9);dD(x,10,H*0.48,W-10,H*0.48,Y+"88",1.5);dT(x,"HVL",W-22,H*0.46,Y,9);dD(x,10,H*0.72,W-10,H*0.72,G+"55",1.5);dT(x,"+GEX Floor",W/2,H*0.76,G,9);dL(x,[[30,H*0.65],[70,H*0.55],[110,H*0.58],[150,H*0.45],[190,H*0.38],[230,H*0.30],[270,H*0.22]],G,2);x.fillStyle=Y;x.beginPath();x.arc(110,H*0.58,4,0,Math.PI*2);x.fill();dT(x,"\u2713 Floor+Target",W/2,H-6,G,10)},
-  drawBad:(x,W,H)=>{dD(x,10,H*0.32,W-10,H*0.32,Y+"88",1.5);dT(x,"HVL",W-22,H*0.30,Y,9);dD(x,10,H*0.55,W-10,H*0.55,R+"55",1.5);dT(x,"-GEX",W/2,H*0.59,R,9);dL(x,[[30,H*0.28],[70,H*0.36],[110,H*0.44],[150,H*0.55],[190,H*0.65],[230,H*0.75],[270,H*0.82]],R,2);x.fillStyle=Y;x.beginPath();x.arc(110,H*0.44,4,0,Math.PI*2);x.fill();dT(x,"\u2717 Below HVL",W/2,H-6,R,10)}},
+{layer:5,title:"GEX Levels",sub:"Pre-Session",icon:"\u25CE",question:"How do gamma levels frame the trade?",go:["+Gamma floor below","Wall above as target","Above Vol Trigger"],caution:["Near Vol Trigger","Mixed","No clear target"],no:["Below Vol Trigger","-Gamma","Major expiry"],tip:"GEX = context and targets.",
+  drawGood:(x,W,H)=>{dD(x,10,H*0.16,W-10,H*0.16,G+"88",1.5);dT(x,"Gamma Wall",W/2,H*0.12,G,9);dD(x,10,H*0.48,W-10,H*0.48,Y+"88",1.5);dT(x,"Vol Trigger",W-22,H*0.46,Y,9);dD(x,10,H*0.72,W-10,H*0.72,G+"55",1.5);dT(x,"+GEX Floor",W/2,H*0.76,G,9);dL(x,[[30,H*0.65],[70,H*0.55],[110,H*0.58],[150,H*0.45],[190,H*0.38],[230,H*0.30],[270,H*0.22]],G,2);x.fillStyle=Y;x.beginPath();x.arc(110,H*0.58,4,0,Math.PI*2);x.fill();dT(x,"\u2713 Floor+Target",W/2,H-6,G,10)},
+  drawBad:(x,W,H)=>{dD(x,10,H*0.32,W-10,H*0.32,Y+"88",1.5);dT(x,"Vol Trigger",W-22,H*0.30,Y,9);dD(x,10,H*0.55,W-10,H*0.55,R+"55",1.5);dT(x,"-GEX",W/2,H*0.59,R,9);dL(x,[[30,H*0.28],[70,H*0.36],[110,H*0.44],[150,H*0.55],[190,H*0.65],[230,H*0.75],[270,H*0.82]],R,2);x.fillStyle=Y;x.beginPath();x.arc(110,H*0.44,4,0,Math.PI*2);x.fill();dT(x,"\u2717 Below Vol Trigger",W/2,H-6,R,10)}},
 ];
 
 let currentTab='patterns',selectedPattern=null,patternStep=0,catFilter='All';
