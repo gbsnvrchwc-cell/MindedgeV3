@@ -1132,6 +1132,89 @@ Write like a mentor, not an auditor. The goal is for the trader to finish readin
   }
 });
 
+// ── SWING PLANS — bot writes, frontend reads ─────────────────
+// In-memory store for today's plans (resets when bot sends new ones)
+let swingPlansStore = { date: null, plans: [], tickers: [], raw: '' };
+
+// Bot POSTs today's swing plans here
+app.post('/api/swing-plans', express.json({ limit: '100kb' }), (req, res) => {
+  const secret = req.headers['x-bot-secret'];
+  if (secret !== process.env.SWING_BOT_SECRET) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  const { date, plans, tickers, raw } = req.body;
+  swingPlansStore = {
+    date: date || new Date().toISOString().slice(0, 10),
+    plans: plans || [],
+    tickers: tickers || [],
+    raw: raw || '',
+    updatedAt: new Date().toISOString()
+  };
+  console.log(`Swing plans updated: ${swingPlansStore.tickers.length} tickers for ${swingPlansStore.date}`);
+  res.json({ ok: true });
+});
+
+// Frontend reads today's swing plans
+app.get('/api/swing-plans', requireAccessAPI, (req, res) => {
+  res.json(swingPlansStore);
+});
+
+// Chart data for any ticker — used by swing page
+app.get('/api/chart/:ticker', requireAccessAPI, chartLimiter, async (req, res) => {
+  try {
+    const ticker = req.params.ticker.toUpperCase();
+    const interval = req.query.interval || '1d';
+    const range = req.query.range || '1y';
+    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=${interval}&range=${range}&includePrePost=false`;
+    const controller = new AbortController();
+    const fetchTimeout = setTimeout(() => controller.abort(), 8000);
+    let r;
+    try {
+      r = await fetch(url, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+          'Accept': 'application/json',
+        },
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(fetchTimeout);
+    }
+    if (!r.ok) throw new Error(`Yahoo Finance error: ${r.status}`);
+    const data = await r.json();
+    const result = data.chart.result[0];
+    const meta = result.meta;
+    const timestamps = result.timestamp || [];
+    const quotes = result.indicators.quote[0];
+    const bars = timestamps.map((ts, i) => ({
+      time: new Date(ts * 1000).toISOString(),
+      open:   quotes.open[i]   != null ? parseFloat(quotes.open[i].toFixed(2))   : null,
+      high:   quotes.high[i]   != null ? parseFloat(quotes.high[i].toFixed(2))   : null,
+      low:    quotes.low[i]    != null ? parseFloat(quotes.low[i].toFixed(2))    : null,
+      close:  quotes.close[i]  != null ? parseFloat(quotes.close[i].toFixed(2))  : null,
+      volume: quotes.volume[i] || 0,
+    })).filter(b => b.close !== null);
+    res.json({
+      ticker,
+      currency: meta.currency,
+      exchange: meta.exchangeName,
+      name: meta.shortName || meta.symbol,
+      price: meta.regularMarketPrice,
+      prevClose: meta.chartPreviousClose,
+      bars,
+    });
+  } catch (err) {
+    console.error('Chart data error:', err.message);
+    res.status(500).json({ error: 'Could not fetch chart data: ' + err.message });
+  }
+});
+
+// Swing page route
+app.get('/swing', requireAccess, (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  res.sendFile(path.join(__dirname, 'public', 'swing.html'));
+});
+
 // ── LOGOUT ───────────────────────────────────────────────────────
 app.get('/logout', (req, res) => {
   res.clearCookie('mindedge_access');
