@@ -34,7 +34,7 @@
     --mono: 'JetBrains Mono', monospace;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: var(--bg); color: var(--cream); font-family: var(--sans); min-height: 100vh; display: flex; }
+  body { background: var(--bg); color: var(--cream); font-family: var(--sans); height: 100vh; display: flex; overflow: hidden; }
 
   /* ── SIDEBAR (matches main app) ── */
   .sidebar {
@@ -62,18 +62,18 @@
   }
 
   /* ── MAIN AREA ── */
-  .main { margin-left: 220px; flex: 1; min-height: 100vh; display: flex; flex-direction: column; }
+  .main { margin-left: 220px; flex: 1; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
   /* ── PAGE HEADER ── */
-  .page-header { padding: 36px 40px 0; }
-  .page-eyebrow { font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em; color: var(--gold); text-transform: uppercase; margin-bottom: 10px; }
-  .page-title { font-family: var(--serif); font-size: 36px; font-weight: 300; color: var(--cream); line-height: 1.1; }
-  .page-subtitle { font-size: 13px; color: var(--cream3); margin-top: 8px; font-weight: 300; }
+  .page-header { padding: 20px 40px 0; flex-shrink: 0; }
+  .page-eyebrow { font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em; color: var(--gold); text-transform: uppercase; margin-bottom: 4px; }
+  .page-title { font-family: var(--serif); font-size: 28px; font-weight: 300; color: var(--cream); line-height: 1.1; }
+  .page-subtitle { font-size: 12px; color: var(--cream3); margin-top: 4px; font-weight: 300; }
 
   /* ── TICKER BAR ── */
   .ticker-bar {
-    display: flex; gap: 8px; padding: 16px 40px; overflow-x: auto;
-    border-bottom: 1px solid var(--border);
+    display: flex; gap: 8px; padding: 12px 40px; overflow-x: auto;
+    border-bottom: 1px solid var(--border); flex-shrink: 0;
   }
   .ticker-btn {
     padding: 8px 18px; border: 1px solid var(--border); border-radius: 8px;
@@ -87,7 +87,7 @@
   /* ── SPLIT LAYOUT: Chart + Plans ── */
   .swing-grid {
     display: grid; grid-template-columns: 1fr 400px;
-    flex: 1; overflow: hidden;
+    flex: 1; overflow: hidden; min-height: 0;
   }
   @media(max-width:1100px) { .swing-grid { grid-template-columns: 1fr; grid-template-rows: 55vh 1fr; } }
 
