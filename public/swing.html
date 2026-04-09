@@ -220,6 +220,9 @@
         <div class="legend-item"><div class="legend-dot" style="background:#E040FB"></div>200 SMA</div>
         <div class="legend-item"><div class="legend-dot" style="background:rgba(201,168,76,0.5)"></div>Fib Levels</div>
         <div class="legend-item"><div class="legend-dot" style="background:rgba(0,191,255,0.4)"></div>VRVP</div>
+        <div class="legend-item"><div style="width:10px;height:10px;border-radius:50%;border:1.5px solid #52a882;background:rgba(82,168,130,0.15);flex-shrink:0;display:inline-block"></div>&nbsp;Call Signal (A, B, C)</div>
+        <div class="legend-item"><div style="width:10px;height:10px;border-radius:50%;border:1.5px solid #e05252;background:rgba(224,82,82,0.15);flex-shrink:0;display:inline-block"></div>&nbsp;Put Signal (D)</div>
+        <div class="legend-item"><div style="width:10px;height:10px;border-radius:50%;border:1.5px solid #00BFFF;background:rgba(0,191,255,0.15);flex-shrink:0;display:inline-block"></div>&nbsp;Current Price (E)</div>
       </div>
       <canvas id="chart"></canvas>
     </div>
@@ -384,6 +387,64 @@ function calcSMA(data, period) {
   return sma;
 }
 
+// ═══════════════════════════════════════════════════════════════
+// PARSE CALL/PUT SIGNALS FROM PLANS TEXT
+// ═══════════════════════════════════════════════════════════════
+
+function parseSignals() {
+  if (!plansData || !plansData.raw || !currentTicker) return [];
+
+  const raw = plansData.raw;
+
+  // Try to isolate just this ticker's section
+  let relevantText = raw;
+  const tickerBlocks = raw.split(/\n(?=\*\*[A-Z]{1,5}\*\*|[A-Z]{1,5}:[ \t])/);
+  const block = tickerBlocks.find(b => b.slice(0, 60).includes(currentTicker));
+  if (block) relevantText = block;
+
+  // Find all TRADE N positions
+  const tradeRe = /TRADE\s+\d+/gi;
+  const positions = [];
+  let m;
+  while ((m = tradeRe.exec(relevantText)) !== null) positions.push(m.index);
+  if (positions.length === 0) return [];
+
+  const sections = positions.map((pos, i) =>
+    relevantText.slice(pos, positions[i + 1] || relevantText.length)
+  );
+
+  let callCount = 0, putCount = 0;
+  const signals = [];
+
+  sections.slice(0, 6).forEach(section => {
+    const top = section.slice(0, 300).toLowerCase();
+    const isPut = /bearish|put signal|short/.test(top.slice(0, 150));
+    // Extract entry price range
+    const pm =
+      section.match(/Entry[^:]*:\s*\$?([\d,]+)(?:\s*[-–—]\s*\$?([\d,]+))?/i) ||
+      section.match(/Entry[^\n$]*\$?([\d,]+)/i);
+    if (!pm) return;
+    const p1 = parseFloat(pm[1].replace(/,/g, ''));
+    if (!p1 || p1 < 1) return;
+    const p2 = pm[2] ? parseFloat(pm[2].replace(/,/g, '')) : p1;
+    const entryPrice = (p1 + p2) / 2;
+
+    let label;
+    if (isPut) {
+      // D, F, G... (skip E which is reserved for current price)
+      const raw = String.fromCharCode(68 + putCount);
+      label = raw === 'E' ? 'F' : raw;
+      putCount++;
+    } else {
+      label = String.fromCharCode(65 + callCount); // A, B, C
+      callCount++;
+    }
+    signals.push({ label, price: entryPrice, type: isPut ? 'put' : 'call' });
+  });
+
+  return signals;
+}
+
 function drawChart() {
   const canvas = document.getElementById('chart');
   const dpr = window.devicePixelRatio || 1;
@@ -490,6 +551,53 @@ function drawChart() {
     const bodyB = py(Math.min(b.open, b.close));
     ctx.fillRect(x - barW/2, bodyT, barW, Math.max(1, bodyB - bodyT));
   });
+
+  // ── CALL / PUT SIGNAL MARKERS (A, B, C, D…) ──────────────────
+  const signals = parseSignals();
+  ctx.save();
+  ctx.font = 'bold 9px JetBrains Mono';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+
+  signals.forEach(sig => {
+    let bestIdx = 0, bestDist = Infinity;
+    bars.forEach((b, i) => {
+      const d = Math.abs(((b.high + b.low) / 2) - sig.price);
+      if (d < bestDist) { bestDist = d; bestIdx = i; }
+    });
+    const b = bars[bestIdx];
+    const x = px(bestIdx);
+    const isCall = sig.type === 'call';
+    const color = isCall ? '#52a882' : '#e05252';
+    const raw = isCall ? py(b.low) + 16 : py(b.high) - 16;
+    const y = Math.max(14, Math.min(chartH - 10, raw));
+    ctx.beginPath();
+    ctx.arc(x, y, 9, 0, Math.PI * 2);
+    ctx.fillStyle = color + '28';
+    ctx.fill();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    ctx.fillStyle = color;
+    ctx.fillText(sig.label, x, y);
+  });
+
+  // ── CURRENT PRICE MARKER (E) ──────────────────────────────────
+  {
+    const lastB = bars[bars.length - 1];
+    const x = px(bars.length - 1);
+    const y = Math.max(14, Math.min(chartH - 10, py(lastB.close) - 18));
+    ctx.beginPath();
+    ctx.arc(x, y, 9, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(0,191,255,0.15)';
+    ctx.fill();
+    ctx.strokeStyle = '#00BFFF';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    ctx.fillStyle = '#00BFFF';
+    ctx.fillText('E', x, y);
+  }
+  ctx.restore();
 
   // EMA / SMA lines
   function drawLine(data, color, w) {
