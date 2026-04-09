@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MindEdge — Swing Analysis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=JetBrains+Mono:wght@300;400&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080807;
+    --bg2: #0f0f0d;
+    --bg3: #161613;
+    --bg4: #1e1e1a;
+    --gold: #C9A84C;
+    --gold2: #e8c870;
+    --gold-dim: rgba(201,168,76,0.12);
+    --gold-border: rgba(201,168,76,0.25);
+    --cream: #F0EAD6;
+    --cream2: #c8c0a8;
+    --cream3: #8a8475;
+    --red: #e05252;
+    --green: #52a882;
+    --neon-green: #00E676;
+    --neon-blue: #00BFFF;
+    --neon-pink: #FF1493;
+    --neon-orange: #FF9800;
+    --neon-purple: #E040FB;
+    --neon-red: #FF1744;
+    --border: rgba(255,255,255,0.06);
+    --serif: 'Cormorant Garamond', Georgia, serif;
+    --sans: 'Outfit', sans-serif;
+    --mono: 'JetBrains Mono', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--cream); font-family: var(--sans); min-height: 100vh; display: flex; }
+
+  /* ── SIDEBAR (matches main app) ── */
+  .sidebar {
+    width: 220px; min-height: 100vh; background: var(--bg2);
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; padding: 32px 0;
+    position: fixed; top: 0; left: 0; z-index: 100;
+  }
+  .logo { padding: 0 24px 32px; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
+  .logo-mark { font-family: var(--serif); font-size: 26px; font-weight: 600; color: var(--gold); letter-spacing: 0.02em; line-height: 1; }
+  .logo-sub { font-size: 10px; font-weight: 300; color: var(--cream3); letter-spacing: 0.15em; text-transform: uppercase; margin-top: 4px; }
+  .nav { flex: 1; padding: 0 12px; display: flex; flex-direction: column; gap: 2px; }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+    border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 400;
+    color: var(--cream3); transition: all 0.2s; border: none; background: none;
+    text-align: left; width: 100%; text-decoration: none;
+  }
+  .nav-item:hover { background: var(--bg4); color: var(--cream2); }
+  .nav-item.active { background: var(--gold-dim); color: var(--gold); border: 1px solid var(--gold-border); }
+  .nav-icon { font-size: 15px; width: 18px; text-align: center; }
+  .sidebar-footer {
+    padding: 16px 24px; border-top: 1px solid var(--border);
+    font-size: 11px; color: var(--cream3); line-height: 1.5;
+  }
+
+  /* ── MAIN AREA ── */
+  .main { margin-left: 220px; flex: 1; min-height: 100vh; display: flex; flex-direction: column; }
+
+  /* ── PAGE HEADER ── */
+  .page-header { padding: 36px 40px 0; }
+  .page-eyebrow { font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em; color: var(--gold); text-transform: uppercase; margin-bottom: 10px; }
+  .page-title { font-family: var(--serif); font-size: 36px; font-weight: 300; color: var(--cream); line-height: 1.1; }
+  .page-subtitle { font-size: 13px; color: var(--cream3); margin-top: 8px; font-weight: 300; }
+
+  /* ── TICKER BAR ── */
+  .ticker-bar {
+    display: flex; gap: 8px; padding: 16px 40px; overflow-x: auto;
+    border-bottom: 1px solid var(--border);
+  }
+  .ticker-btn {
+    padding: 8px 18px; border: 1px solid var(--border); border-radius: 8px;
+    background: transparent; color: var(--cream3); font-family: var(--sans);
+    font-size: 13px; font-weight: 400; cursor: pointer; transition: all .2s;
+    white-space: nowrap;
+  }
+  .ticker-btn:hover { border-color: var(--gold-border); color: var(--cream2); }
+  .ticker-btn.active { background: var(--gold-dim); color: var(--gold); border-color: var(--gold-border); font-weight: 500; }
+
+  /* ── SPLIT LAYOUT: Chart + Plans ── */
+  .swing-grid {
+    display: grid; grid-template-columns: 1fr 400px;
+    flex: 1; overflow: hidden;
+  }
+  @media(max-width:1100px) { .swing-grid { grid-template-columns: 1fr; grid-template-rows: 55vh 1fr; } }
+
+  /* ── CHART PANEL ── */
+  .chart-panel { position: relative; background: var(--bg); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
+  .chart-info {
+    display: flex; align-items: center; gap: 14px; padding: 12px 20px;
+    font-family: var(--mono); font-size: 12px;
+  }
+  .chart-ticker { font-family: var(--serif); font-size: 22px; font-weight: 500; color: var(--gold2); }
+  .chart-price { font-size: 16px; color: var(--cream); }
+  .chart-change { font-size: 12px; padding: 2px 8px; border-radius: 4px; }
+  .chart-change.up { background: rgba(82,168,130,0.15); color: var(--green); }
+  .chart-change.down { background: rgba(224,82,82,0.15); color: var(--red); }
+  .legend {
+    display: flex; gap: 14px; padding: 0 20px 8px; flex-wrap: wrap;
+  }
+  .legend-item { display: flex; align-items: center; gap: 4px; font-size: 10px; color: var(--cream3); font-family: var(--mono); }
+  .legend-dot { width: 10px; height: 2px; border-radius: 1px; }
+  canvas#chart { flex: 1; width: 100%; display: block; }
+
+  /* ── PLAN PANEL ── */
+  .plan-panel { background: var(--bg2); overflow-y: auto; display: flex; flex-direction: column; }
+  .plan-header {
+    padding: 20px 24px; border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; background: var(--bg2); z-index: 2;
+  }
+  .plan-header h2 { font-family: var(--serif); font-size: 20px; font-weight: 400; color: var(--cream); }
+  .plan-date { font-family: var(--mono); font-size: 10px; color: var(--cream3); letter-spacing: 0.1em; margin-top: 4px; }
+  .plan-content { flex: 1; padding: 20px 24px; overflow-y: auto; }
+
+  /* ── TRADE CARDS ── */
+  .trade-card {
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 12px; padding: 20px; margin-bottom: 16px;
+    border-left: 3px solid var(--gold-border); transition: opacity 0.3s;
+  }
+  .trade-card.bullish { border-left-color: var(--green); }
+  .trade-card.bearish { border-left-color: var(--red); }
+  .trade-card.dimmed { opacity: 0.3; }
+  .trade-card strong { color: var(--gold2); }
+  .trade-card { font-size: 12.5px; line-height: 1.7; color: var(--cream2); }
+
+  .disclaimer {
+    padding: 16px 24px; font-size: 10px; color: var(--cream3);
+    border-top: 1px solid var(--border); line-height: 1.5;
+    font-family: var(--mono);
+  }
+
+  /* ── EMPTY / LOADING ── */
+  .empty-state { padding: 48px 24px; text-align: center; }
+  .empty-state h3 { font-family: var(--serif); font-size: 22px; color: var(--cream); font-weight: 400; margin-bottom: 8px; }
+  .empty-state p { font-size: 13px; color: var(--cream3); }
+
+  /* ── CUSTOM TICKER INPUT ── */
+  .ticker-input {
+    padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px;
+    background: var(--bg); color: var(--cream); font-family: var(--mono);
+    font-size: 12px; width: 100px; outline: none;
+  }
+  .ticker-input:focus { border-color: var(--gold-border); }
+  .ticker-go {
+    padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px;
+    background: transparent; color: var(--cream3); font-size: 12px;
+    cursor: pointer; font-family: var(--sans); transition: all .2s;
+  }
+  .ticker-go:hover { border-color: var(--gold); color: var(--gold); }
+
+  /* ── MOBILE SIDEBAR ── */
+  @media(max-width:768px) {
+    .sidebar { display: none; }
+    .main { margin-left: 0; }
+    .page-header { padding: 24px 20px 0; }
+    .ticker-bar { padding: 12px 20px; }
+    .plan-content { padding: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══ SIDEBAR ═══ -->
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-mark">MindEdge</div>
+    <div class="logo-sub">Trading Intelligence</div>
+  </div>
+  <nav class="nav">
+    <a href="/app" class="nav-item"><span class="nav-icon">◈</span> Dashboard</a>
+    <a href="/app" class="nav-item"><span class="nav-icon">◉</span> Psychology Masters</a>
+    <a href="/app" class="nav-item"><span class="nav-icon">◑</span> Scenario Lab</a>
+    <a href="/app" class="nav-item"><span class="nav-icon">◐</span> Bias Tracker</a>
+    <a href="/app" class="nav-item"><span class="nav-icon">◻</span> Trade Journal</a>
+    <a href="/app" class="nav-item"><span class="nav-icon">✦</span> AI Coach</a>
+    <a href="/app" class="nav-item"><span class="nav-icon">▲</span> Trade Analyzer</a>
+    <a href="/app" class="nav-item"><span class="nav-icon">◎</span> Chart Practice</a>
+    <a href="/app" class="nav-item"><span class="nav-icon">◈</span> Chart Intelligence</a>
+    <a href="/swing" class="nav-item active"><span class="nav-icon">◇</span> Swing Analysis</a>
+  </nav>
+  <div class="sidebar-footer">
+    Institutional-grade swing<br>analysis & trade plans
+  </div>
+</aside>
+
+<!-- ═══ MAIN ═══ -->
+<div class="main">
+
+  <div class="page-header">
+    <div class="page-eyebrow">Market Intelligence</div>
+    <h1 class="page-title">Swing Analysis</h1>
+    <p class="page-subtitle">Live charts with daily trade plans — updated every market morning at 6:30 AM ET</p>
+  </div>
+
+  <div class="ticker-bar" id="tickerBar">
+    <span style="color:var(--cream3);font-size:13px;padding:8px 0;">Loading today's picks...</span>
+  </div>
+
+  <div class="swing-grid">
+
+    <!-- CHART -->
+    <div class="chart-panel">
+      <div class="chart-info">
+        <span class="chart-ticker" id="chartTicker">—</span>
+        <span class="chart-price" id="chartPrice">—</span>
+        <span class="chart-change" id="chartChange">—</span>
+      </div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#00E676"></div>9 EMA</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#00BFFF"></div>21 EMA</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#FF9800"></div>50 SMA</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#E040FB"></div>200 SMA</div>
+        <div class="legend-item"><div class="legend-dot" style="background:rgba(201,168,76,0.5)"></div>Fib Levels</div>
+        <div class="legend-item"><div class="legend-dot" style="background:rgba(0,191,255,0.4)"></div>VRVP</div>
+      </div>
+      <canvas id="chart"></canvas>
+    </div>
+
+    <!-- TRADE PLANS -->
+    <div class="plan-panel">
+      <div class="plan-header">
+        <h2>Today's Trade Plans</h2>
+        <div class="plan-date" id="planDate">—</div>
+      </div>
+      <div class="plan-content" id="planContent">
+        <div class="empty-state">
+          <h3>No plans yet today</h3>
+          <p>Swing plans are posted at 6:30 AM ET every weekday.</p>
+        </div>
+      </div>
+      <div class="disclaimer">
+        Educational analysis only. Not financial advice. Always validate with your own research and manage position size accordingly.
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════
+
+let currentTicker = null;
+let chartData = null;
+let plansData = null;
+
+// ═══════════════════════════════════════════════════════════════
+// LOAD PLANS + BUILD TICKER BAR
+// ═══════════════════════════════════════════════════════════════
+
+async function loadPlans() {
+  try {
+    const res = await fetch('/api/swing-plans');
+    if (!res.ok) throw new Error('Not authorized');
+    plansData = await res.json();
+    const bar = document.getElementById('tickerBar');
+
+    if (!plansData.tickers || plansData.tickers.length === 0) {
+      bar.innerHTML = `
+        <input type="text" id="tickerInput" class="ticker-input" placeholder="Enter ticker...">
+        <button onclick="loadCustomTicker()" class="ticker-go">Load Chart</button>
+        <span style="color:var(--cream3);font-size:11px;padding:8px;">No bot picks today — enter any ticker to view chart</span>
+      `;
+      return;
+    }
+
+    document.getElementById('planDate').textContent = plansData.date || 'Today';
+    bar.innerHTML = plansData.tickers.map((t, i) =>
+      `<button class="ticker-btn ${i===0?'active':''}" onclick="selectTicker('${t}', this)">${t}</button>`
+    ).join('') +
+      `<input type="text" id="tickerInput" class="ticker-input" placeholder="Custom...">` +
+      `<button onclick="loadCustomTicker()" class="ticker-go">Go</button>`;
+
+    renderPlans();
+    selectTicker(plansData.tickers[0]);
+  } catch (err) {
+    console.error('Load plans error:', err);
+    document.getElementById('tickerBar').innerHTML = `
+      <input type="text" id="tickerInput" class="ticker-input" placeholder="Enter ticker (e.g. GS, AVGO)">
+      <button onclick="loadCustomTicker()" class="ticker-go">Load Chart</button>
+    `;
+  }
+}
+
+function loadCustomTicker() {
+  const input = document.getElementById('tickerInput');
+  const ticker = input.value.trim().toUpperCase();
+  if (ticker) {
+    document.querySelectorAll('.ticker-btn').forEach(b => b.classList.remove('active'));
+    selectTicker(ticker);
+  }
+}
+
+function renderPlans() {
+  const el = document.getElementById('planContent');
+  if (!plansData || !plansData.raw) {
+    el.innerHTML = '<div class="empty-state"><h3>No plans yet today</h3><p>Swing plans post at 6:30 AM ET weekdays.</p></div>';
+    return;
+  }
+  const sections = plansData.raw.split('---').filter(s => s.trim().length > 50);
+  if (sections.length === 0) {
+    el.innerHTML = `<div class="trade-card">${plansData.raw.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</div>`;
+    return;
+  }
+  el.innerHTML = sections.map(section => {
+    const isBearish = /bearish|put/i.test(section.slice(0, 200));
+    const html = section.trim().replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+    // Extract ticker from section
+    const tickerMatch = section.match(/\(([A-Z]{1,5})\)/);
+    const sectionTicker = tickerMatch ? tickerMatch[1] : '';
+    return `<div class="trade-card ${isBearish ? 'bearish' : 'bullish'}" data-ticker="${sectionTicker}">${html}</div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SELECT TICKER → LOAD CHART + HIGHLIGHT PLANS
+// ═══════════════════════════════════════════════════════════════
+
+async function selectTicker(ticker, btnEl) {
+  currentTicker = ticker;
+  if (btnEl) {
+    document.querySelectorAll('.ticker-btn').forEach(b => b.classList.remove('active'));
+    btnEl.classList.add('active');
+  }
+  document.getElementById('chartTicker').textContent = ticker;
+  document.getElementById('chartPrice').textContent = 'Loading...';
+  document.getElementById('chartChange').textContent = '';
+  document.getElementById('chartChange').className = 'chart-change';
+
+  // Highlight matching plans, dim others
+  document.querySelectorAll('.trade-card').forEach(card => {
+    const matches = card.dataset.ticker === ticker || card.textContent.includes(ticker);
+    card.classList.toggle('dimmed', !matches);
+    if (matches) card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  });
+
+  try {
+    const res = await fetch(`/api/chart/${ticker}?interval=1d&range=1y`);
+    if (!res.ok) throw new Error('Chart fetch failed');
+    chartData = await res.json();
+
+    const price = chartData.price || chartData.bars[chartData.bars.length-1]?.close;
+    const prevClose = chartData.prevClose || chartData.bars[chartData.bars.length-2]?.close;
+    const change = price && prevClose ? ((price - prevClose) / prevClose * 100) : 0;
+
+    document.getElementById('chartPrice').textContent = '$' + (price||0).toFixed(2);
+    const chEl = document.getElementById('chartChange');
+    chEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + '%';
+    chEl.className = 'chart-change ' + (change >= 0 ? 'up' : 'down');
+
+    drawChart();
+  } catch (err) {
+    console.error('Chart error:', err);
+    document.getElementById('chartPrice').textContent = 'Error';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CHART — Candles + EMAs + Fibs + VRVP
+// ═══════════════════════════════════════════════════════════════
+
+function calcEMA(data, period) {
+  const k = 2 / (period + 1);
+  const ema = [data[0]];
+  for (let i = 1; i < data.length; i++) ema.push(data[i] * k + ema[i-1] * (1 - k));
+  return ema;
+}
+function calcSMA(data, period) {
+  const sma = [];
+  for (let i = 0; i < data.length; i++) {
+    if (i < period - 1) { sma.push(null); continue; }
+    let s = 0; for (let j = i - period + 1; j <= i; j++) s += data[j];
+    sma.push(s / period);
+  }
+  return sma;
+}
+
+function drawChart() {
+  const canvas = document.getElementById('chart');
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  const W = rect.width, H = rect.height;
+
+  const bars = chartData.bars;
+  if (!bars || bars.length === 0) return;
+
+  const closes = bars.map(b => b.close);
+  const highs = bars.map(b => b.high);
+  const lows = bars.map(b => b.low);
+
+  const ema9 = calcEMA(closes, 9);
+  const ema21 = calcEMA(closes, 21);
+  const sma50 = calcSMA(closes, 50);
+  const sma200 = calcSMA(closes, 200);
+
+  const allH = Math.max(...highs);
+  const allL = Math.min(...lows);
+  const pad = (allH - allL) * 0.08;
+  const priceH = allH + pad, priceL = allL - pad;
+
+  const vrvpW = 55;
+  const chartW = W - vrvpW - 8;
+  const chartH = H - 16;
+
+  const px = (i) => 8 + (i / (bars.length - 1)) * (chartW - 8);
+  const py = (p) => 8 + (1 - (p - priceL) / (priceH - priceL)) * (chartH - 8);
+  const barW = Math.max(1, (chartW / bars.length) * 0.6);
+
+  // Clear
+  ctx.fillStyle = '#080807';
+  ctx.fillRect(0, 0, W, H);
+
+  // Grid
+  ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+  ctx.lineWidth = 0.5;
+  for (let i = 0; i < 6; i++) {
+    const y = 8 + (chartH - 8) * (i / 5);
+    ctx.beginPath(); ctx.moveTo(8, y); ctx.lineTo(chartW, y); ctx.stroke();
+  }
+
+  // Fibonacci
+  const swingH = Math.max(...highs.slice(-120));
+  const swingL = Math.min(...lows.slice(-120));
+  const fibLevels = [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1.0];
+  ctx.font = '10px JetBrains Mono';
+  fibLevels.forEach(fib => {
+    const price = swingH - (swingH - swingL) * fib;
+    const y = py(price);
+    ctx.strokeStyle = 'rgba(201,168,76,0.2)';
+    ctx.lineWidth = 0.5;
+    ctx.setLineDash([3, 3]);
+    ctx.beginPath(); ctx.moveTo(8, y); ctx.lineTo(chartW, y); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = 'rgba(201,168,76,0.5)';
+    ctx.fillText(`${(fib*100).toFixed(1)}% $${price.toFixed(0)}`, chartW - 105, y - 3);
+  });
+
+  // VRVP
+  const vpBins = 30;
+  const vpStep = (priceH - priceL) / vpBins;
+  const vp = new Array(vpBins).fill(0);
+  let vpBuy = new Array(vpBins).fill(0);
+  let vpSell = new Array(vpBins).fill(0);
+  bars.forEach(b => {
+    const bin = Math.min(vpBins - 1, Math.floor((b.close - priceL) / vpStep));
+    vp[bin] += b.volume;
+    if (b.close >= b.open) vpBuy[bin] += b.volume; else vpSell[bin] += b.volume;
+  });
+  const vpMax = Math.max(...vp);
+  for (let i = 0; i < vpBins; i++) {
+    const y1 = py(priceL + (i + 1) * vpStep);
+    const y2 = py(priceL + i * vpStep);
+    const h = Math.abs(y2 - y1) - 1;
+    ctx.fillStyle = 'rgba(0,191,255,0.2)';
+    ctx.fillRect(chartW + 2, Math.min(y1, y2), (vpBuy[i] / vpMax) * vrvpW, h);
+    ctx.fillStyle = 'rgba(255,23,68,0.2)';
+    ctx.fillRect(chartW + 2 + (vpBuy[i] / vpMax) * vrvpW, Math.min(y1, y2), (vpSell[i] / vpMax) * vrvpW, h);
+  }
+  // POC
+  const pocBin = vp.indexOf(vpMax);
+  const pocPrice = priceL + (pocBin + 0.5) * vpStep;
+  ctx.strokeStyle = 'rgba(0,191,255,0.35)';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([2, 3]);
+  ctx.beginPath(); ctx.moveTo(8, py(pocPrice)); ctx.lineTo(chartW, py(pocPrice)); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Candles
+  bars.forEach((b, i) => {
+    const x = px(i);
+    const bull = b.close >= b.open;
+    const clr = bull ? '#52a882' : '#e05252';
+    ctx.fillStyle = clr; ctx.strokeStyle = clr;
+    ctx.lineWidth = 0.8;
+    ctx.beginPath(); ctx.moveTo(x, py(b.high)); ctx.lineTo(x, py(b.low)); ctx.stroke();
+    const bodyT = py(Math.max(b.open, b.close));
+    const bodyB = py(Math.min(b.open, b.close));
+    ctx.fillRect(x - barW/2, bodyT, barW, Math.max(1, bodyB - bodyT));
+  });
+
+  // EMA / SMA lines
+  function drawLine(data, color, w) {
+    ctx.strokeStyle = color; ctx.lineWidth = w;
+    ctx.beginPath(); let s = false;
+    data.forEach((v, i) => { if (v === null) return; const x = px(i), y = py(v); if (!s) { ctx.moveTo(x, y); s = true; } else ctx.lineTo(x, y); });
+    ctx.stroke();
+  }
+  drawLine(ema9, '#00E676', 1.2);
+  drawLine(ema21, '#00BFFF', 1.2);
+  drawLine(sma50, '#FF9800', 1);
+  drawLine(sma200, '#E040FB', 1);
+
+  // Current price label
+  const lastPrice = closes[closes.length - 1];
+  const lastY = py(lastPrice);
+  const prevPrice = closes[closes.length - 2];
+  ctx.fillStyle = lastPrice >= prevPrice ? '#52a882' : '#e05252';
+  ctx.fillRect(chartW - 2, lastY - 8, 62, 16);
+  ctx.fillStyle = '#fff';
+  ctx.font = '10px JetBrains Mono';
+  ctx.fillText('$' + lastPrice.toFixed(2), chartW + 2, lastY + 4);
+
+  // EMA labels
+  [
+    { val: ema9[ema9.length-1], label: '9E', color: '#00E676' },
+    { val: ema21[ema21.length-1], label: '21E', color: '#00BFFF' },
+    { val: sma50[sma50.length-1], label: '50S', color: '#FF9800' },
+    { val: sma200[sma200.length-1], label: '200S', color: '#E040FB' },
+  ].forEach(e => {
+    if (e.val === null) return;
+    ctx.fillStyle = e.color; ctx.globalAlpha = 0.6;
+    ctx.fillText(`${e.label} $${e.val.toFixed(0)}`, 12, py(e.val) - 3);
+    ctx.globalAlpha = 1;
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════
+
+window.addEventListener('resize', () => { if (chartData) drawChart(); });
+document.addEventListener('DOMContentLoaded', loadPlans);
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && document.activeElement.id === 'tickerInput') loadCustomTicker();
+});
+</script>
+</body>
+</html>
