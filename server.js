@@ -1133,8 +1133,23 @@ Write like a mentor, not an auditor. The goal is for the trader to finish readin
 });
 
 // ── SWING PLANS — bot writes, frontend reads ─────────────────
-// In-memory store for today's plans (resets when bot sends new ones)
-let swingPlansStore = { date: null, plans: [], tickers: [], raw: '' };
+// Persisted to file so plans survive server restarts
+const SWING_FILE = path.join(__dirname, '.swing-plans.json');
+
+function loadSwingPlans() {
+  try {
+    if (require('fs').existsSync(SWING_FILE)) {
+      return JSON.parse(require('fs').readFileSync(SWING_FILE, 'utf8'));
+    }
+  } catch (e) { console.error('Failed to load swing plans:', e.message); }
+  return { date: null, plans: [], tickers: [], raw: '' };
+}
+
+function saveSwingPlans(data) {
+  try {
+    require('fs').writeFileSync(SWING_FILE, JSON.stringify(data), 'utf8');
+  } catch (e) { console.error('Failed to save swing plans:', e.message); }
+}
 
 // Bot POSTs today's swing plans here
 app.post('/api/swing-plans', express.json({ limit: '100kb' }), (req, res) => {
@@ -1143,20 +1158,21 @@ app.post('/api/swing-plans', express.json({ limit: '100kb' }), (req, res) => {
     return res.status(401).json({ error: 'Unauthorized' });
   }
   const { date, plans, tickers, raw } = req.body;
-  swingPlansStore = {
+  const store = {
     date: date || new Date().toISOString().slice(0, 10),
     plans: plans || [],
     tickers: tickers || [],
     raw: raw || '',
     updatedAt: new Date().toISOString()
   };
-  console.log(`Swing plans updated: ${swingPlansStore.tickers.length} tickers for ${swingPlansStore.date}`);
+  saveSwingPlans(store);
+  console.log(`Swing plans saved: ${store.tickers.length} tickers for ${store.date}`);
   res.json({ ok: true });
 });
 
 // Frontend reads today's swing plans
 app.get('/api/swing-plans', requireAccessAPI, (req, res) => {
-  res.json(swingPlansStore);
+  res.json(loadSwingPlans());
 });
 
 // Chart data for any ticker — used by swing page
