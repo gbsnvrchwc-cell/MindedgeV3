@@ -1134,7 +1134,7 @@ Write like a mentor, not an auditor. The goal is for the trader to finish readin
 
 // ── SWING PLANS — bot writes, frontend reads ─────────────────
 // Persisted to file so plans survive server restarts
-const SWING_FILE = path.join(__dirname, '.swing-plans.json');
+const SWING_FILE = path.join('/data', '.swing-plans.json');
 
 function loadSwingPlans() {
   try {
