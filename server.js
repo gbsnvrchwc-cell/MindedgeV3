@@ -1157,12 +1157,13 @@ app.post('/api/swing-plans', express.json({ limit: '100kb' }), (req, res) => {
   if (secret !== process.env.SWING_BOT_SECRET) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
-  const { date, plans, tickers, raw } = req.body;
+  const { date, plans, tickers, raw, marketContext } = req.body;
   const store = {
     date: date || new Date().toISOString().slice(0, 10),
     plans: plans || [],
     tickers: tickers || [],
     raw: raw || '',
+    marketContext: marketContext || '',
     updatedAt: new Date().toISOString()
   };
   saveSwingPlans(store);
