@@ -131,6 +131,61 @@
   .trade-card strong { color: var(--gold2); }
   .trade-card { font-size: 12.5px; line-height: 1.7; color: var(--cream2); }
 
+  /* ── STRUCTURED DECISION CARDS ── */
+  .decision-card {
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 12px; margin-bottom: 16px; overflow: hidden;
+    transition: opacity 0.3s;
+  }
+  .decision-card.dimmed { opacity: 0.3; }
+  .decision-header {
+    padding: 16px 20px; border-bottom: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .decision-ticker { font-family: var(--mono); font-size: 16px; font-weight: 600; color: var(--gold); }
+  .decision-price { font-family: var(--mono); font-size: 14px; color: var(--cream); }
+  .decision-meta {
+    padding: 12px 20px; font-family: var(--mono); font-size: 11px;
+    color: var(--cream3); border-bottom: 1px solid var(--border);
+    display: flex; gap: 16px; flex-wrap: wrap;
+  }
+  .decision-meta span { white-space: nowrap; }
+  .scenario {
+    padding: 16px 20px; border-bottom: 1px solid var(--border);
+  }
+  .scenario:last-of-type { border-bottom: none; }
+  .scenario-label {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em;
+    text-transform: uppercase; margin-bottom: 8px; font-weight: 600;
+  }
+  .scenario-label.bull { color: var(--green); }
+  .scenario-label.bear { color: var(--red); }
+  .scenario-label.rec { color: var(--gold); }
+  .scenario-label.rationale-label { color: var(--cream3); }
+  .scenario-condition {
+    font-size: 12px; color: var(--cream2); margin-bottom: 6px; line-height: 1.6;
+  }
+  .scenario-trade {
+    font-family: var(--mono); font-size: 11.5px; color: var(--cream);
+    background: var(--bg); padding: 10px 14px; border-radius: 8px;
+    border-left: 2px solid var(--border); line-height: 1.6;
+  }
+  .scenario-trade.bull-trade { border-left-color: var(--green); }
+  .scenario-trade.bear-trade { border-left-color: var(--red); }
+  .scenario-rec {
+    font-size: 12px; color: var(--cream2); line-height: 1.7;
+  }
+  .scenario-rationale {
+    font-size: 11.5px; color: var(--cream3); line-height: 1.7; font-style: italic;
+  }
+  .market-context {
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px 20px; margin-bottom: 16px;
+    font-size: 12px; color: var(--cream3); line-height: 1.7;
+    border-left: 3px solid var(--gold-border);
+  }
+  .market-context strong { color: var(--gold2); }
+
   .disclaimer {
     padding: 16px 24px; font-size: 10px; color: var(--cream3);
     border-top: 1px solid var(--border); line-height: 1.5;
@@ -305,10 +360,56 @@ function loadCustomTicker() {
 
 function renderPlans() {
   const el = document.getElementById('planContent');
-  if (!plansData || !plansData.raw) {
-    el.innerHTML = '<div class="empty-state"><h3>No plans yet today</h3><p>Swing plans post at 6:30 AM ET weekdays.</p></div>';
+  if (!plansData || (!plansData.plans?.length && !plansData.raw)) {
+    el.innerHTML = '<div class="empty-state"><h3>No plans yet today</h3><p>Swing plans are posted at 6:30 AM ET every weekday.</p></div>';
     return;
   }
+
+  // Structured plans (new format)
+  if (plansData.plans && plansData.plans.length && typeof plansData.plans[0] === 'object' && plansData.plans[0].ticker) {
+    let html = '';
+
+    if (plansData.marketContext) {
+      html += `<div class="market-context"><strong>MARKET CONTEXT</strong><br>${plansData.marketContext}</div>`;
+    }
+
+    html += plansData.plans.map(p => `
+      <div class="decision-card" data-ticker="${p.ticker}">
+        <div class="decision-header">
+          <span class="decision-ticker">${p.ticker}</span>
+          <span class="decision-price">${p.currentPrice}</span>
+        </div>
+        <div class="decision-meta">
+          <span>${p.position}</span>
+          <span>RSI ${p.rsi}</span>
+          <span>MACD ${p.macd}</span>
+        </div>
+        <div class="scenario">
+          <div class="scenario-label bull">▲ BULL SCENARIO (${p.bull.timeframe})</div>
+          <div class="scenario-condition">${p.bull.condition}</div>
+          <div class="scenario-trade bull-trade">${p.bull.trade}</div>
+        </div>
+        <div class="scenario">
+          <div class="scenario-label bear">▼ BEAR SCENARIO (${p.bear.timeframe})</div>
+          <div class="scenario-condition">${p.bear.condition}</div>
+          <div class="scenario-trade bear-trade">${p.bear.trade}</div>
+        </div>
+        <div class="scenario">
+          <div class="scenario-label rec">◆ RECOMMENDED</div>
+          <div class="scenario-rec">${p.recommendation}</div>
+        </div>
+        ${p.rationale ? `<div class="scenario">
+          <div class="scenario-label rationale-label">RATIONALE</div>
+          <div class="scenario-rationale">${p.rationale}</div>
+        </div>` : ''}
+      </div>
+    `).join('');
+
+    el.innerHTML = html;
+    return;
+  }
+
+  // Legacy raw text format (fallback)
   const sections = plansData.raw.split('---').filter(s => s.trim().length > 50);
   if (sections.length === 0) {
     el.innerHTML = `<div class="trade-card">${plansData.raw.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</div>`;
@@ -317,7 +418,6 @@ function renderPlans() {
   el.innerHTML = sections.map(section => {
     const isBearish = /bearish|put/i.test(section.slice(0, 200));
     const html = section.trim().replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
-    // Extract ticker from section
     const tickerMatch = section.match(/\(([A-Z]{1,5})\)/);
     const sectionTicker = tickerMatch ? tickerMatch[1] : '';
     return `<div class="trade-card ${isBearish ? 'bearish' : 'bullish'}" data-ticker="${sectionTicker}">${html}</div>`;
@@ -340,7 +440,7 @@ async function selectTicker(ticker, btnEl) {
   document.getElementById('chartChange').className = 'chart-change';
 
   // Highlight matching plans, dim others
-  document.querySelectorAll('.trade-card').forEach(card => {
+  document.querySelectorAll('.trade-card, .decision-card').forEach(card => {
     const matches = card.dataset.ticker === ticker || card.textContent.includes(ticker);
     card.classList.toggle('dimmed', !matches);
     if (matches) card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
