@@ -384,32 +384,33 @@ app.post('/api/redeem-code', codeLimiter, (req, res) => {
 // Read env vars at runtime via dynamic key construction
 // so Railpack's static analysis doesn't flag them as build secrets
 const _sp = 'STRIPE_PRICE_';
+const cleanPrice = (key) => (process.env[_sp + key] || '').replace(/^[\s='"+]+/, '').trim();
 function getProducts() {
   return {
     app_monthly: {
       name: 'MindEdge Pro — Monthly',
-      priceId: process.env[_sp + 'APP_MONTHLY'],
+      priceId: cleanPrice('APP_MONTHLY'),
       mode: 'subscription',
       tier: 'pro',
       includesGuide: false,
     },
     app_annual: {
       name: 'MindEdge Pro — Annual',
-      priceId: process.env[_sp + 'APP_ANNUAL'],
+      priceId: cleanPrice('APP_ANNUAL'),
       mode: 'subscription',
       tier: 'pro',
       includesGuide: false,
     },
     app_discord: {
       name: 'MindEdge Pro + Discord — Monthly',
-      priceId: process.env[_sp + 'APP_DISCORD'],
+      priceId: cleanPrice('APP_DISCORD'),
       mode: 'subscription',
       tier: 'pro_discord',
       includesGuide: false,
     },
     guide: {
       name: 'SPX Scalping Framework — PDF Guide',
-      priceId: process.env[_sp + 'GUIDE'],
+      priceId: cleanPrice('GUIDE'),
       mode: 'payment',
       tier: 'guide',
       includesGuide: true,
