@@ -62,7 +62,7 @@
   }
 
   /* ── MAIN AREA ── */
-  .main { margin-left: 220px; flex: 1; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+  .main { margin-left: 220px; flex: 1; height: 100vh; display: flex; flex-direction: column; overflow-y: auto; }
 
   /* ── PAGE HEADER ── */
   .page-header { padding: 20px 40px 0; flex-shrink: 0; }
@@ -84,15 +84,13 @@
   .ticker-btn:hover { border-color: var(--gold-border); color: var(--cream2); }
   .ticker-btn.active { background: var(--gold-dim); color: var(--gold); border-color: var(--gold-border); font-weight: 500; }
 
-  /* ── SPLIT LAYOUT: Chart + Plans ── */
+  /* ── STACKED LAYOUT: Chart on top, Plans below ── */
   .swing-grid {
-    display: grid; grid-template-columns: 1fr 400px;
-    flex: 1; overflow: hidden; min-height: 0;
+    display: flex; flex-direction: column; flex: 1; min-height: 0;
   }
-  @media(max-width:1100px) { .swing-grid { grid-template-columns: 1fr; grid-template-rows: 55vh 1fr; } }
 
-  /* ── CHART PANEL ── */
-  .chart-panel { position: relative; background: var(--bg); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
+  /* ── CHART PANEL — full width, generous height ── */
+  .chart-panel { position: relative; background: var(--bg); border-bottom: 1px solid var(--border); display: flex; flex-direction: column; min-height: 700px; }
   .chart-info {
     display: flex; align-items: center; gap: 14px; padding: 12px 20px;
     font-family: var(--mono); font-size: 12px;
@@ -109,15 +107,14 @@
   .legend-dot { width: 10px; height: 2px; border-radius: 1px; }
   canvas#chart { flex: 1; width: 100%; display: block; }
 
-  /* ── PLAN PANEL ── */
-  .plan-panel { background: var(--bg2); overflow-y: auto; display: flex; flex-direction: column; }
+  /* ── PLAN PANEL — full width below chart ── */
+  .plan-panel { background: var(--bg2); display: flex; flex-direction: column; }
   .plan-header {
-    padding: 20px 24px; border-bottom: 1px solid var(--border);
-    position: sticky; top: 0; background: var(--bg2); z-index: 2;
+    padding: 20px 40px; border-bottom: 1px solid var(--border);
   }
   .plan-header h2 { font-family: var(--serif); font-size: 20px; font-weight: 400; color: var(--cream); }
   .plan-date { font-family: var(--mono); font-size: 10px; color: var(--cream3); letter-spacing: 0.1em; margin-top: 4px; }
-  .plan-content { flex: 1; padding: 20px 24px; overflow-y: auto; }
+  .plan-content { padding: 20px 40px; display: flex; flex-wrap: wrap; gap: 16px; }
 
   /* ── TRADE CARDS ── */
   .trade-card {
@@ -131,11 +128,11 @@
   .trade-card strong { color: var(--gold2); }
   .trade-card { font-size: 12.5px; line-height: 1.7; color: var(--cream2); }
 
-  /* ── STRUCTURED DECISION CARDS ── */
+  /* ── STRUCTURED DECISION CARDS — side by side ── */
   .decision-card {
     background: var(--bg3); border: 1px solid var(--border);
-    border-radius: 12px; margin-bottom: 16px; overflow: hidden;
-    transition: opacity 0.3s;
+    border-radius: 12px; overflow: hidden;
+    transition: opacity 0.3s; flex: 1; min-width: 320px; max-width: 450px;
   }
   .decision-card.dimmed { opacity: 0.3; }
   .decision-header {
@@ -180,14 +177,14 @@
   }
   .market-context {
     background: var(--bg3); border: 1px solid var(--border);
-    border-radius: 12px; padding: 16px 20px; margin-bottom: 16px;
+    border-radius: 12px; padding: 16px 20px; margin-bottom: 0;
     font-size: 12px; color: var(--cream3); line-height: 1.7;
-    border-left: 3px solid var(--gold-border);
+    border-left: 3px solid var(--gold-border); width: 100%; flex-basis: 100%;
   }
   .market-context strong { color: var(--gold2); }
 
   .disclaimer {
-    padding: 16px 24px; font-size: 10px; color: var(--cream3);
+    padding: 16px 40px; font-size: 10px; color: var(--cream3);
     border-top: 1px solid var(--border); line-height: 1.5;
     font-family: var(--mono);
   }
@@ -217,7 +214,9 @@
     .main { margin-left: 0; }
     .page-header { padding: 24px 20px 0; }
     .ticker-bar { padding: 12px 20px; }
-    .plan-content { padding: 16px; }
+    .plan-content { padding: 16px; flex-direction: column; }
+    .decision-card { max-width: 100%; }
+    .chart-panel { min-height: 500px; }
   }
 </style>
 </head>
@@ -237,9 +236,15 @@
     <a href="/app" class="nav-item"><span class="nav-icon">◻</span> Trade Journal</a>
     <a href="/app" class="nav-item"><span class="nav-icon">✦</span> AI Coach</a>
     <a href="/app" class="nav-item"><span class="nav-icon">▲</span> Trade Analyzer</a>
+    <a href="/app" class="nav-item"><span class="nav-icon">◎</span> Progress</a>
+    <a href="/app" class="nav-item"><span class="nav-icon">▌</span> Stop Loss Calc</a>
+    <a href="/app" class="nav-item"><span class="nav-icon">✶</span> Pre-Market</a>
+    <a href="/app" class="nav-item"><span class="nav-icon">◌</span> Rule Drills</a>
     <a href="/app" class="nav-item"><span class="nav-icon">◎</span> Chart Practice</a>
+    <a href="/app" class="nav-item"><span class="nav-icon">▌</span> Analytics</a>
     <a href="/app" class="nav-item"><span class="nav-icon">◈</span> Chart Intelligence</a>
     <a href="/swing" class="nav-item active"><span class="nav-icon">◇</span> Swing Analysis</a>
+    <a href="/app" class="nav-item"><span class="nav-icon">⚙</span> Settings</a>
   </nav>
   <div class="sidebar-footer">
     Institutional-grade swing<br>analysis & trade plans
@@ -575,18 +580,18 @@ function drawChart() {
   const sma50 = calcSMA(closes, 50);
   const sma200 = calcSMA(closes, 200);
 
-  // ── LAYOUT: Main 55%, Vol 10%, RSI 15%, MACD 20% ──
-  const mainH = H * 0.55;
-  const volH = H * 0.10;
-  const rsiH = H * 0.15;
-  const macdH = H * 0.20;
+  // ── LAYOUT: Main 62%, Vol 8%, RSI 13%, MACD 17% ──
+  const mainH = H * 0.62;
+  const volH = H * 0.08;
+  const rsiH = H * 0.13;
+  const macdH = H * 0.17;
   const mainTop = 8;
   const volTop = mainH;
   const rsiTop = mainH + volH;
   const macdTop = mainH + volH + rsiH;
 
   const vrvpW = 55;
-  const leftPad = 85; // room for Fib labels on left
+  const leftPad = 100; // room for Fib labels on left
   const chartW = W - vrvpW - leftPad;
 
   const allH = Math.max(...highs);
@@ -603,9 +608,9 @@ function drawChart() {
   const wk52H = Math.max(...highs);
   const wk52L = Math.min(...lows);
   const wk52HIdx = highs.indexOf(wk52H);
-  const wk52HDate = bars[wk52HIdx] ? new Date(bars[wk52HIdx].date).toLocaleDateString('en-US',{month:'short',year:'2-digit'}) : '';
+  const wk52HDate = bars[wk52HIdx]?.date ? new Date(bars[wk52HIdx].date*1000 || bars[wk52HIdx].date).toLocaleDateString('en-US',{month:'short',year:'2-digit'}) : '';
   const wk52LIdx = lows.indexOf(wk52L);
-  const wk52LDate = bars[wk52LIdx] ? new Date(bars[wk52LIdx].date).toLocaleDateString('en-US',{month:'short',year:'2-digit'}) : '';
+  const wk52LDate = bars[wk52LIdx]?.date ? new Date(bars[wk52LIdx].date*1000 || bars[wk52LIdx].date).toLocaleDateString('en-US',{month:'short',year:'2-digit'}) : '';
   const pctFrom52H = ((lastPrice - wk52H) / wk52H * 100).toFixed(0);
 
   document.getElementById('chart52wk').innerHTML =
@@ -635,10 +640,10 @@ function drawChart() {
   });
 
   // ── Section labels ──
-  ctx.font = '9px JetBrains Mono'; ctx.fillStyle = 'rgba(255,255,255,0.3)';
-  ctx.fillText('VOL', leftPad + 4, volTop + 12);
-  ctx.fillText('RSI', leftPad + 4, rsiTop + 12);
-  ctx.fillText('MACD', leftPad + 4, macdTop + 12);
+  ctx.font = '11px JetBrains Mono'; ctx.fillStyle = 'rgba(255,255,255,0.35)';
+  ctx.fillText('VOL', leftPad + 4, volTop + 14);
+  ctx.fillText('RSI', leftPad + 4, rsiTop + 14);
+  ctx.fillText('MACD', leftPad + 4, macdTop + 14);
 
   // Grid
   ctx.strokeStyle = 'rgba(255,255,255,0.03)'; ctx.lineWidth = 0.5;
@@ -659,7 +664,7 @@ function drawChart() {
     { fib: 0.786, label: '78.6',  color: '#FF9800' },
     { fib: 1.0,   label: '100%',  color: '#52a882' },
   ];
-  ctx.font = '9px JetBrains Mono';
+  ctx.font = '11px JetBrains Mono';
   fibLevels.forEach(f => {
     const price = swingH - (swingH - swingL) * f.fib;
     const y = py(price);
@@ -681,9 +686,9 @@ function drawChart() {
       ctx.fillStyle = f.color + '40';
       ctx.fillRect(2, y + 6, ctx.measureText(f.name).width + 8, 12);
       ctx.fillStyle = f.color;
-      ctx.font = 'bold 8px JetBrains Mono';
-      ctx.fillText(f.name, 6, y + 15);
-      ctx.font = '9px JetBrains Mono';
+      ctx.font = 'bold 9px JetBrains Mono';
+      ctx.fillText(f.name, 6, y + 16);
+      ctx.font = '11px JetBrains Mono';
     }
   });
 
@@ -828,7 +833,7 @@ function drawChart() {
   const prevPrice = closes[closes.length - 2];
   ctx.fillStyle = lastPrice >= prevPrice ? '#52a882' : '#e05252';
   ctx.fillRect(leftPad + chartW - 2, lastY - 8, 65, 16);
-  ctx.fillStyle = '#fff'; ctx.font = '10px JetBrains Mono';
+  ctx.fillStyle = '#fff'; ctx.font = '11px JetBrains Mono';
   ctx.fillText('$' + lastPrice.toFixed(2), leftPad + chartW + 2, lastY + 4);
 
   // EMA labels (left side, below fibs)
@@ -842,7 +847,7 @@ function drawChart() {
     const y = py(e.val);
     if (y < mainTop || y > mainH) return;
     ctx.fillStyle = e.color; ctx.globalAlpha = 0.7;
-    ctx.font = '9px JetBrains Mono';
+    ctx.font = '11px JetBrains Mono';
     ctx.fillText(`${e.label} $${e.val.toFixed(0)}`, leftPad + 4, y - 3);
     ctx.globalAlpha = 1;
   });
@@ -886,7 +891,7 @@ function drawChart() {
     ctx.setLineDash(lv === 50 ? [] : [2,2]);
     ctx.beginPath(); ctx.moveTo(leftPad, rsiPy(lv)); ctx.lineTo(leftPad + chartW, rsiPy(lv)); ctx.stroke();
     ctx.setLineDash([]);
-    ctx.fillStyle = 'rgba(255,255,255,0.2)'; ctx.font = '8px JetBrains Mono';
+    ctx.fillStyle = 'rgba(255,255,255,0.25)'; ctx.font = '10px JetBrains Mono';
     ctx.fillText(lv.toString(), W - vrvpW + 4, rsiPy(lv) + 3);
   });
   // RSI line
@@ -901,7 +906,7 @@ function drawChart() {
   // RSI value
   const lastRSI = rsiData[rsiData.length-1];
   ctx.fillStyle = lastRSI > 70 ? '#e05252' : lastRSI < 30 ? '#52a882' : '#E040FB';
-  ctx.font = '9px JetBrains Mono';
+  ctx.font = '11px JetBrains Mono';
   ctx.fillText(lastRSI.toFixed(0), W - vrvpW + 4, rsiPy(lastRSI) + 3);
 
   // ═══ MACD ═══
@@ -953,16 +958,17 @@ function drawChart() {
   // MACD value label
   const lastMACD = macdLine[macdLine.length-1];
   const macdColor = lastMACD >= 0 ? '#52a882' : '#e05252';
-  ctx.fillStyle = macdColor; ctx.font = '9px JetBrains Mono';
+  ctx.fillStyle = macdColor; ctx.font = '11px JetBrains Mono';
   const macdLabel = (lastMACD >= 0 ? 'Bullish' : 'Bearish') + ' → ' + lastMACD.toFixed(1);
   ctx.fillText(macdLabel, leftPad + chartW - ctx.measureText(macdLabel).width - 4, macdTop + macdH - 6);
 
   // ═══ DATE AXIS ═══
-  ctx.fillStyle = 'rgba(255,255,255,0.2)'; ctx.font = '9px JetBrains Mono';
-  const dateStep = Math.floor(bars.length / 8);
+  ctx.fillStyle = 'rgba(255,255,255,0.25)'; ctx.font = '10px JetBrains Mono';
+  const dateStep = Math.floor(bars.length / 10);
   for (let i = 0; i < bars.length; i += dateStep) {
     if (!bars[i].date) continue;
-    const d = new Date(bars[i].date);
+    const d = new Date(bars[i].date * 1000 || bars[i].date);
+    if (isNaN(d.getTime())) continue;
     const label = d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
     ctx.fillText(label, px(i) - 15, mainH - 2);
   }
