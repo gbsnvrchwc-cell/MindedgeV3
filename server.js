@@ -1286,6 +1286,16 @@ app.post('/api/swing-plans/generate', express.json(), async (req, res) => {
   res.json({ ok: true, message: 'Generation started — check back in ~2 minutes' });
 });
 
+// GET trigger — just visit this URL in your browser to test
+app.get('/api/swing-plans/generate/:secret', async (req, res) => {
+  if (req.params.secret !== process.env.SWING_BOT_SECRET) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  console.log('[Swing] Manual generation triggered via browser');
+  generateSwingPlans();
+  res.json({ ok: true, message: 'Generation started — refresh swing page in ~2 minutes' });
+});
+
 // Bot POSTs today's swing plans here
 app.post('/api/swing-plans', express.json({ limit: '100kb' }), (req, res) => {
   const secret = req.headers['x-bot-secret'];
