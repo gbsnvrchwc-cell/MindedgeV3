@@ -264,9 +264,16 @@
     <!-- CHART -->
     <div class="chart-panel">
       <div class="chart-info">
-        <span class="chart-ticker" id="chartTicker">—</span>
-        <span class="chart-price" id="chartPrice">—</span>
-        <span class="chart-change" id="chartChange">—</span>
+        <div style="flex:1">
+          <div style="display:flex;align-items:center;gap:14px;">
+            <span class="chart-ticker" id="chartTicker">—</span>
+            <span class="chart-price" id="chartPrice">—</span>
+            <span class="chart-change" id="chartChange">—</span>
+            <span id="chartMAStatus" style="font-family:var(--mono);font-size:10px;padding:2px 8px;border-radius:4px;"></span>
+          </div>
+          <div id="chartTitle" style="font-family:var(--mono);font-size:10px;color:var(--cream3);margin-top:2px;"></div>
+        </div>
+        <div id="chart52wk" style="text-align:right;font-family:var(--mono);font-size:10px;color:var(--cream3);line-height:1.5;"></div>
       </div>
       <div class="legend">
         <div class="legend-item"><div class="legend-dot" style="background:#00E676"></div>9 EMA</div>
@@ -561,55 +568,126 @@ function drawChart() {
   const closes = bars.map(b => b.close);
   const highs = bars.map(b => b.high);
   const lows = bars.map(b => b.low);
+  const volumes = bars.map(b => b.volume || 0);
 
   const ema9 = calcEMA(closes, 9);
   const ema21 = calcEMA(closes, 21);
   const sma50 = calcSMA(closes, 50);
   const sma200 = calcSMA(closes, 200);
 
+  // ── LAYOUT: Main 55%, Vol 10%, RSI 15%, MACD 20% ──
+  const mainH = H * 0.55;
+  const volH = H * 0.10;
+  const rsiH = H * 0.15;
+  const macdH = H * 0.20;
+  const mainTop = 8;
+  const volTop = mainH;
+  const rsiTop = mainH + volH;
+  const macdTop = mainH + volH + rsiH;
+
+  const vrvpW = 55;
+  const leftPad = 85; // room for Fib labels on left
+  const chartW = W - vrvpW - leftPad;
+
   const allH = Math.max(...highs);
   const allL = Math.min(...lows);
   const pad = (allH - allL) * 0.08;
   const priceH = allH + pad, priceL = allL - pad;
 
-  const vrvpW = 55;
-  const chartW = W - vrvpW - 8;
-  const chartH = H - 16;
-
-  const px = (i) => 8 + (i / (bars.length - 1)) * (chartW - 8);
-  const py = (p) => 8 + (1 - (p - priceL) / (priceH - priceL)) * (chartH - 8);
+  const px = (i) => leftPad + (i / (bars.length - 1)) * (chartW - 8);
+  const py = (p) => mainTop + (1 - (p - priceL) / (priceH - priceL)) * (mainH - 16);
   const barW = Math.max(1, (chartW / bars.length) * 0.6);
 
-  // Clear
+  // ── Update header info ──
+  const lastPrice = closes[closes.length-1];
+  const wk52H = Math.max(...highs);
+  const wk52L = Math.min(...lows);
+  const wk52HIdx = highs.indexOf(wk52H);
+  const wk52HDate = bars[wk52HIdx] ? new Date(bars[wk52HIdx].date).toLocaleDateString('en-US',{month:'short',year:'2-digit'}) : '';
+  const wk52LIdx = lows.indexOf(wk52L);
+  const wk52LDate = bars[wk52LIdx] ? new Date(bars[wk52LIdx].date).toLocaleDateString('en-US',{month:'short',year:'2-digit'}) : '';
+  const pctFrom52H = ((lastPrice - wk52H) / wk52H * 100).toFixed(0);
+
+  document.getElementById('chart52wk').innerHTML =
+    `52wk High: $${wk52H.toFixed(2)} (${wk52HDate})<br>52wk Low: $${wk52L.toFixed(2)} (${wk52LDate})`;
+  document.getElementById('chartTitle').textContent =
+    `${currentTicker} Daily | Price + EMAs + VRVP + Fibonacci Retracement`;
+
+  // MA status
+  const e9v = ema9[ema9.length-1], e21v = ema21[ema21.length-1];
+  const s50v = sma50[sma50.length-1], s200v = sma200[sma200.length-1];
+  let maCount = 0;
+  if (lastPrice > e9v) maCount++; if (lastPrice > e21v) maCount++;
+  if (s50v && lastPrice > s50v) maCount++; if (s200v && lastPrice > s200v) maCount++;
+  const maEl = document.getElementById('chartMAStatus');
+  if (maCount === 0) { maEl.textContent = `${pctFrom52H}% from 52wk high | Below all 4 MAs`; maEl.style.background='rgba(224,82,82,0.15)'; maEl.style.color='#e05252'; }
+  else if (maCount <= 2) { maEl.textContent = `${pctFrom52H}% from 52wk high | Below ${4-maCount} MAs`; maEl.style.background='rgba(255,152,0,0.15)'; maEl.style.color='#FF9800'; }
+  else { maEl.textContent = `${pctFrom52H}% from 52wk high | Above ${maCount} MAs`; maEl.style.background='rgba(82,168,130,0.15)'; maEl.style.color='#52a882'; }
+
+  // ── Clear ──
   ctx.fillStyle = '#080807';
   ctx.fillRect(0, 0, W, H);
 
-  // Grid
-  ctx.strokeStyle = 'rgba(255,255,255,0.03)';
-  ctx.lineWidth = 0.5;
-  for (let i = 0; i < 6; i++) {
-    const y = 8 + (chartH - 8) * (i / 5);
-    ctx.beginPath(); ctx.moveTo(8, y); ctx.lineTo(chartW, y); ctx.stroke();
-  }
-
-  // Fibonacci
-  const swingH = Math.max(...highs.slice(-120));
-  const swingL = Math.min(...lows.slice(-120));
-  const fibLevels = [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1.0];
-  ctx.font = '10px JetBrains Mono';
-  fibLevels.forEach(fib => {
-    const price = swingH - (swingH - swingL) * fib;
-    const y = py(price);
-    ctx.strokeStyle = 'rgba(201,168,76,0.2)';
-    ctx.lineWidth = 0.5;
-    ctx.setLineDash([3, 3]);
-    ctx.beginPath(); ctx.moveTo(8, y); ctx.lineTo(chartW, y); ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.fillStyle = 'rgba(201,168,76,0.5)';
-    ctx.fillText(`${(fib*100).toFixed(1)}% $${price.toFixed(0)}`, chartW - 105, y - 3);
+  // ── Section dividers ──
+  [volTop, rsiTop, macdTop].forEach(y => {
+    ctx.strokeStyle = 'rgba(255,255,255,0.08)'; ctx.lineWidth = 0.5;
+    ctx.beginPath(); ctx.moveTo(leftPad, y); ctx.lineTo(W - vrvpW, y); ctx.stroke();
   });
 
-  // VRVP
+  // ── Section labels ──
+  ctx.font = '9px JetBrains Mono'; ctx.fillStyle = 'rgba(255,255,255,0.3)';
+  ctx.fillText('VOL', leftPad + 4, volTop + 12);
+  ctx.fillText('RSI', leftPad + 4, rsiTop + 12);
+  ctx.fillText('MACD', leftPad + 4, macdTop + 12);
+
+  // Grid
+  ctx.strokeStyle = 'rgba(255,255,255,0.03)'; ctx.lineWidth = 0.5;
+  for (let i = 0; i < 6; i++) {
+    const y = mainTop + (mainH - 16) * (i / 5);
+    ctx.beginPath(); ctx.moveTo(leftPad, y); ctx.lineTo(leftPad + chartW, y); ctx.stroke();
+  }
+
+  // ═══ FIBONACCI — left side with colored boxes ═══
+  const swingH = Math.max(...highs.slice(-120));
+  const swingL = Math.min(...lows.slice(-120));
+  const fibLevels = [
+    { fib: 0,     label: '0%',    color: '#e05252' },
+    { fib: 0.236, label: '23.6',  color: '#FF9800' },
+    { fib: 0.382, label: '38.2',  color: '#FFD700' },
+    { fib: 0.5,   label: '50%',   color: '#FFD700', name: '' },
+    { fib: 0.618, label: '61.8',  color: '#C9A84C', name: 'GOLDEN' },
+    { fib: 0.786, label: '78.6',  color: '#FF9800' },
+    { fib: 1.0,   label: '100%',  color: '#52a882' },
+  ];
+  ctx.font = '9px JetBrains Mono';
+  fibLevels.forEach(f => {
+    const price = swingH - (swingH - swingL) * f.fib;
+    const y = py(price);
+    if (y < mainTop || y > mainH) return;
+    // Dashed line
+    ctx.strokeStyle = 'rgba(201,168,76,0.15)'; ctx.lineWidth = 0.5;
+    ctx.setLineDash([3, 3]);
+    ctx.beginPath(); ctx.moveTo(leftPad, y); ctx.lineTo(leftPad + chartW, y); ctx.stroke();
+    ctx.setLineDash([]);
+    // Left label box
+    const txt = `${f.label} $${price.toFixed(0)}`;
+    const tw = ctx.measureText(txt).width + 8;
+    ctx.fillStyle = f.color + '25';
+    ctx.fillRect(2, y - 8, tw + 4, 16);
+    ctx.fillStyle = f.color;
+    ctx.fillText(txt, 6, y + 3);
+    // Golden label
+    if (f.name) {
+      ctx.fillStyle = f.color + '40';
+      ctx.fillRect(2, y + 6, ctx.measureText(f.name).width + 8, 12);
+      ctx.fillStyle = f.color;
+      ctx.font = 'bold 8px JetBrains Mono';
+      ctx.fillText(f.name, 6, y + 15);
+      ctx.font = '9px JetBrains Mono';
+    }
+  });
+
+  // ═══ VRVP ═══
   const vpBins = 30;
   const vpStep = (priceH - priceL) / vpBins;
   const vp = new Array(vpBins).fill(0);
@@ -621,44 +699,76 @@ function drawChart() {
     if (b.close >= b.open) vpBuy[bin] += b.volume; else vpSell[bin] += b.volume;
   });
   const vpMax = Math.max(...vp);
+  const vpX = leftPad + chartW + 2;
   for (let i = 0; i < vpBins; i++) {
     const y1 = py(priceL + (i + 1) * vpStep);
     const y2 = py(priceL + i * vpStep);
     const h = Math.abs(y2 - y1) - 1;
     ctx.fillStyle = 'rgba(0,191,255,0.2)';
-    ctx.fillRect(chartW + 2, Math.min(y1, y2), (vpBuy[i] / vpMax) * vrvpW, h);
+    ctx.fillRect(vpX, Math.min(y1, y2), (vpBuy[i] / vpMax) * vrvpW, h);
     ctx.fillStyle = 'rgba(255,23,68,0.2)';
-    ctx.fillRect(chartW + 2 + (vpBuy[i] / vpMax) * vrvpW, Math.min(y1, y2), (vpSell[i] / vpMax) * vrvpW, h);
+    ctx.fillRect(vpX + (vpBuy[i] / vpMax) * vrvpW, Math.min(y1, y2), (vpSell[i] / vpMax) * vrvpW, h);
   }
-  // POC
+  // POC + HVN/LVN labels
   const pocBin = vp.indexOf(vpMax);
   const pocPrice = priceL + (pocBin + 0.5) * vpStep;
-  ctx.strokeStyle = 'rgba(0,191,255,0.35)';
-  ctx.lineWidth = 1;
+  ctx.strokeStyle = 'rgba(0,191,255,0.35)'; ctx.lineWidth = 1;
   ctx.setLineDash([2, 3]);
-  ctx.beginPath(); ctx.moveTo(8, py(pocPrice)); ctx.lineTo(chartW, py(pocPrice)); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(leftPad, py(pocPrice)); ctx.lineTo(leftPad + chartW, py(pocPrice)); ctx.stroke();
   ctx.setLineDash([]);
+  ctx.fillStyle = '#00BFFF'; ctx.font = '9px JetBrains Mono';
+  ctx.fillText('POC', W - 28, py(pocPrice) + 3);
+  // HVN (top heavy volume)
+  const sortedBins = [...vp].map((v,i)=>({v,i})).sort((a,b)=>b.v-a.v);
+  if (sortedBins.length > 1) {
+    const hvnBin = sortedBins[0].i !== pocBin ? sortedBins[0].i : sortedBins[1].i;
+    const hvnPrice = priceL + (hvnBin + 0.5) * vpStep;
+    ctx.fillText('HVN', W - 28, py(hvnPrice) + 3);
+  }
+  // LVN
+  const lvnBin = sortedBins[sortedBins.length-1].i;
+  const lvnPrice = priceL + (lvnBin + 0.5) * vpStep;
+  if (py(lvnPrice) > mainTop && py(lvnPrice) < mainH) {
+    ctx.fillStyle = '#FF1493'; ctx.fillText('LVN', W - 28, py(lvnPrice) + 3);
+  }
+  ctx.fillStyle = '#00BFFF'; ctx.font = '9px JetBrains Mono';
+  ctx.fillText('VRVP', W - 34, mainH - 4);
 
-  // Candles
+  // ═══ CANDLES ═══
   bars.forEach((b, i) => {
     const x = px(i);
     const bull = b.close >= b.open;
     const clr = bull ? '#52a882' : '#e05252';
-    ctx.fillStyle = clr; ctx.strokeStyle = clr;
-    ctx.lineWidth = 0.8;
+    ctx.fillStyle = clr; ctx.strokeStyle = clr; ctx.lineWidth = 0.8;
     ctx.beginPath(); ctx.moveTo(x, py(b.high)); ctx.lineTo(x, py(b.low)); ctx.stroke();
     const bodyT = py(Math.max(b.open, b.close));
     const bodyB = py(Math.min(b.open, b.close));
     ctx.fillRect(x - barW/2, bodyT, barW, Math.max(1, bodyB - bodyT));
   });
 
-  // ── CALL / PUT SIGNAL MARKERS (A, B, C, D…) ──────────────────
+  // ═══ CALL / PUT SIGNAL MARKERS ═══
   const signals = parseSignals();
+  // Also parse from structured plans
+  if (plansData?.plans?.length && currentTicker) {
+    const plan = plansData.plans.find(p => p.ticker === currentTicker);
+    if (plan) {
+      // Find where bull/bear entry prices would be on chart
+      const bullMatch = plan.bull?.trade?.match(/\$(\d+)/);
+      const bearMatch = plan.bear?.trade?.match(/\$(\d+)/);
+      if (bullMatch && signals.length === 0) {
+        const bp = parseFloat(bullMatch[1]);
+        signals.push({ label: 'A', price: bp, type: 'call', text: 'CALL: ' + plan.bull.condition.slice(0,30) });
+      }
+      if (bearMatch && signals.filter(s=>s.type==='put').length === 0) {
+        const sp = parseFloat(bearMatch[1]);
+        signals.push({ label: 'D', price: sp, type: 'put', text: 'PUT: ' + plan.bear.condition.slice(0,30) });
+      }
+    }
+  }
+
   ctx.save();
   ctx.font = 'bold 9px JetBrains Mono';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   signals.forEach(sig => {
     let bestIdx = 0, bestDist = Infinity;
     bars.forEach((b, i) => {
@@ -670,40 +780,42 @@ function drawChart() {
     const isCall = sig.type === 'call';
     const color = isCall ? '#52a882' : '#e05252';
     const raw = isCall ? py(b.low) + 16 : py(b.high) - 16;
-    const y = Math.max(14, Math.min(chartH - 10, raw));
-    ctx.beginPath();
-    ctx.arc(x, y, 9, 0, Math.PI * 2);
-    ctx.fillStyle = color + '28';
-    ctx.fill();
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-    ctx.fillStyle = color;
-    ctx.fillText(sig.label, x, y);
+    const y = Math.max(14, Math.min(mainH - 10, raw));
+    // Circle marker
+    ctx.beginPath(); ctx.arc(x, y, 9, 0, Math.PI * 2);
+    ctx.fillStyle = color + '28'; ctx.fill();
+    ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.stroke();
+    ctx.fillStyle = color; ctx.fillText(sig.label, x, y);
+    // Text annotation
+    if (sig.text) {
+      ctx.font = '8px JetBrains Mono'; ctx.textAlign = 'left';
+      const tx = x + 14, ty = y;
+      const tw = ctx.measureText(sig.text).width;
+      ctx.fillStyle = isCall ? 'rgba(82,168,130,0.2)' : 'rgba(224,82,82,0.2)';
+      ctx.fillRect(tx - 2, ty - 7, tw + 6, 14);
+      ctx.fillStyle = color;
+      ctx.fillText(sig.text, tx, ty + 3);
+      ctx.font = 'bold 9px JetBrains Mono'; ctx.textAlign = 'center';
+    }
   });
 
-  // ── CURRENT PRICE MARKER (E) ──────────────────────────────────
+  // ── CURRENT PRICE MARKER (E) ──
   {
     const lastB = bars[bars.length - 1];
     const x = px(bars.length - 1);
-    const y = Math.max(14, Math.min(chartH - 10, py(lastB.close) - 18));
-    ctx.beginPath();
-    ctx.arc(x, y, 9, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(0,191,255,0.15)';
-    ctx.fill();
-    ctx.strokeStyle = '#00BFFF';
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-    ctx.fillStyle = '#00BFFF';
-    ctx.fillText('E', x, y);
+    const y = Math.max(14, Math.min(mainH - 10, py(lastB.close) - 18));
+    ctx.beginPath(); ctx.arc(x, y, 9, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(0,191,255,0.15)'; ctx.fill();
+    ctx.strokeStyle = '#00BFFF'; ctx.lineWidth = 1.5; ctx.stroke();
+    ctx.fillStyle = '#00BFFF'; ctx.fillText('E', x, y);
   }
   ctx.restore();
 
-  // EMA / SMA lines
+  // ═══ EMA / SMA LINES ═══
   function drawLine(data, color, w) {
     ctx.strokeStyle = color; ctx.lineWidth = w;
     ctx.beginPath(); let s = false;
-    data.forEach((v, i) => { if (v === null) return; const x = px(i), y = py(v); if (!s) { ctx.moveTo(x, y); s = true; } else ctx.lineTo(x, y); });
+    data.forEach((v, i) => { if (v === null || py(v) > mainH) return; const x = px(i), y = py(v); if (!s) { ctx.moveTo(x, y); s = true; } else ctx.lineTo(x, y); });
     ctx.stroke();
   }
   drawLine(ema9, '#00E676', 1.2);
@@ -712,27 +824,148 @@ function drawChart() {
   drawLine(sma200, '#E040FB', 1);
 
   // Current price label
-  const lastPrice = closes[closes.length - 1];
   const lastY = py(lastPrice);
   const prevPrice = closes[closes.length - 2];
   ctx.fillStyle = lastPrice >= prevPrice ? '#52a882' : '#e05252';
-  ctx.fillRect(chartW - 2, lastY - 8, 62, 16);
-  ctx.fillStyle = '#fff';
-  ctx.font = '10px JetBrains Mono';
-  ctx.fillText('$' + lastPrice.toFixed(2), chartW + 2, lastY + 4);
+  ctx.fillRect(leftPad + chartW - 2, lastY - 8, 65, 16);
+  ctx.fillStyle = '#fff'; ctx.font = '10px JetBrains Mono';
+  ctx.fillText('$' + lastPrice.toFixed(2), leftPad + chartW + 2, lastY + 4);
 
-  // EMA labels
+  // EMA labels (left side, below fibs)
   [
-    { val: ema9[ema9.length-1], label: '9E', color: '#00E676' },
-    { val: ema21[ema21.length-1], label: '21E', color: '#00BFFF' },
-    { val: sma50[sma50.length-1], label: '50S', color: '#FF9800' },
-    { val: sma200[sma200.length-1], label: '200S', color: '#E040FB' },
+    { val: e9v, label: '9E', color: '#00E676' },
+    { val: e21v, label: '21E', color: '#00BFFF' },
+    { val: s50v, label: '50S', color: '#FF9800' },
+    { val: s200v, label: '200S', color: '#E040FB' },
   ].forEach(e => {
     if (e.val === null) return;
-    ctx.fillStyle = e.color; ctx.globalAlpha = 0.6;
-    ctx.fillText(`${e.label} $${e.val.toFixed(0)}`, 12, py(e.val) - 3);
+    const y = py(e.val);
+    if (y < mainTop || y > mainH) return;
+    ctx.fillStyle = e.color; ctx.globalAlpha = 0.7;
+    ctx.font = '9px JetBrains Mono';
+    ctx.fillText(`${e.label} $${e.val.toFixed(0)}`, leftPad + 4, y - 3);
     ctx.globalAlpha = 1;
   });
+
+  // ═══ VOLUME BARS ═══
+  const maxVol = Math.max(...volumes);
+  bars.forEach((b, i) => {
+    const x = px(i);
+    const vh = (volumes[i] / maxVol) * (volH - 8);
+    const bull = b.close >= b.open;
+    ctx.fillStyle = bull ? 'rgba(82,168,130,0.5)' : 'rgba(224,82,82,0.5)';
+    ctx.fillRect(x - barW/2, volTop + volH - 4 - vh, barW, vh);
+  });
+
+  // ═══ RSI ═══
+  const rsiPeriod = 14;
+  const rsiData = [];
+  let gains = 0, losses = 0;
+  for (let i = 0; i < closes.length; i++) {
+    if (i === 0) { rsiData.push(50); continue; }
+    const delta = closes[i] - closes[i-1];
+    if (i <= rsiPeriod) {
+      if (delta > 0) gains += delta; else losses -= delta;
+      if (i === rsiPeriod) {
+        gains /= rsiPeriod; losses /= rsiPeriod;
+        const rs = losses === 0 ? 100 : gains / losses;
+        rsiData.push(100 - 100 / (1 + rs));
+      } else { rsiData.push(50); }
+    } else {
+      gains = (gains * (rsiPeriod - 1) + (delta > 0 ? delta : 0)) / rsiPeriod;
+      losses = (losses * (rsiPeriod - 1) + (delta < 0 ? -delta : 0)) / rsiPeriod;
+      const rs = losses === 0 ? 100 : gains / losses;
+      rsiData.push(100 - 100 / (1 + rs));
+    }
+  }
+  const rsiPy = (v) => rsiTop + 4 + (1 - v / 100) * (rsiH - 8);
+  // RSI levels
+  [30, 50, 70].forEach(lv => {
+    ctx.strokeStyle = lv === 50 ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.05)';
+    ctx.lineWidth = 0.5;
+    ctx.setLineDash(lv === 50 ? [] : [2,2]);
+    ctx.beginPath(); ctx.moveTo(leftPad, rsiPy(lv)); ctx.lineTo(leftPad + chartW, rsiPy(lv)); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = 'rgba(255,255,255,0.2)'; ctx.font = '8px JetBrains Mono';
+    ctx.fillText(lv.toString(), W - vrvpW + 4, rsiPy(lv) + 3);
+  });
+  // RSI line
+  ctx.strokeStyle = '#E040FB'; ctx.lineWidth = 1;
+  ctx.beginPath(); let rsiStarted = false;
+  rsiData.forEach((v, i) => {
+    if (i < rsiPeriod) return;
+    const x = px(i), y = rsiPy(v);
+    if (!rsiStarted) { ctx.moveTo(x, y); rsiStarted = true; } else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+  // RSI value
+  const lastRSI = rsiData[rsiData.length-1];
+  ctx.fillStyle = lastRSI > 70 ? '#e05252' : lastRSI < 30 ? '#52a882' : '#E040FB';
+  ctx.font = '9px JetBrains Mono';
+  ctx.fillText(lastRSI.toFixed(0), W - vrvpW + 4, rsiPy(lastRSI) + 3);
+
+  // ═══ MACD ═══
+  const ema12 = calcEMA(closes, 12);
+  const ema26 = calcEMA(closes, 26);
+  const macdLine = ema12.map((v, i) => v - (ema26[i] || v));
+  const macdSignal = calcEMA(macdLine, 9);
+  const macdHist = macdLine.map((v, i) => v - (macdSignal[i] || 0));
+
+  const macdMax = Math.max(...macdLine.map(Math.abs), ...macdHist.map(Math.abs)) * 1.2;
+  const macdPy = (v) => macdTop + macdH / 2 - (v / macdMax) * (macdH / 2 - 6);
+
+  // Zero line
+  ctx.strokeStyle = 'rgba(255,255,255,0.08)'; ctx.lineWidth = 0.5;
+  ctx.beginPath(); ctx.moveTo(leftPad, macdPy(0)); ctx.lineTo(leftPad + chartW, macdPy(0)); ctx.stroke();
+
+  // MACD histogram
+  bars.forEach((b, i) => {
+    if (i < 26) return;
+    const x = px(i);
+    const h = macdPy(0) - macdPy(macdHist[i]);
+    ctx.fillStyle = macdHist[i] >= 0 ?
+      (macdHist[i] >= macdHist[i-1] ? 'rgba(82,168,130,0.6)' : 'rgba(82,168,130,0.3)') :
+      (macdHist[i] <= macdHist[i-1] ? 'rgba(224,82,82,0.6)' : 'rgba(224,82,82,0.3)');
+    if (h > 0) ctx.fillRect(x - barW/2, macdPy(macdHist[i]), barW, h);
+    else ctx.fillRect(x - barW/2, macdPy(0), barW, -h);
+  });
+
+  // MACD line
+  ctx.strokeStyle = '#00BFFF'; ctx.lineWidth = 1;
+  ctx.beginPath(); let mStarted = false;
+  macdLine.forEach((v, i) => {
+    if (i < 26) return;
+    const x = px(i), y = macdPy(v);
+    if (!mStarted) { ctx.moveTo(x, y); mStarted = true; } else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  // Signal line
+  ctx.strokeStyle = '#FF9800'; ctx.lineWidth = 1;
+  ctx.beginPath(); mStarted = false;
+  macdSignal.forEach((v, i) => {
+    if (i < 34) return;
+    const x = px(i), y = macdPy(v);
+    if (!mStarted) { ctx.moveTo(x, y); mStarted = true; } else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  // MACD value label
+  const lastMACD = macdLine[macdLine.length-1];
+  const macdColor = lastMACD >= 0 ? '#52a882' : '#e05252';
+  ctx.fillStyle = macdColor; ctx.font = '9px JetBrains Mono';
+  const macdLabel = (lastMACD >= 0 ? 'Bullish' : 'Bearish') + ' → ' + lastMACD.toFixed(1);
+  ctx.fillText(macdLabel, leftPad + chartW - ctx.measureText(macdLabel).width - 4, macdTop + macdH - 6);
+
+  // ═══ DATE AXIS ═══
+  ctx.fillStyle = 'rgba(255,255,255,0.2)'; ctx.font = '9px JetBrains Mono';
+  const dateStep = Math.floor(bars.length / 8);
+  for (let i = 0; i < bars.length; i += dateStep) {
+    if (!bars[i].date) continue;
+    const d = new Date(bars[i].date);
+    const label = d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+    ctx.fillText(label, px(i) - 15, mainH - 2);
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════
