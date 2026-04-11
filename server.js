@@ -1159,9 +1159,17 @@ function saveSwingPlans(data) {
 // ═══════════════════════════════════════════════════════════════
 
 async function generateSwingPlans() {
+  // Prevent duplicate runs
+  if (generateSwingPlans._running) {
+    console.log('[Swing] Generation already in progress — skipping');
+    return;
+  }
+  generateSwingPlans._running = true;
+
   const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
   if (!ANTHROPIC_KEY) {
     console.error('Cannot generate swing plans: ANTHROPIC_API_KEY not set');
+    generateSwingPlans._running = false;
     return;
   }
 
@@ -1265,6 +1273,8 @@ RULES:
 
   } catch (err) {
     console.error('[Swing] Generation error:', err.message);
+  } finally {
+    generateSwingPlans._running = false;
   }
 }
 
@@ -1290,6 +1300,9 @@ app.post('/api/swing-plans/generate', express.json(), async (req, res) => {
 app.get('/api/swing-plans/generate/:secret', async (req, res) => {
   if (req.params.secret !== process.env.SWING_BOT_SECRET) {
     return res.status(401).json({ error: 'Unauthorized' });
+  }
+  if (generateSwingPlans._running) {
+    return res.json({ ok: true, message: 'Already generating — wait 2 minutes and refresh swing page' });
   }
   console.log('[Swing] Manual generation triggered via browser');
   generateSwingPlans();
