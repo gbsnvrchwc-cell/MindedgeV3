@@ -377,7 +377,7 @@ function renderPlans() {
     return;
   }
 
-  // Structured plans (new format)
+  // Structured plans (new format) — show only selected ticker
   if (plansData.plans && plansData.plans.length && typeof plansData.plans[0] === 'object' && plansData.plans[0].ticker) {
     let html = '';
 
@@ -385,7 +385,15 @@ function renderPlans() {
       html += `<div class="market-context"><strong>MARKET CONTEXT</strong><br>${plansData.marketContext}</div>`;
     }
 
-    html += plansData.plans.map(p => `
+    // Filter to current ticker only
+    const filtered = currentTicker
+      ? plansData.plans.filter(p => p.ticker === currentTicker)
+      : plansData.plans;
+
+    // If no match for current ticker, show all
+    const toShow = filtered.length > 0 ? filtered : plansData.plans;
+
+    html += toShow.map(p => `
       <div class="decision-card" data-ticker="${p.ticker}">
         <div class="decision-header">
           <span class="decision-ticker">${p.ticker}</span>
@@ -451,12 +459,8 @@ async function selectTicker(ticker, btnEl) {
   document.getElementById('chartChange').textContent = '';
   document.getElementById('chartChange').className = 'chart-change';
 
-  // Highlight matching plans, dim others
-  document.querySelectorAll('.trade-card, .decision-card').forEach(card => {
-    const matches = card.dataset.ticker === ticker || card.textContent.includes(ticker);
-    card.classList.toggle('dimmed', !matches);
-    if (matches) card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  });
+  // Re-render plans for this ticker
+  renderPlans();
 
   try {
     const res = await fetch(`/api/chart/${ticker}?interval=1d&range=1y`);
@@ -755,29 +759,25 @@ function drawChart() {
     ctx.fillRect(x - barW/2, bodyT, barW, Math.max(1, bodyB - bodyT));
   });
 
-  // ═══ CALL / PUT SIGNAL MARKERS ═══
+  // ═══ CALL / PUT SIGNAL MARKERS — large, clear ═══
   const signals = parseSignals();
-  // Also parse from structured plans
   if (plansData?.plans?.length && currentTicker) {
     const plan = plansData.plans.find(p => p.ticker === currentTicker);
     if (plan) {
-      // Find where bull/bear entry prices would be on chart
       const bullMatch = plan.bull?.trade?.match(/\$(\d+)/);
       const bearMatch = plan.bear?.trade?.match(/\$(\d+)/);
       if (bullMatch && signals.length === 0) {
         const bp = parseFloat(bullMatch[1]);
-        signals.push({ label: 'A', price: bp, type: 'call', text: 'CALL: ' + plan.bull.condition.slice(0,30) });
+        signals.push({ label: 'A', price: bp, type: 'call', text: 'CALL: ' + plan.bull.condition.slice(0,40) });
       }
       if (bearMatch && signals.filter(s=>s.type==='put').length === 0) {
         const sp = parseFloat(bearMatch[1]);
-        signals.push({ label: 'D', price: sp, type: 'put', text: 'PUT: ' + plan.bear.condition.slice(0,30) });
+        signals.push({ label: 'D', price: sp, type: 'put', text: 'PUT: ' + plan.bear.condition.slice(0,40) });
       }
     }
   }
 
   ctx.save();
-  ctx.font = 'bold 9px JetBrains Mono';
-  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   signals.forEach(sig => {
     let bestIdx = 0, bestDist = Infinity;
     bars.forEach((b, i) => {
@@ -788,23 +788,42 @@ function drawChart() {
     const x = px(bestIdx);
     const isCall = sig.type === 'call';
     const color = isCall ? '#52a882' : '#e05252';
-    const raw = isCall ? py(b.low) + 16 : py(b.high) - 16;
-    const y = Math.max(14, Math.min(mainH - 10, raw));
-    // Circle marker
-    ctx.beginPath(); ctx.arc(x, y, 9, 0, Math.PI * 2);
-    ctx.fillStyle = color + '28'; ctx.fill();
-    ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.stroke();
-    ctx.fillStyle = color; ctx.fillText(sig.label, x, y);
-    // Text annotation
+    const bgColor = isCall ? 'rgba(82,168,130,0.25)' : 'rgba(224,82,82,0.25)';
+    const priceY = py(sig.price);
+
+    // Horizontal dashed line at signal price level
+    ctx.strokeStyle = color + '35'; ctx.lineWidth = 1;
+    ctx.setLineDash([5, 4]);
+    ctx.beginPath(); ctx.moveTo(leftPad, priceY); ctx.lineTo(leftPad + chartW, priceY); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Circle marker — large
+    const circleY = isCall ? priceY + 24 : priceY - 24;
+    const cy = Math.max(22, Math.min(mainH - 18, circleY));
+    ctx.beginPath(); ctx.arc(x, cy, 13, 0, Math.PI * 2);
+    ctx.fillStyle = bgColor; ctx.fill();
+    ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.stroke();
+    ctx.fillStyle = color; ctx.font = 'bold 12px JetBrains Mono';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(sig.label, x, cy);
+
+    // Connecting line
+    ctx.strokeStyle = color + '50'; ctx.lineWidth = 1;
+    ctx.setLineDash([2, 2]);
+    ctx.beginPath(); ctx.moveTo(x, isCall ? cy - 13 : cy + 13); ctx.lineTo(x, priceY); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Text annotation with rounded background
     if (sig.text) {
-      ctx.font = '8px JetBrains Mono'; ctx.textAlign = 'left';
-      const tx = x + 14, ty = y;
+      const tx = Math.min(x + 20, leftPad + chartW - 280);
+      const ty = isCall ? cy + 20 : cy - 20;
+      ctx.font = '11px JetBrains Mono'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
       const tw = ctx.measureText(sig.text).width;
-      ctx.fillStyle = isCall ? 'rgba(82,168,130,0.2)' : 'rgba(224,82,82,0.2)';
-      ctx.fillRect(tx - 2, ty - 7, tw + 6, 14);
+      ctx.fillStyle = bgColor;
+      ctx.beginPath(); ctx.roundRect(tx - 6, ty - 11, tw + 14, 22, 5); ctx.fill();
+      ctx.strokeStyle = color + '50'; ctx.lineWidth = 1; ctx.stroke();
       ctx.fillStyle = color;
-      ctx.fillText(sig.text, tx, ty + 3);
-      ctx.font = 'bold 9px JetBrains Mono'; ctx.textAlign = 'center';
+      ctx.fillText(sig.text, tx, ty);
     }
   });
 
@@ -812,11 +831,13 @@ function drawChart() {
   {
     const lastB = bars[bars.length - 1];
     const x = px(bars.length - 1);
-    const y = Math.max(14, Math.min(mainH - 10, py(lastB.close) - 18));
-    ctx.beginPath(); ctx.arc(x, y, 9, 0, Math.PI * 2);
+    const y = Math.max(22, Math.min(mainH - 18, py(lastB.close) - 24));
+    ctx.beginPath(); ctx.arc(x, y, 13, 0, Math.PI * 2);
     ctx.fillStyle = 'rgba(0,191,255,0.15)'; ctx.fill();
-    ctx.strokeStyle = '#00BFFF'; ctx.lineWidth = 1.5; ctx.stroke();
-    ctx.fillStyle = '#00BFFF'; ctx.fillText('E', x, y);
+    ctx.strokeStyle = '#00BFFF'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.fillStyle = '#00BFFF'; ctx.font = 'bold 12px JetBrains Mono';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('E', x, y);
   }
   ctx.restore();
 
