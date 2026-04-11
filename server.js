@@ -1190,28 +1190,31 @@ async function generateSwingPlans() {
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
-        max_tokens: 4000,
+        max_tokens: 6000,
         tools: [{ type: 'web_search_20250305', name: 'web_search' }],
         messages: [{
           role: 'user',
           content: `Current date: ${today}.
 
-You are an institutional-grade options swing trade analyst. Search for current market data and find exactly 3 stocks with high-conviction swing setups across different sectors.
+You are an institutional-grade options swing trade analyst. Search for current market data and find EXACTLY 3 stocks with high-conviction swing setups across DIFFERENT sectors (e.g. tech, finance, energy, healthcare).
 
-For each stock search for: current price, Fibonacci levels from recent swing high/low, RSI, MACD, upcoming earnings/catalysts.
+For each stock search for: current price, Fibonacci levels from recent swing high/low, RSI, MACD, upcoming earnings date.
 
-OUTPUT ONLY VALID JSON. No text before or after. No markdown. Start with { end with }.
+OUTPUT ONLY VALID JSON. No text before or after. No markdown fences. Start your response with { and end with }.
 
-Use this EXACT structure:
-{"plans":[{"ticker":"LLY","currentPrice":"$955","position":"Between 61.8% ($939) and 78.6% ($1025)","rsi":"~48","macd":"-8.0","bull":{"timeframe":"2 weeks","condition":"$939 HOLDS on bounce; RSI >50, MACD curls up","trade":"BUY $950-960 calls, target $1025 (7%), stop $930 = 2.7:1 R/R"},"bear":{"timeframe":"2 weeks","condition":"Close BELOW $939 on volume; RSI <45","trade":"BUY $940 puts, target $879 (8%), stop $960 = 16:1 R/R"},"recommendation":"Watch $939 bounce or breakdown. 25-50% size. Exit before earnings Apr 27.","rationale":"At golden ratio 61.8% after 16% decline. RSI neutral, MACD bearish but flattening."}],"marketContext":"VIX at XX, SPX trend..."}
+The JSON MUST have exactly 3 objects in the plans array. Use this structure:
 
-RULES:
-- EXACTLY 3 plans, each with bull AND bear scenario
-- Keep each field SHORT — one line max
-- Use REAL current prices and earnings dates (search for them)
-- Include R/R ratios in trade lines
-- Vary sectors
-- Output ONLY the JSON object`
+{"plans":[{"ticker":"LLY","currentPrice":"$955","position":"Between 61.8% ($939) and 78.6% ($1025)","rsi":"~48","macd":"-8.0","bull":{"timeframe":"2 weeks","condition":"$939 HOLDS on bounce; RSI bounces above 50, MACD curls up","trade":"BUY $950-960 calls (May 2 exp), target $1025 (7%), stop $930 (-2.6%) = 2.7:1 R/R"},"bear":{"timeframe":"2 weeks","condition":"Close BELOW $939 on volume; RSI <45; MACD deepens red","trade":"BUY $940 puts (May 2 exp), target $879 (8%), stop $960 (+0.5%) = 16:1 R/R"},"recommendation":"Short-term (2 weeks): Watch for $939 bounce OR breakdown. Enter 25-50% size. BEFORE earnings (Apr 27-28): Exit or reduce to 25-50%. Size: 25-50% due to earnings risk. Plan exit by Apr 27. Allocation: 70% bull / 30% bear hedge if uncertain.","rationale":"Price at golden ratio 61.8% after 16% decline from Dec highs. RSI neutral at 48, MACD bearish but flattening. Earnings Apr 27-28 is key catalyst. Below all 4 MAs — needs reclaim of 9 EMA for bull case."}],"marketContext":"VIX at 19.2 (cooling from March highs). SPX at 6816, tentative recovery. CPI came hot at 3.3%. Big bank earnings begin Apr 14 with JPM."}
+
+CRITICAL RULES:
+- EXACTLY 3 plans — not 1, not 2, not 4. THREE.
+- The "recommendation" field MUST include ALL of these details: timeframe, entry size (e.g. 25-50%), specific exit timing (e.g. before earnings date), position sizing guidance, and bull/bear allocation split
+- The "trade" fields MUST include expiration date, target with %, stop with %, and R/R ratio
+- The "rationale" field should be 2-3 sentences referencing specific Fib levels, MA positions, and catalysts
+- Use REAL current prices (search for them)
+- Use REAL earnings dates (search for them)
+- Vary sectors — do NOT pick 3 tech stocks
+- Output ONLY the JSON — no preamble, no explanation, no markdown`
         }],
       }),
     });
@@ -1257,6 +1260,12 @@ RULES:
       console.error('[Swing] No plans in parsed response');
       return;
     }
+
+    if (parsed.plans.length < 3) {
+      console.warn(`[Swing] WARNING: Only ${parsed.plans.length} plans returned (expected 3)`);
+    }
+
+    console.log(`[Swing] Parsed ${parsed.plans.length} plans: ${parsed.plans.map(p => p.ticker).join(', ')}`);
 
     const tickers = parsed.plans.map(p => p.ticker);
     const store = {
