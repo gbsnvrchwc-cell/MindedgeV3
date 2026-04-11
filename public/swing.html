@@ -759,7 +759,7 @@ function drawChart() {
     ctx.fillRect(x - barW/2, bodyT, barW, Math.max(1, bodyB - bodyT));
   });
 
-  // ═══ CALL / PUT SIGNAL MARKERS — large, clear ═══
+  // ═══ CALL / PUT SIGNAL MARKERS — placed in margins, not on candles ═══
   const signals = parseSignals();
   if (plansData?.plans?.length && currentTicker) {
     const plan = plansData.plans.find(p => p.ticker === currentTicker);
@@ -768,62 +768,70 @@ function drawChart() {
       const bearMatch = plan.bear?.trade?.match(/\$(\d+)/);
       if (bullMatch && signals.length === 0) {
         const bp = parseFloat(bullMatch[1]);
-        signals.push({ label: 'A', price: bp, type: 'call', text: 'CALL: ' + plan.bull.condition.slice(0,40) });
+        signals.push({ label: 'A', price: bp, type: 'call', text: 'CALL: ' + plan.bull.condition.slice(0,45) });
       }
       if (bearMatch && signals.filter(s=>s.type==='put').length === 0) {
         const sp = parseFloat(bearMatch[1]);
-        signals.push({ label: 'D', price: sp, type: 'put', text: 'PUT: ' + plan.bear.condition.slice(0,40) });
+        signals.push({ label: 'D', price: sp, type: 'put', text: 'PUT: ' + plan.bear.condition.slice(0,45) });
       }
     }
   }
 
   ctx.save();
+  let callIdx = 0, putIdx = 0;
   signals.forEach(sig => {
-    let bestIdx = 0, bestDist = Infinity;
-    bars.forEach((b, i) => {
-      const d = Math.abs(((b.high + b.low) / 2) - sig.price);
-      if (d < bestDist) { bestDist = d; bestIdx = i; }
-    });
-    const b = bars[bestIdx];
-    const x = px(bestIdx);
     const isCall = sig.type === 'call';
     const color = isCall ? '#52a882' : '#e05252';
-    const bgColor = isCall ? 'rgba(82,168,130,0.25)' : 'rgba(224,82,82,0.25)';
+    const bgColor = isCall ? 'rgba(82,168,130,0.3)' : 'rgba(224,82,82,0.3)';
     const priceY = py(sig.price);
 
-    // Horizontal dashed line at signal price level
-    ctx.strokeStyle = color + '35'; ctx.lineWidth = 1;
-    ctx.setLineDash([5, 4]);
+    // Horizontal dashed line across chart at signal price
+    ctx.strokeStyle = color + '40'; ctx.lineWidth = 1.5;
+    ctx.setLineDash([6, 4]);
     ctx.beginPath(); ctx.moveTo(leftPad, priceY); ctx.lineTo(leftPad + chartW, priceY); ctx.stroke();
     ctx.setLineDash([]);
 
-    // Circle marker — large
-    const circleY = isCall ? priceY + 24 : priceY - 24;
-    const cy = Math.max(22, Math.min(mainH - 18, circleY));
-    ctx.beginPath(); ctx.arc(x, cy, 13, 0, Math.PI * 2);
+    // Place label in margin: CALL at bottom, PUT at top
+    const marginY = isCall
+      ? mainH - 40 - (callIdx * 30)   // bottom margin, stack if multiple
+      : mainTop + 30 + (putIdx * 30);  // top margin, stack if multiple
+
+    if (isCall) callIdx++; else putIdx++;
+
+    // Text label position — centered in chart
+    const textX = leftPad + chartW * 0.45;
+
+    // Connecting line from margin label down/up to price level
+    ctx.strokeStyle = color + '40'; ctx.lineWidth = 1;
+    ctx.setLineDash([3, 3]);
+    ctx.beginPath(); ctx.moveTo(textX, marginY); ctx.lineTo(textX, priceY); ctx.stroke();
+    // Small arrow at price end
+    ctx.setLineDash([]);
+    ctx.beginPath();
+    if (isCall) {
+      ctx.moveTo(textX - 4, priceY + 6); ctx.lineTo(textX, priceY); ctx.lineTo(textX + 4, priceY + 6);
+    } else {
+      ctx.moveTo(textX - 4, priceY - 6); ctx.lineTo(textX, priceY); ctx.lineTo(textX + 4, priceY - 6);
+    }
+    ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.stroke();
+
+    // Circle with letter
+    ctx.beginPath(); ctx.arc(textX - 20, marginY, 12, 0, Math.PI * 2);
     ctx.fillStyle = bgColor; ctx.fill();
     ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.stroke();
     ctx.fillStyle = color; ctx.font = 'bold 12px JetBrains Mono';
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText(sig.label, x, cy);
+    ctx.fillText(sig.label, textX - 20, marginY);
 
-    // Connecting line
-    ctx.strokeStyle = color + '50'; ctx.lineWidth = 1;
-    ctx.setLineDash([2, 2]);
-    ctx.beginPath(); ctx.moveTo(x, isCall ? cy - 13 : cy + 13); ctx.lineTo(x, priceY); ctx.stroke();
-    ctx.setLineDash([]);
-
-    // Text annotation with rounded background
+    // Text annotation — clear, readable
     if (sig.text) {
-      const tx = Math.min(x + 20, leftPad + chartW - 280);
-      const ty = isCall ? cy + 20 : cy - 20;
-      ctx.font = '11px JetBrains Mono'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+      ctx.font = '12px JetBrains Mono'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
       const tw = ctx.measureText(sig.text).width;
       ctx.fillStyle = bgColor;
-      ctx.beginPath(); ctx.roundRect(tx - 6, ty - 11, tw + 14, 22, 5); ctx.fill();
-      ctx.strokeStyle = color + '50'; ctx.lineWidth = 1; ctx.stroke();
+      ctx.beginPath(); ctx.roundRect(textX - 4, marginY - 13, tw + 12, 26, 5); ctx.fill();
+      ctx.strokeStyle = color + '60'; ctx.lineWidth = 1; ctx.stroke();
       ctx.fillStyle = color;
-      ctx.fillText(sig.text, tx, ty);
+      ctx.fillText(sig.text, textX + 2, marginY);
     }
   });
 
