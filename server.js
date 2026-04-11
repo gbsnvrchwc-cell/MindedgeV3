@@ -7,6 +7,7 @@ const jwt = require('jsonwebtoken');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const cron = require('node-cron');
 require('dotenv').config();
 
 const app = express();
@@ -1152,6 +1153,139 @@ function saveSwingPlans(data) {
   } catch (e) { console.error('Failed to save swing plans:', e.message); }
 }
 
+// ═══════════════════════════════════════════════════════════════
+// SWING PLAN GENERATOR — runs daily at 6:30 AM ET
+// No external bot needed — Mindedge generates its own plans
+// ═══════════════════════════════════════════════════════════════
+
+async function generateSwingPlans() {
+  const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
+  if (!ANTHROPIC_KEY) {
+    console.error('Cannot generate swing plans: ANTHROPIC_API_KEY not set');
+    return;
+  }
+
+  const today = new Date().toLocaleDateString('en-US', {
+    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+    timeZone: 'America/New_York'
+  });
+
+  console.log(`[Swing] Generating plans for ${today}...`);
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': ANTHROPIC_KEY,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 4000,
+        tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+        messages: [{
+          role: 'user',
+          content: `Current date: ${today}.
+
+You are an institutional-grade options swing trade analyst. Search for current market data and find exactly 3 stocks with high-conviction swing setups across different sectors.
+
+For each stock search for: current price, Fibonacci levels from recent swing high/low, RSI, MACD, upcoming earnings/catalysts.
+
+OUTPUT ONLY VALID JSON. No text before or after. No markdown. Start with { end with }.
+
+Use this EXACT structure:
+{"plans":[{"ticker":"LLY","currentPrice":"$955","position":"Between 61.8% ($939) and 78.6% ($1025)","rsi":"~48","macd":"-8.0","bull":{"timeframe":"2 weeks","condition":"$939 HOLDS on bounce; RSI >50, MACD curls up","trade":"BUY $950-960 calls, target $1025 (7%), stop $930 = 2.7:1 R/R"},"bear":{"timeframe":"2 weeks","condition":"Close BELOW $939 on volume; RSI <45","trade":"BUY $940 puts, target $879 (8%), stop $960 = 16:1 R/R"},"recommendation":"Watch $939 bounce or breakdown. 25-50% size. Exit before earnings Apr 27.","rationale":"At golden ratio 61.8% after 16% decline. RSI neutral, MACD bearish but flattening."}],"marketContext":"VIX at XX, SPX trend..."}
+
+RULES:
+- EXACTLY 3 plans, each with bull AND bear scenario
+- Keep each field SHORT — one line max
+- Use REAL current prices and earnings dates (search for them)
+- Include R/R ratios in trade lines
+- Vary sectors
+- Output ONLY the JSON object`
+        }],
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.content) {
+      console.error('[Swing] API error:', JSON.stringify(data).substring(0, 500));
+      return;
+    }
+
+    // Extract text from response
+    const text = data.content
+      .filter(item => item.type === 'text')
+      .map(item => item.text)
+      .join('\n')
+      .replace(/<[^>]*>/gi, '')
+      .trim();
+
+    // Parse JSON — handle preamble, fences, etc.
+    let parsed;
+    let jsonStr = text.replace(/```json\s*/g, '').replace(/```\s*/g, '');
+    const firstBrace = jsonStr.indexOf('{');
+    const lastBrace = jsonStr.lastIndexOf('}');
+    if (firstBrace === -1 || lastBrace === -1) {
+      console.error('[Swing] No JSON found in response');
+      console.log('[Swing] Raw (first 500):', text.slice(0, 500));
+      return;
+    }
+    jsonStr = jsonStr.slice(firstBrace, lastBrace + 1);
+    jsonStr = jsonStr.replace(/,\s*([}\]])/g, '$1'); // fix trailing commas
+
+    try {
+      parsed = JSON.parse(jsonStr);
+    } catch (parseErr) {
+      console.error('[Swing] JSON parse error:', parseErr.message);
+      console.log('[Swing] Raw (first 800):', text.slice(0, 800));
+      console.log('[Swing] Raw (last 400):', text.slice(-400));
+      return;
+    }
+
+    if (!parsed.plans || !parsed.plans.length) {
+      console.error('[Swing] No plans in parsed response');
+      return;
+    }
+
+    const tickers = parsed.plans.map(p => p.ticker);
+    const store = {
+      date: new Date().toLocaleDateString('en-US', { timeZone: 'America/New_York' }),
+      plans: parsed.plans,
+      tickers,
+      marketContext: parsed.marketContext || '',
+      raw: text,
+      updatedAt: new Date().toISOString(),
+    };
+
+    saveSwingPlans(store);
+    console.log(`[Swing] Plans saved: ${tickers.join(', ')} for ${store.date}`);
+
+  } catch (err) {
+    console.error('[Swing] Generation error:', err.message);
+  }
+}
+
+// Schedule: 6:30 AM ET, weekdays only
+// ET = UTC-4 (EDT) or UTC-5 (EST). Use America/New_York timezone.
+cron.schedule('30 6 * * 1-5', () => {
+  console.log('[Swing] Cron triggered at 6:30 AM ET');
+  generateSwingPlans();
+}, { timezone: 'America/New_York' });
+
+// Manual trigger endpoint (admin only)
+app.post('/api/swing-plans/generate', express.json(), async (req, res) => {
+  const secret = req.headers['x-bot-secret'] || req.body.secret;
+  if (secret !== process.env.SWING_BOT_SECRET) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  console.log('[Swing] Manual generation triggered');
+  generateSwingPlans();
+  res.json({ ok: true, message: 'Generation started — check back in ~2 minutes' });
+});
+
 // Bot POSTs today's swing plans here
 app.post('/api/swing-plans', express.json({ limit: '100kb' }), (req, res) => {
   const secret = req.headers['x-bot-secret'];
@@ -1255,4 +1389,5 @@ app.listen(PORT, () => {
   console.log(`Security: helmet + rate limiting + JWT auth enabled`);
   console.log(`Stripe: subscription billing ${process.env[_sp + 'APP_MONTHLY'] ? 'configured' : 'NOT configured — set STRIPE_PRICE_* env vars'}`);
   console.log(`Webhook: ${process.env['STRIPE_WEBHOOK' + '_SECRET'] ? 'configured' : 'NOT configured — set STRIPE_WEBHOOK_SECRET'}`);
+  console.log(`Swing Plans: cron scheduled for 6:30 AM ET weekdays`);
 });
