@@ -128,11 +128,11 @@
   .trade-card strong { color: var(--gold2); }
   .trade-card { font-size: 12.5px; line-height: 1.7; color: var(--cream2); }
 
-  /* ── STRUCTURED DECISION CARDS — side by side ── */
+  /* ── STRUCTURED DECISION CARDS — responsive grid ── */
   .decision-card {
     background: var(--bg3); border: 1px solid var(--border);
     border-radius: 12px; overflow: hidden;
-    transition: opacity 0.3s; flex: 1; min-width: 320px; max-width: 450px;
+    transition: opacity 0.3s; flex: 1 1 300px;
   }
   .decision-card.dimmed { opacity: 0.3; }
   .decision-header {
@@ -590,20 +590,24 @@ function drawChart() {
   const rsiTop = mainH + volH;
   const macdTop = mainH + volH + rsiH;
 
-  const vrvpW = 55;
+  const vrvpW = 60;
   const leftPad = 100; // room for Fib labels on left
   const chartW = W - vrvpW - leftPad;
 
-  const allH = Math.max(...highs);
-  const allL = Math.min(...lows);
-  const pad = (allH - allL) * 0.08;
+  // Use recent price range (last 60% of bars) for better zoom
+  const recentStart = Math.floor(bars.length * 0.3);
+  const recentHighs = highs.slice(recentStart);
+  const recentLows = lows.slice(recentStart);
+  const allH = Math.max(...recentHighs);
+  const allL = Math.min(...recentLows);
+  const pad = (allH - allL) * 0.12;
   const priceH = allH + pad, priceL = allL - pad;
 
   const px = (i) => leftPad + (i / (bars.length - 1)) * (chartW - 8);
   const py = (p) => mainTop + (1 - (p - priceL) / (priceH - priceL)) * (mainH - 16);
   const barW = Math.max(1, (chartW / bars.length) * 0.6);
 
-  // ── Update header info ──
+  // ── Update header info — use FULL range for 52wk ──
   const lastPrice = closes[closes.length-1];
   const wk52H = Math.max(...highs);
   const wk52L = Math.min(...lows);
@@ -647,8 +651,8 @@ function drawChart() {
 
   // Grid
   ctx.strokeStyle = 'rgba(255,255,255,0.03)'; ctx.lineWidth = 0.5;
-  for (let i = 0; i < 6; i++) {
-    const y = mainTop + (mainH - 16) * (i / 5);
+  for (let i = 0; i < 8; i++) {
+    const y = mainTop + (mainH - 16) * (i / 7);
     ctx.beginPath(); ctx.moveTo(leftPad, y); ctx.lineTo(leftPad + chartW, y); ctx.stroke();
   }
 
@@ -832,7 +836,7 @@ function drawChart() {
   const lastY = py(lastPrice);
   const prevPrice = closes[closes.length - 2];
   ctx.fillStyle = lastPrice >= prevPrice ? '#52a882' : '#e05252';
-  ctx.fillRect(leftPad + chartW - 2, lastY - 8, 65, 16);
+  ctx.fillRect(leftPad + chartW - 2, lastY - 9, 68, 18);
   ctx.fillStyle = '#fff'; ctx.font = '11px JetBrains Mono';
   ctx.fillText('$' + lastPrice.toFixed(2), leftPad + chartW + 2, lastY + 4);
 
