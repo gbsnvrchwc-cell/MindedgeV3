@@ -1318,6 +1318,142 @@ app.get('/api/swing-plans/generate/:secret', async (req, res) => {
   res.json({ ok: true, message: 'Generation started — refresh swing page in ~2 minutes' });
 });
 
+// ═══════════════════════════════════════════════════════════════
+// ON-DEMAND TICKER ANALYSIS — generates detailed analysis for any ticker
+// ═══════════════════════════════════════════════════════════════
+
+const analyzeLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 3,
+  message: { error: 'Too many analysis requests. Wait 1 minute.' },
+});
+
+app.get('/api/swing-analyze/:ticker', requireAccessAPI, analyzeLimiter, async (req, res) => {
+  const ticker = req.params.ticker.toUpperCase().replace(/[^A-Z]/g, '');
+  if (!ticker || ticker.length > 5) {
+    return res.status(400).json({ error: 'Invalid ticker' });
+  }
+
+  const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
+  if (!ANTHROPIC_KEY) {
+    return res.status(500).json({ error: 'API not configured' });
+  }
+
+  const today = new Date().toLocaleDateString('en-US', {
+    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+    timeZone: 'America/New_York'
+  });
+
+  console.log(`[Analyze] Generating analysis for ${ticker}...`);
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': ANTHROPIC_KEY,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 4000,
+        tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+        messages: [{
+          role: 'user',
+          content: `Current date: ${today}.
+
+You are an institutional-grade options swing trade analyst. Search for current data on ${ticker} and produce a comprehensive trading decision analysis.
+
+Search for: current price, 52-week high/low, Fibonacci retracement levels from recent swing high to swing low, all major EMAs (9, 21, 50, 200), RSI, MACD, upcoming earnings date, recent analyst price targets, volume profile, and any upcoming catalysts.
+
+OUTPUT ONLY VALID JSON. No text before or after. No markdown fences. Start with { end with }.
+
+Use this EXACT structure:
+{
+  "ticker": "${ticker}",
+  "currentPrice": "$144.97",
+  "wk52High": "$149.80",
+  "wk52Low": "$45.20",
+  "position": "Just below 52-week high of $149.80, breaking above prior ATH of $141.10 for first time since Oct 2025",
+  "rsi": "~68",
+  "macd": "+3.2 (bullish, accelerating)",
+  "emaStatus": "Above all 4 MAs — 9E $140, 21E $135, 50S $125, 200S $105",
+  "earningsDate": "May 8, 2026",
+  "bullCase": {
+    "probability": "70%",
+    "title": "New ATH → Analyst Targets → $180+",
+    "condition": "Price breaks and holds above $149.80 with volume confirmation. RSI stays above 60.",
+    "entry": "BUY $145-150 calls (May 16 exp)",
+    "targets": [
+      {"level": "PT1: $155", "action": "TAKE 50% PROFIT — analyst consensus resistance zone"},
+      {"level": "PT2: $163", "action": "SELL another 25% — analyst average price target"},
+      {"level": "PT3: $175-180", "action": "LET FINAL 25% RUN with trailing SL at $160 — LVN extension +20% above analyst target"}
+    ],
+    "stopLoss": "Hard SL at $130 (close below 9 EMA). -$15 from entry (-10%). If broken, bullish case is DEAD. Exit immediately."
+  },
+  "baseCase": {
+    "probability": "20%",
+    "title": "Consolidation then Breakout",
+    "description": "Price consolidates between $135-$150 for 1-2 weeks, building base before next leg up. Use this time to scale in at lower prices."
+  },
+  "bearCase": {
+    "probability": "10%",
+    "title": "Rejection + Pullback",
+    "condition": "If ${ticker} rejects at $149.80-$150 with a RED candle, long upper wick, AND RSI divergence (price higher, momentum lower), then bearish case activates.",
+    "entry": "BUY $145 puts (May 2 exp)",
+    "targets": "Expect pullback to 78.6% Fib ($122) or deeper to 61.8% ($100). Take profit at first Fib support.",
+    "stopLoss": "Close above $155 invalidates bear case."
+  },
+  "recommendation": "Short-term (2 weeks): Enter 25-50% size on breakout above $150. Scale to full position on retest and hold. BEFORE earnings (${ticker} reports May 8): Take 50% off or hedge with protective puts. Size: 50% max due to extended RSI. Allocation: 70% bull / 20% wait / 10% bear hedge.",
+  "rationale": "Breaking above prior ATH for first time in 6 months — massive technical event. Analyst targets cluster at $155-$163 providing clear profit-taking zones. RSI elevated but not overbought in trending context. MACD accelerating bullish. Volume confirming breakout. Key risk is earnings in 4 weeks — take profits before."
+}
+
+RULES:
+- Use REAL current prices, Fibonacci levels, EMA values, RSI, MACD (search for them)
+- Use REAL earnings dates and analyst price targets (search for them)
+- Bull case MUST include multiple price targets with specific scaling out instructions (50%/25%/25%)
+- Bear case MUST include specific rejection conditions (candle type, RSI divergence)
+- Include specific stop loss levels with % risk from entry
+- Recommendation MUST include position sizing, timing, and earnings risk management
+- Output ONLY the JSON object`
+        }],
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.content) {
+      console.error(`[Analyze] API error for ${ticker}:`, JSON.stringify(data).substring(0, 300));
+      return res.status(500).json({ error: 'Analysis generation failed' });
+    }
+
+    const text = data.content
+      .filter(item => item.type === 'text')
+      .map(item => item.text)
+      .join('\n')
+      .replace(/<[^>]*>/gi, '')
+      .trim();
+
+    let jsonStr = text.replace(/```json\s*/g, '').replace(/```\s*/g, '');
+    const firstBrace = jsonStr.indexOf('{');
+    const lastBrace = jsonStr.lastIndexOf('}');
+    if (firstBrace === -1 || lastBrace === -1) {
+      console.error(`[Analyze] No JSON for ${ticker}`);
+      return res.status(500).json({ error: 'Failed to parse analysis' });
+    }
+    jsonStr = jsonStr.slice(firstBrace, lastBrace + 1);
+    jsonStr = jsonStr.replace(/,\s*([}\]])/g, '$1');
+
+    const parsed = JSON.parse(jsonStr);
+    console.log(`[Analyze] Analysis complete for ${ticker}`);
+    res.json(parsed);
+
+  } catch (err) {
+    console.error(`[Analyze] Error for ${ticker}:`, err.message);
+    res.status(500).json({ error: 'Analysis failed: ' + err.message });
+  }
+});
+
 // Bot POSTs today's swing plans here
 app.post('/api/swing-plans', express.json({ limit: '100kb' }), (req, res) => {
   const secret = req.headers['x-bot-secret'];
