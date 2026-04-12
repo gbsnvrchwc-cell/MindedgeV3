@@ -366,8 +366,77 @@ function loadCustomTicker() {
   const ticker = input.value.trim().toUpperCase();
   if (ticker) {
     document.querySelectorAll('.ticker-btn').forEach(b => b.classList.remove('active'));
-    selectTicker(ticker);
+    selectTicker(ticker, null, true); // true = custom ticker, fetch analysis
   }
+}
+
+function renderAnalysis(a) {
+  const el = document.getElementById('planContent');
+  el.innerHTML = `
+    <div class="decision-card" style="flex-basis:100%;max-width:100%;">
+      <div class="decision-header">
+        <span class="decision-ticker">${a.ticker}</span>
+        <span class="decision-price">${a.currentPrice}</span>
+      </div>
+      <div class="decision-meta">
+        <span>${a.position || ''}</span>
+        <span>RSI ${a.rsi || ''}</span>
+        <span>MACD ${a.macd || ''}</span>
+      </div>
+      ${a.emaStatus ? `<div class="decision-meta"><span>${a.emaStatus}</span></div>` : ''}
+      ${a.earningsDate ? `<div class="decision-meta"><span>Earnings: ${a.earningsDate}</span><span>52wk: ${a.wk52Low || ''} – ${a.wk52High || ''}</span></div>` : ''}
+
+      <div class="scenario">
+        <div class="scenario-label bull">▲ BULL CASE (${a.bullCase?.probability || ''})</div>
+        <div style="font-family:var(--serif);font-size:15px;color:var(--cream);margin-bottom:8px;">${a.bullCase?.title || ''}</div>
+        <div class="scenario-condition">${a.bullCase?.condition || ''}</div>
+        <div class="scenario-trade bull-trade">${a.bullCase?.entry || ''}</div>
+        ${a.bullCase?.targets?.length ? `
+          <div style="margin-top:10px;">
+            ${a.bullCase.targets.map(t => `
+              <div style="font-family:var(--mono);font-size:11px;color:var(--cream);padding:6px 12px;margin:4px 0;background:var(--bg);border-radius:6px;border-left:2px solid var(--green);line-height:1.5;">
+                <strong style="color:var(--green);">${t.level}</strong> — ${t.action}
+              </div>
+            `).join('')}
+          </div>
+        ` : ''}
+        ${a.bullCase?.stopLoss ? `
+          <div style="font-family:var(--mono);font-size:11px;color:var(--red);padding:8px 12px;margin-top:8px;background:rgba(224,82,82,0.08);border-radius:6px;border-left:2px solid var(--red);line-height:1.5;">
+            ✗ STOP: ${a.bullCase.stopLoss}
+          </div>
+        ` : ''}
+      </div>
+
+      <div class="scenario">
+        <div class="scenario-label" style="color:var(--cream3);">◎ BASE CASE (${a.baseCase?.probability || ''})</div>
+        <div style="font-family:var(--serif);font-size:14px;color:var(--cream);margin-bottom:6px;">${a.baseCase?.title || ''}</div>
+        <div class="scenario-condition">${a.baseCase?.description || ''}</div>
+      </div>
+
+      <div class="scenario">
+        <div class="scenario-label bear">▼ BEAR CASE (${a.bearCase?.probability || ''})</div>
+        <div style="font-family:var(--serif);font-size:14px;color:var(--cream);margin-bottom:6px;">${a.bearCase?.title || ''}</div>
+        <div class="scenario-condition">${a.bearCase?.condition || ''}</div>
+        <div class="scenario-trade bear-trade">${a.bearCase?.entry || ''}</div>
+        <div class="scenario-condition" style="margin-top:6px;">${a.bearCase?.targets || ''}</div>
+        ${a.bearCase?.stopLoss ? `
+          <div style="font-family:var(--mono);font-size:11px;color:var(--green);padding:6px 12px;margin-top:6px;background:rgba(82,168,130,0.08);border-radius:6px;border-left:2px solid var(--green);">
+            ✗ Bear invalidated: ${a.bearCase.stopLoss}
+          </div>
+        ` : ''}
+      </div>
+
+      <div class="scenario">
+        <div class="scenario-label rec">◆ RECOMMENDED</div>
+        <div class="scenario-rec">${a.recommendation || ''}</div>
+      </div>
+
+      ${a.rationale ? `<div class="scenario">
+        <div class="scenario-label rationale-label">RATIONALE</div>
+        <div class="scenario-rationale">${a.rationale}</div>
+      </div>` : ''}
+    </div>
+  `;
 }
 
 function renderPlans() {
@@ -448,7 +517,7 @@ function renderPlans() {
 // SELECT TICKER → LOAD CHART + HIGHLIGHT PLANS
 // ═══════════════════════════════════════════════════════════════
 
-async function selectTicker(ticker, btnEl) {
+async function selectTicker(ticker, btnEl, fetchCustom) {
   currentTicker = ticker;
   if (btnEl) {
     document.querySelectorAll('.ticker-btn').forEach(b => b.classList.remove('active'));
@@ -459,8 +528,30 @@ async function selectTicker(ticker, btnEl) {
   document.getElementById('chartChange').textContent = '';
   document.getElementById('chartChange').className = 'chart-change';
 
-  // Re-render plans for this ticker
-  renderPlans();
+  // Check if this ticker has a daily plan
+  const hasDailyPlan = plansData?.plans?.some(p => p.ticker === ticker);
+
+  if (hasDailyPlan) {
+    renderPlans();
+  } else if (fetchCustom) {
+    // Fetch on-demand analysis for custom tickers
+    const el = document.getElementById('planContent');
+    el.innerHTML = '<div class="empty-state"><h3>Analyzing ' + ticker + '...</h3><p>Generating institutional-grade analysis. This takes ~30 seconds.</p></div>';
+    try {
+      const aRes = await fetch(`/api/swing-analyze/${ticker}`);
+      if (aRes.ok) {
+        const analysis = await aRes.json();
+        renderAnalysis(analysis);
+      } else {
+        const err = await aRes.json();
+        el.innerHTML = '<div class="empty-state"><h3>Analysis unavailable</h3><p>' + (err.error || 'Try again in a minute.') + '</p></div>';
+      }
+    } catch (err) {
+      el.innerHTML = '<div class="empty-state"><h3>Analysis failed</h3><p>' + err.message + '</p></div>';
+    }
+  } else {
+    renderPlans();
+  }
 
   try {
     const res = await fetch(`/api/chart/${ticker}?interval=1d&range=1y`);
