@@ -1405,7 +1405,16 @@ Use this EXACT structure:
     "stopLoss": "Close above $155 invalidates bear case."
   },
   "recommendation": "Short-term (2 weeks): Enter 25-50% size on breakout above $150. Scale to full position on retest and hold. BEFORE earnings (${ticker} reports May 8): Take 50% off or hedge with protective puts. Size: 50% max due to extended RSI. Allocation: 70% bull / 20% wait / 10% bear hedge.",
-  "rationale": "Breaking above prior ATH for first time in 6 months — massive technical event. Analyst targets cluster at $155-$163 providing clear profit-taking zones. RSI elevated but not overbought in trending context. MACD accelerating bullish. Volume confirming breakout. Key risk is earnings in 4 weeks — take profits before."
+  "fundamentals": [
+    "Contracted revenue pipeline — $27B Meta deal + Microsoft contract shifts company from speculative to contracted infrastructure provider. Revenue scaling from ~$200M to $1B+ by 2027.",
+    "European AI sovereignty play — Non-US companies need AI compute not controlled by a US hyperscaler. Only scaled neutral option in Europe. Structural multi-year demand.",
+    "Nvidia GPU priority access — As a direct Nvidia investee, gets preferential chip allocation while competitors wait quarters. Hard moat to replicate."
+  ],
+  "sentiment": [
+    "Short squeeze fuel — Small float, high short interest, two consecutive gap-up days. Shorts still covering = sustained upward pressure.",
+    "Institutional adoption early innings — Many funds still have compliance flags. As clearances expand, structural buying waves follow independent of earnings.",
+    "Quant/CTA momentum trigger — Breaking prior ATH fires 52-week-high breakout signals in algorithmic systems. RSI not overbought yet means systematic buying continues."
+  ]
 }
 
 RULES:
@@ -1415,6 +1424,8 @@ RULES:
 - Bear case MUST include specific rejection conditions (candle type, RSI divergence)
 - Include specific stop loss levels with % risk from entry
 - Recommendation MUST include position sizing, timing, and earnings risk management
+- "fundamentals" MUST be an array of EXACTLY 3 strings covering: revenue/contracts, competitive moat/sector position, and key business catalyst
+- "sentiment" MUST be an array of EXACTLY 3 strings covering: short interest/positioning, institutional flow, and technical/algorithmic triggers
 - Output ONLY the JSON object`
         }],
       }),
