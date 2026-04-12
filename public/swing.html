@@ -435,6 +435,25 @@ function renderAnalysis(a) {
         <div class="scenario-label rationale-label">RATIONALE</div>
         <div class="scenario-rationale">${a.rationale}</div>
       </div>` : ''}
+
+      ${a.fundamentals || a.sentiment ? `
+      <div style="display:flex;gap:16px;flex-wrap:wrap;">
+        ${a.fundamentals ? `
+        <div style="flex:1;min-width:280px;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:16px 20px;border-top:3px solid var(--gold);">
+          <div style="font-family:var(--mono);font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--gold);margin-bottom:12px;font-weight:600;">Fundamentals & Macro Context</div>
+          ${a.fundamentals.map(f => `
+            <div style="font-size:12px;color:var(--cream2);line-height:1.6;margin-bottom:10px;padding-left:12px;border-left:2px solid var(--gold-border);">${f}</div>
+          `).join('')}
+        </div>` : ''}
+        ${a.sentiment ? `
+        <div style="flex:1;min-width:280px;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:16px 20px;border-top:3px solid var(--neon-blue);">
+          <div style="font-family:var(--mono);font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--neon-blue);margin-bottom:12px;font-weight:600;">Sentiment & Positioning</div>
+          ${a.sentiment.map(s => `
+            <div style="font-size:12px;color:var(--cream2);line-height:1.6;margin-bottom:10px;padding-left:12px;border-left:2px solid rgba(0,191,255,0.25);">${s}</div>
+          `).join('')}
+        </div>` : ''}
+      </div>
+      ` : ''}
     </div>
   `;
 }
