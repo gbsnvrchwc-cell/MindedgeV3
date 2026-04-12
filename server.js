@@ -1356,7 +1356,7 @@ app.get('/api/swing-analyze/:ticker', requireAccessAPI, analyzeLimiter, async (r
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
-        max_tokens: 4000,
+        max_tokens: 8000,
         tools: [{ type: 'web_search_20250305', name: 'web_search' }],
         messages: [{
           role: 'user',
@@ -1444,7 +1444,43 @@ RULES:
     jsonStr = jsonStr.slice(firstBrace, lastBrace + 1);
     jsonStr = jsonStr.replace(/,\s*([}\]])/g, '$1');
 
-    const parsed = JSON.parse(jsonStr);
+    // Attempt to repair truncated JSON
+    let parsed;
+    try {
+      parsed = JSON.parse(jsonStr);
+    } catch (e1) {
+      console.warn(`[Analyze] JSON parse failed for ${ticker}, attempting repair...`);
+      // Try closing unclosed strings, arrays, objects
+      let repaired = jsonStr;
+      // Count unclosed braces/brackets
+      let braces = 0, brackets = 0, inStr = false, escape = false;
+      for (const ch of repaired) {
+        if (escape) { escape = false; continue; }
+        if (ch === '\\') { escape = true; continue; }
+        if (ch === '"') { inStr = !inStr; continue; }
+        if (inStr) continue;
+        if (ch === '{') braces++;
+        if (ch === '}') braces--;
+        if (ch === '[') brackets++;
+        if (ch === ']') brackets--;
+      }
+      // Close unclosed string
+      if (inStr) repaired += '"';
+      // Remove trailing comma
+      repaired = repaired.replace(/,\s*$/, '');
+      // Close unclosed brackets/braces
+      for (let i = 0; i < brackets; i++) repaired += ']';
+      for (let i = 0; i < braces; i++) repaired += '}';
+      try {
+        parsed = JSON.parse(repaired);
+        console.log(`[Analyze] JSON repaired successfully for ${ticker}`);
+      } catch (e2) {
+        console.error(`[Analyze] JSON repair also failed for ${ticker}:`, e2.message);
+        console.log('[Analyze] First 500:', jsonStr.slice(0, 500));
+        console.log('[Analyze] Last 300:', jsonStr.slice(-300));
+        return res.status(500).json({ error: 'Analysis failed: response was truncated. Try again.' });
+      }
+    }
     console.log(`[Analyze] Analysis complete for ${ticker}`);
     res.json(parsed);
 
